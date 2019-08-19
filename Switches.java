@@ -57,6 +57,16 @@ public class Switches {
 					}
 				}			
 				ports.add(temPort);
+			}else {
+				Optional<Port> temPort = ports.stream().filter(x -> (x.connectedTo.equals(nodes.get(index+1)) && x.outPort)).findFirst();
+				if(temPort.isPresent()) {
+					for (int _id : Ids) {
+						Optional<Stream> s = streams.stream().filter(x -> x.Id == _id).findFirst();
+						if(s.isPresent()) {
+							temPort.get().AssignStream(s.get());
+						}
+					}
+				}
 			}
 			
 		}
