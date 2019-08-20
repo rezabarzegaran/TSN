@@ -1,5 +1,7 @@
 package TSN;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -28,17 +30,115 @@ import org.w3c.dom.Element;
 
 public class DataUnloader {
 
+	boolean CreateLuxiOutput;
     public DataUnloader(){
-
+    	CreateLuxiOutput = true;
     }
     public void UnloadAll(List<Solution> solutions, String name) {
     	int counter = 1;
     	for (Solution solution : solutions) {
-    		String pathString = "streams/"+ name;
+    		String pathStringStreams = "streams/"+ name;
+    		String pathStringSwitches = "switchs/"+ name;
     		String fileNameStream = "S_" + counter + ".xml";
-			UnloadStreams(solution, pathString, fileNameStream);
+			UnloadStreams(solution, pathStringStreams, fileNameStream);
+			UnloadPorts(solution, pathStringSwitches, fileNameStream);
 			counter++;
 		}
+    	if(CreateLuxiOutput) {
+    		String pathStringStreams = "luxiTool/"+ name;
+    		UnloadLuxi(solutions.get(solutions.size() - 1), pathStringStreams);
+    	}
+    	
+    }
+    public void UnloadLuxi(Solution solution, String DirPath){
+    	try {
+    		Files.createDirectories(Paths.get(DirPath));
+    		PrintWriter writer = new PrintWriter(DirPath + "/historySCHED1.txt", "UTF-8");
+    		String hyperperiod = String.valueOf(solution.Hyperperiod);
+    		for (Switches sw : solution.SW) {
+				for (Port port : sw.ports) {
+					if(port.outPort) {
+						String routeLink = sw.Name + "," + port.connectedTo;
+						writer.println();
+						writer.println(routeLink);
+						for (int i = 0; i < port.Tclose.length; i++) {
+							String frame = String.valueOf(port.Topen[i]) + " " + String.valueOf(port.Tclose[i]) + " " + hyperperiod + " " + String.valueOf(port.affiliatedQue[i]);
+							writer.println(frame);
+						}
+					}
+				}
+			}
+    		
+    		writer.close();
+    	} catch (Exception e){
+            e.printStackTrace();
+        }
+    	
+    	
+    }
+    
+    public void UnloadPorts(Solution solution, String DirPath, String fName) {
+        try{
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.newDocument();
+            
+            Element root = doc.createElement("Switches");
+            doc.appendChild(root);
+            
+            for (Switches s : solution.SW) {
+            	Element sw = doc.createElement("Switch");
+            	root.appendChild(sw);
+            	Attr sWNaAttr = doc.createAttribute("Name");
+            	sWNaAttr.setValue(s.Name);
+				sw.setAttributeNode(sWNaAttr);
+				for (Port port : s.ports) {
+					if(port.outPort) {
+						Element portElement = doc.createElement("Port");
+						sw.appendChild(portElement);
+						Attr portNameAttr = doc.createAttribute("ConnectedTo");
+						portNameAttr.setValue(port.connectedTo);
+						portElement.setAttributeNode(portNameAttr);
+						for (int i = 0; i < port.Topen.length; i++) {
+							Element frame = doc.createElement("Frame");
+							portElement.appendChild(frame);
+							Attr openAttr = doc.createAttribute("Open");
+							openAttr.setValue(String.valueOf(port.Topen[i]));
+							frame.setAttributeNode(openAttr);
+							Attr closeAttr = doc.createAttribute("Close");
+							closeAttr.setValue(String.valueOf(port.Tclose[i]));
+							frame.setAttributeNode(closeAttr);
+							Attr queAttr = doc.createAttribute("Que");
+							queAttr.setValue(String.valueOf(port.affiliatedQue[i]));
+							frame.setAttributeNode(queAttr);
+						}
+
+						
+					}
+				}
+			}
+            
+            
+            
+            
+            
+
+                      
+            
+            
+            
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource domSource = new DOMSource(doc);
+            Files.createDirectories(Paths.get(DirPath));
+            String path = DirPath + "/" + fName;
+            StreamResult streamResult = new StreamResult(new File(path));
+            transformer.transform(domSource, streamResult);
+            
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
     public void UnloadStreams(Solution solution, String DirPath, String fName){
         try{
@@ -63,19 +163,22 @@ public class DataUnloader {
 					
 					if(portObj != null) {
 						for (int i = 0; i < portObj.indexMap[stramIndex].length; i++) {
-							Element t_open = doc.createElement("T_open");
-							port.appendChild(t_open);
-							Attr time = doc.createAttribute("T");
-							time.setValue(String.valueOf(portObj.Topen[portObj.indexMap[stramIndex][i]]));
-							t_open.setAttributeNode(time);
-						}
-					}
-					
 
-					
-					
-					
-					
+							
+							Element frame = doc.createElement("Frame");
+							port.appendChild(frame);
+							Attr openAttr = doc.createAttribute("Open");
+							openAttr.setValue(String.valueOf(portObj.Topen[portObj.indexMap[stramIndex][i]]));
+							frame.setAttributeNode(openAttr);
+							Attr closeAttr = doc.createAttribute("Close");
+							closeAttr.setValue(String.valueOf(portObj.Tclose[portObj.indexMap[stramIndex][i]]));
+							frame.setAttributeNode(closeAttr);
+							Attr queAttr = doc.createAttribute("Que");
+							queAttr.setValue(String.valueOf(portObj.affiliatedQue[portObj.indexMap[stramIndex][i]]));
+							frame.setAttributeNode(queAttr);
+							
+						}
+					}				
 
 				}
 				

@@ -55,18 +55,24 @@ public class ORSolver {
  
 	    
 	    
-	    //while (solver.wallTime() <= 6000) {
-	    	//solver.nextSolution();
-			//optSolutions.add(method.cloneSolution());
-		    
-
-	    //}
-	    
-	    while (solver.nextSolution()) {
+	    while (solver.wallTime() <= 15000) {
+	    	solver.nextSolution();
 			optSolutions.add(method.cloneSolution());
 		    
 
 	    }
+	    
+	    //int counters = 0;
+	    //while (solver.nextSolution()) {
+			//optSolutions.add(method.cloneSolution());
+			//counters++;
+			
+			//if(counters >= 20) {
+				//break;
+			//}
+		    
+
+	    //}
 	    solver.endSearch();
     	
 

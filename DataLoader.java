@@ -1,5 +1,8 @@
 package TSN;
 import java.io.File;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -123,6 +126,42 @@ public class DataLoader {
         }
 
 
+    }
+    public void UnloadLuxi() {
+    	try {
+    		String DirPath = "luxiTool";
+    		Files.createDirectories(Paths.get(DirPath));
+    		PrintWriter writer = new PrintWriter(DirPath + "/vis.txt", "UTF-8");
+    		for (Routes r : routings) {
+        		String routeLink = String.valueOf(r.id) + " : ";
+        		for (int i = 0; i < (r.nodes.size() - 1); i++) {
+        			routeLink += r.nodes.get(i) + "," + r.nodes.get(i+1) + " ; ";
+				}
+        		writer.println(routeLink);
+			}
+
+    		writer.close();
+    		
+    		PrintWriter mwriter = new PrintWriter(DirPath + "/msg.txt", "UTF-8");
+    		for (Messages m : messages) {
+    			String routingID = null;
+    			for (Routes r : routings) {
+					for (int mId : r.messsageIDs) {
+						if(mId == m.id) {
+							routingID = String.valueOf(r.id);
+						}
+					}
+				}
+    			String mLink = String.valueOf(m.id) + ", " + String.valueOf(m.size) + ", " + String.valueOf(m.deadline) + ", ";
+    			mLink += routingID + ", TT, " + String.valueOf(m.priority) + ", " + String.valueOf(m.period);
+    			mwriter.println(mLink);
+			}
+
+    		mwriter.close();
+    		
+    	} catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public List<Messages> getCloneMessages(){

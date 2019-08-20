@@ -14,7 +14,7 @@ public class Solution {
         costValues = new ArrayList<Long>();
         
     }
-	public Solution(List<Stream> _streams, List<EndSystems> _es, List<Switches> _sw, List<Long> _costs) {
+	public Solution(List<Stream> _streams, List<EndSystems> _es, List<Switches> _sw, List<Long> _costs, int _hyperperiod) {
         streams = new ArrayList<Stream>();
         ES = new ArrayList<EndSystems>();
         SW = new ArrayList<Switches>();
@@ -32,6 +32,7 @@ public class Solution {
         for (Switches sw : _sw) {
 			SW.add(sw.Clone());
 		}
+        Hyperperiod = _hyperperiod;
 	}
     public List<Stream> streams;
     public List<EndSystems> ES;
@@ -150,7 +151,14 @@ public class Solution {
 		return Outports;
     }
     public Solution Clone() {
-    	return new Solution(streams, ES, SW, costValues);
+    	return new Solution(streams, ES, SW, costValues, Hyperperiod);
+    }
+    public Long getCost() {
+    	Long valCostLong = (long) 0;
+    	for (Long a : costValues) {
+    		valCostLong += a;
+		}
+    	return valCostLong;
     }
 
 }

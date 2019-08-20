@@ -307,12 +307,18 @@ public class Romon {
 											IntExpr cExpr = solver.makeSum(Tclose[counter2][prevport.indexMap[Previndex][l]] ,sw.clockAsync);
 											IntExpr dExpr = solver.makeIsLessOrEqualVar(cExpr, Topen[counter][port.indexMap[i][k]]);
 											
-											IntExpr eExpr = solver.makeIsEqualVar(Paff[counter][port.indexMap[i][k]], Paff[counter2][port.indexMap[j][l]]);
 											
+											IntExpr eExpr = solver.makeIsEqualVar(Paff[counter][port.indexMap[i][k]], Paff[counter][port.indexMap[j][l]]);
+											IntExpr fExpr = solver.makeSum(eExpr, 0);
 											//IntExpr fExpr = solver.makeIsEqualVar(port.indexMap[i][k], port.indexMap[j][l]);
+											if(port.indexMap[i][k] == port.indexMap[j][l]) {
+
+												fExpr = solver.makeSum(eExpr, 1);
+												
+											}
 											IntExpr gExpr = solver.makeSum(bExpr, dExpr);
-											IntExpr hExpr = solver.makeSum(gExpr, eExpr);
-											solver.addConstraint(solver.makeLessOrEqual(hExpr, 1));
+											IntExpr hExpr = solver.makeSum(gExpr, fExpr);
+											solver.addConstraint(solver.makeLessOrEqual(hExpr, 2));
 											
 										}
 										

@@ -7,7 +7,14 @@ public class NetOpt {
 
 	public static void main(String[] args) {
         
-        String inputPath = "src/TSN/input.xml";
+		//DataConverter converter = new DataConverter();
+		//converter.txt2xml("orion.streams", "orion.vls", "src/TSN/orion.xml");
+		
+		
+		
+		
+        //String inputPath = "src/TSN/input.xml";
+        String inputPath = "src/TSN/orion.xml";
         List<Solution> OptimizedSolutions = new ArrayList<Solution>();
         
         
@@ -23,9 +30,11 @@ public class NetOpt {
         optimizer.Run();
         OptimizedSolutions = optimizer.getOptimizedSolutions();
         System.out.println("total Solution is: " + OptimizedSolutions.size() );
+        System.out.println("Best Cost is " + OptimizedSolutions.get(OptimizedSolutions.size() - 1).getCost());
         
         DataUnloader outData = new DataUnloader();
         outData.UnloadAll(OptimizedSolutions, solutionName);
+        inData.UnloadLuxi();
         
 
         //System.out.println("Cost 0 is " + current_Solution.costValues[0]);
