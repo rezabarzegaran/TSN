@@ -10,13 +10,16 @@ public class ORSolver {
     Solver solver;
     Solution Current;
     List<Solution> optSolutions;
+    DataUnloader outData = new DataUnloader();
     Romon method;
+    String name;
     //Niklas method;
 	static { System.loadLibrary("jniortools");}
 
 	public ORSolver(String _method) {
 		//model = new CpModel();
 	    solver = new Solver(_method);
+	    name = _method;
 	    optSolutions = new ArrayList<Solution>();
 	    switch (_method) {
 		case "Romon":
@@ -54,25 +57,27 @@ public class ORSolver {
 
  
 	    
+	    //int counter = 0;
+	    //while (solver.wallTime() <= 15000) {
+	    	//solver.nextSolution();
+			////optSolutions.add(method.cloneSolution());
+	    	//outData.UnloadOnce(method.cloneSolution(), name, counter);
+		    //counter++;
+
+	    //}
 	    
-	    while (solver.wallTime() <= 15000) {
-	    	solver.nextSolution();
-			optSolutions.add(method.cloneSolution());
+	    int counter = 0;
+	    while (solver.nextSolution()) {
+			//optSolutions.add(method.cloneSolution());
+			outData.UnloadOnce(method.cloneSolution(), name, counter);
+			counter++;
+			
+			if(counter >= 10) {
+				break;
+			}
 		    
 
 	    }
-	    
-	    //int counters = 0;
-	    //while (solver.nextSolution()) {
-			//optSolutions.add(method.cloneSolution());
-			//counters++;
-			
-			//if(counters >= 20) {
-				//break;
-			//}
-		    
-
-	    //}
 	    solver.endSearch();
     	
 

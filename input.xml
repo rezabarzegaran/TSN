@@ -52,4 +52,8 @@
     			<node>ES4</node></Nodes>
     		<messages>
     			<messageID>5</messageID></messages></Route>
-    			</Routing></Network>
+    			</Routing>
+    <CA>
+    	<APP id="1">
+    		<in>1</in>
+    		<out>3</out></APP></CA></Network>

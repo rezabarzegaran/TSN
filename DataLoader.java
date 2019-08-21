@@ -55,10 +55,27 @@ class Routes{
 		return new Routes(id , nodes, messsageIDs);
 	}
 }
+class ControlApp{
+	ControlApp(int _id, List<Integer> _inIDs, List<Integer> _outIDs){
+		id = _id;
+		for (Integer item : _inIDs) {
+			inIDs.add(item);
+			
+		}
+		for (Integer item : _outIDs) {
+			outIDs.add(item);
+			
+		}
+	}
+	int id;
+	List<Integer> inIDs = new ArrayList<Integer>();
+	List<Integer> outIDs = new ArrayList<Integer>();
+}
 public class DataLoader {
-
+	public GraphExporter graphicExporter = new GraphExporter();
     public List<Messages> messages = new ArrayList<Messages>();
     public List<Routes> routings = new ArrayList<Routes>();
+    public List<ControlApp> CAs = new ArrayList<ControlApp>();
     public DataLoader(){
 
     }
@@ -73,6 +90,7 @@ public class DataLoader {
                     
             NodeList messageList = doc.getElementsByTagName("Message");
             NodeList routingList = doc.getElementsByTagName("Route");
+            NodeList appList = doc.getElementsByTagName("APP");
             
 
         
@@ -120,12 +138,34 @@ public class DataLoader {
         
                 }
             }
+            for (int i = 0; i < appList.getLength(); i++) {
+            	Node nNode = routingList.item(i);
+            	List<Integer> inIDList = new ArrayList<Integer>();
+            	List<Integer> outIDList = new ArrayList<Integer>();
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                	Element eElement = (Element) nNode;
+                	int _id = Integer.parseInt(eElement.getAttribute("id"));
+                    NodeList listednotes = eElement.getElementsByTagName("in");
+                    for (int j = 0; j < listednotes.getLength(); j++) {
+                    	inIDList.add(Integer.valueOf(listednotes.item(i).getTextContent()));
+					}
+                    NodeList listednotes2 = eElement.getElementsByTagName("in");
+                    for (int j = 0; j < listednotes2.getLength(); j++) {
+                    	outIDList.add(Integer.valueOf(listednotes2.item(i).getTextContent()));
+					}
+                	ControlApp tc = new ControlApp(_id, inIDList, outIDList);
+                	CAs.add(tc);
+                }
+			}
 
         } catch (Exception e){
             e.printStackTrace();
         }
 
 
+    }
+    public void exportGraph() {
+    	graphicExporter.Export( messages,routings, "visual");
     }
     public void UnloadLuxi() {
     	try {

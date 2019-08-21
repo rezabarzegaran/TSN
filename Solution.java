@@ -150,6 +150,17 @@ public class Solution {
 		}
 		return Outports;
     }
+    public List<String> getOutPorts(){
+    	List<String> nameStrings = new ArrayList<String>();
+		for (Switches sw : SW) {
+			for (Port port : sw.ports) {
+				if(port.outPort) {
+					nameStrings.add("[" + sw.Name + " : " + port.connectedTo + "]");
+				}
+			}
+		}
+		return nameStrings;
+    }
     public Solution Clone() {
     	return new Solution(streams, ES, SW, costValues, Hyperperiod);
     }

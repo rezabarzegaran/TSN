@@ -1,18 +1,14 @@
 package TSN;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -20,17 +16,15 @@ import org.w3c.dom.Attr;
 
 import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 
-import org.w3c.dom.Attr;
-
-import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
 
 public class DataUnloader {
+	
 
 	boolean CreateLuxiOutput;
+    DataVisualizer visualizer = new DataVisualizer();
     public DataUnloader(){
     	CreateLuxiOutput = true;
     }
@@ -50,6 +44,20 @@ public class DataUnloader {
     	}
     	
     }
+    public void UnloadOnce(Solution solution, String name, int counter) {
+		String pathStringStreams = "streams/"+ name;
+		String pathStringSwitches = "switchs/"+ name;
+		String fileNameStream = "S_" + counter + ".xml";
+		UnloadStreams(solution, pathStringStreams, fileNameStream);
+		UnloadPorts(solution, pathStringSwitches, fileNameStream);
+	    visualizer.CreateTotalSVG(solution, "visual/"+ name + "/Solution " + counter, solution.Hyperperiod, false);
+    	
+    	if(CreateLuxiOutput) {
+    		String pathStringStreamsLuxi = "luxiTool/"+ name;
+    		UnloadLuxi(solution, pathStringStreamsLuxi);
+    	}
+    	
+    }
     public void UnloadLuxi(Solution solution, String DirPath){
     	try {
     		Files.createDirectories(Paths.get(DirPath));
@@ -62,7 +70,7 @@ public class DataUnloader {
 						writer.println();
 						writer.println(routeLink);
 						for (int i = 0; i < port.Tclose.length; i++) {
-							String frame = String.valueOf(port.Topen[i]) + " " + String.valueOf(port.Tclose[i]) + " " + hyperperiod + " " + String.valueOf(port.affiliatedQue[i]);
+							String frame = String.valueOf(port.Topen[i]) + "\t" + String.valueOf(port.Tclose[i]) + "\t" + hyperperiod + "\t" + String.valueOf(port.affiliatedQue[i]);
 							writer.println(frame);
 						}
 					}
@@ -118,15 +126,7 @@ public class DataUnloader {
 				}
 			}
             
-            
-            
-            
-            
-
-                      
-            
-            
-            
+       
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             DOMSource domSource = new DOMSource(doc);

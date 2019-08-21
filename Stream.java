@@ -12,11 +12,12 @@ public class Stream {
         Priority = priority;
         offset = _offset;
         // 1 Byte takes 0.008us at 1000Mbits, 42bit header for ethernet packet. Round down.
-        Transmit_Time = (int) Math.ceil((Size + 42)*0.008);
+        Transmit_Time = (int) Math.ceil((Size + 42)*0.1);
         routingList = new ArrayList<String>();
+        CroutingList = new ArrayList<String>();
 
     }
-	public Stream(int _id, int _period, int _deadline, int _size, int priority, int _offset, int _hyper, int _instances, List<String> _routing){
+	public Stream(int _id, int _period, int _deadline, int _size, int priority, int _offset, int _hyper, int _instances, List<String> _routing, List<String> _crouting){
         Id = _id;
         Period = _period;
         Deadline = _deadline;
@@ -24,12 +25,16 @@ public class Stream {
         Priority = priority;
         offset = _offset;
         // 1 Byte takes 0.008us at 1000Mbits, 42bit header for ethernet packet. Round down.
-        Transmit_Time = (int) Math.ceil((Size + 42)*0.008);
+        Transmit_Time = (int) Math.ceil((Size + 42)*0.1);
         routingList = new ArrayList<String>();
+        CroutingList = new ArrayList<String>();
         Hyperperiod = _hyper;
         N_instances = _instances;
         for (String s : _routing) {
 			routingList.add(s);
+		}
+        for (String s : _crouting) {
+			CroutingList.add(s);
 		}
 
     }
@@ -46,6 +51,7 @@ public class Stream {
     public int N_instances;
     public int offset;
     List<String> routingList;
+    List<String> CroutingList;
     
     public void initiate(int hyperperiod) {
     	Hyperperiod = hyperperiod;
@@ -54,6 +60,7 @@ public class Stream {
     }
     public void SetRouting(List<String> routing) {
     	for (String s : routing) {
+    		CroutingList.add(s);
 			if(!s.contains("ES")) {
 				routingList.add(s);
 			}
@@ -90,8 +97,15 @@ public class Stream {
 		}
     	return false;
     }
+    public List<String> getPorts(){
+    	List<String> nameStrings = new ArrayList<String>();
+    	for (int i = 1; i < (CroutingList.size()-1); i++) {
+    		nameStrings.add("[" + CroutingList.get(i) + " : " + CroutingList.get(i+1) + "]");
+		}
+		return nameStrings;
+    }
     public Stream Clone() {
-    	return new Stream(Id, Period, Deadline, Size, Priority, offset, Hyperperiod, N_instances, routingList );
+    	return new Stream(Id, Period, Deadline, Size, Priority, offset, Hyperperiod, N_instances, routingList, CroutingList );
     }
 
 }
