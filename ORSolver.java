@@ -66,6 +66,7 @@ public class ORSolver {
 
 	    //}
 	    
+	    long start=System.currentTimeMillis();
 	    int counter = 0;
 	    while (solver.nextSolution()) {
 			//optSolutions.add(method.cloneSolution());
@@ -79,6 +80,9 @@ public class ORSolver {
 
 	    }
 	    solver.endSearch();
+	    long end=System.currentTimeMillis();
+	    int duration = (int) (end - start);
+	    outData.CreateReport(duration);
     	
 
 	    // Statistics

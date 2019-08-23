@@ -30,10 +30,13 @@ public class Romon {
 		Constraint1(Topen, Tclose, Paff);
 		Constraint2(Topen, Tclose, Paff);
 		Constraint3(Topen, Tclose, Paff);
-		Constraint4(Topen, Tclose, Paff);
+		Constraint4_main(Topen, Tclose, Paff);
+		//Constraint4(Topen, Tclose, Paff);
 		Constraint5(Topen, Tclose, Paff);
 		Constraint6(Topen, Tclose, Paff);
 		Constraint7(Topen, Tclose, Paff);
+		Constraint8(Topen, Tclose, Paff);
+		Constraint9(Topen, Tclose, Paff);
 	}
 	public void addCosts() {
 		Cost0(Topen, Tclose, Paff, Jitters);
@@ -124,6 +127,8 @@ public class Romon {
 
 	}
 	private void Constraint0(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff) {
+	//Assign Que to Window and Frame
+		//Equation Number 1 of the paper IEEE802.1Qbv Gate Control List Synthesis using Array Theory Encoding
 		int counter = 0;
 		for (Switches sw : Current.SW) {
 			for (Port port : sw.ports) {
@@ -167,7 +172,9 @@ public class Romon {
 				if(port.outPort) {
 					for (int i = 0; i < port.AssignedStreams.size(); i++) {
 						for (int j = 0; j < (port.AssignedStreams.get(i).N_instances - 1); j++) {
-							solver.addConstraint(solver.makeEquality(solver.makeDifference(Topen[counter][port.indexMap[i][j+1]], Topen[counter][port.indexMap[i][j]]), port.AssignedStreams.get(i).Period));
+							//solver.addConstraint(solver.makeEquality(solver.makeDifference(Topen[counter][port.indexMap[i][j+1]], Topen[counter][port.indexMap[i][j]]), port.AssignedStreams.get(i).Period));
+							solver.addConstraint(solver.makeGreaterOrEqual(solver.makeDifference(Topen[counter][port.indexMap[i][j+1]], Topen[counter][port.indexMap[i][j]]), port.AssignedStreams.get(i).Period));
+
 						}
 						
 					}
@@ -185,8 +192,10 @@ public class Romon {
 			for (Port port : sw.ports) {
 				if(port.outPort) {
 					for (int i = 0; i < port.AssignedStreams.size(); i++) {
-						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {							
-							solver.addConstraint(solver.makeEquality(solver.makeDifference(Tclose[counter][port.indexMap[i][j]], Topen[counter][port.indexMap[i][j]]), port.AssignedStreams.get(i).Transmit_Time));
+						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {			
+							//solver.addConstraint(solver.makeEquality(solver.makeDifference(Tclose[counter][port.indexMap[i][j]], Topen[counter][port.indexMap[i][j]]), port.AssignedStreams.get(i).Transmit_Time));
+							solver.addConstraint(solver.makeGreaterOrEqual(solver.makeDifference(Tclose[counter][port.indexMap[i][j]], Topen[counter][port.indexMap[i][j]]), port.AssignedStreams.get(i).Transmit_Time));
+							
 						}
 						
 					}
@@ -227,7 +236,7 @@ public class Romon {
 	}
 	private void Constraint4(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff) {
 		// No overlaping windows
-		//Equation Number 4 of the paper IEEE802.1Qbv Gate Control List Synthesis using Array Theory Encoding
+		//Equation Number 5 of the paper IEEE802.1Qbv Gate Control List Synthesis using Array Theory Encoding
 		int counter = 0;
 		for (Switches sw : Current.SW) {
 			for (Port port : sw.ports) {
@@ -318,7 +327,7 @@ public class Romon {
 											}
 											IntExpr gExpr = solver.makeSum(bExpr, dExpr);
 											IntExpr hExpr = solver.makeSum(gExpr, fExpr);
-											solver.addConstraint(solver.makeLessOrEqual(hExpr, 2));
+											solver.addConstraint(solver.makeLess(hExpr, 3));
 											
 										}
 										
@@ -346,6 +355,34 @@ public class Romon {
 				for (int i = 0; i < stream.N_instances; i++) {
 					solver.addConstraint(solver.makeLessOrEqual(solver.makeDifference(Tclose[lastIndex][getPortObject(lastSwitch, stream.Id).indexMap[getStreamIndex(lastSwitch, stream.Id)][i]], Topen[firstIndex][getPortObject(firstSwitch, stream.Id).indexMap[getStreamIndex(firstSwitch, stream.Id)][i]]), (stream.Deadline -  Current.SW.get(0).clockAsync)));
 				}
+			}
+			
+		}
+		
+
+	}
+	private void Constraint8(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff) {
+		// Offset
+		//The opeening should be after offset
+		for (Stream stream : Current.streams) {
+			String firstSwitch = stream.getFirstSwitch();
+			int firstIndex = FindPortIndex(firstSwitch, stream.Id);
+			if(firstIndex != -1) {
+				solver.addConstraint(solver.makeGreaterOrEqual(Topen[firstIndex][getPortObject(firstSwitch, stream.Id).indexMap[getStreamIndex(firstSwitch, stream.Id)][0]], stream.offset));
+			}
+			
+		}
+		
+
+	}
+	private void Constraint9(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff) {
+		// AboluteDeadline
+		//The opeening should be after offset
+		for (Stream stream : Current.streams) {
+			String lastSwitch = stream.getLastSwitch();
+			int lastIndex = FindPortIndex(lastSwitch, stream.Id);
+			if(lastIndex != -1) {
+				solver.addConstraint(solver.makeLessOrEqual(Tclose[lastIndex][getPortObject(lastSwitch, stream.Id).indexMap[getStreamIndex(lastSwitch, stream.Id)][0]], stream.Deadline));
 			}
 			
 		}

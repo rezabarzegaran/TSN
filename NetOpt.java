@@ -14,7 +14,8 @@ public class NetOpt {
 		
 		
         //String inputPath = "src/TSN/input.xml";
-        String inputPath = "src/TSN/GM.xml";
+        //String inputPath = "src/TSN/GM.xml";
+        String inputPath = "src/TSN/GMM.xml";
         List<Solution> OptimizedSolutions = new ArrayList<Solution>();
         
         
@@ -24,7 +25,7 @@ public class NetOpt {
         Solution initial_Solution = new Solution();
         String solutionName = "Romon";
         ORSolver optimizer = new ORSolver(solutionName);
-        initial_Solution.Create(inData.getMessages(), inData.getRoutes());
+        initial_Solution.Create(inData.getMessages(), inData.getRoutes(), inData.getApps());
         initial_Solution.Initialize();
         optimizer.setSolution(initial_Solution);
         optimizer.Run();

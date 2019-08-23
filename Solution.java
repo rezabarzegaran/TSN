@@ -39,7 +39,7 @@ public class Solution {
     public List<Switches> SW;
     public List<Long> costValues;
     public int Hyperperiod = 1;
-    public void Create(List<Messages> _messages, List<Routes> routes){
+    public void Create(List<Messages> _messages, List<Routes> routes, List<ControlApp> CAs){
 
         for (Messages item : _messages) {
             streams.add(new Stream(item.id, item.period, item.deadline, item.size, item.priority, item.offset));
@@ -164,8 +164,8 @@ public class Solution {
     public Solution Clone() {
     	return new Solution(streams, ES, SW, costValues, Hyperperiod);
     }
-    public Long getCost() {
-    	Long valCostLong = (long) 0;
+    public int getCost() {
+    	int valCostLong =  0;
     	for (Long a : costValues) {
     		valCostLong += a;
 		}

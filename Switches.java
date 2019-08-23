@@ -3,6 +3,7 @@ package TSN;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 
 public class Switches {
@@ -10,9 +11,11 @@ public class Switches {
 	int Hyperperiod = 1;
 	List<Stream> streams =  new ArrayList<Stream>();
 	List<Port> ports = new ArrayList<Port>();
-	int clockAsync = 4;
+	int clockAsync = 0;
 	public Switches(String _name) {
 		Name = _name;
+		Random rndRandom = new Random();
+		//clockAsync =rndRandom.nextInt(10);
 	}
 	public Switches(String _name, int _hyperperiod, int _clock, List<Stream> _s, List<Port> _ports) {
 		Name = _name;

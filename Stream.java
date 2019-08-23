@@ -12,7 +12,7 @@ public class Stream {
         Priority = priority;
         offset = _offset;
         // 1 Byte takes 0.008us at 1000Mbits, 42bit header for ethernet packet. Round down.
-        Transmit_Time = (int) Math.ceil((Size + 42)*0.1);
+        Transmit_Time = (int) Math.ceil((Size + 42)*0.195);
         routingList = new ArrayList<String>();
         CroutingList = new ArrayList<String>();
 

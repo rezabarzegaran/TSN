@@ -227,4 +227,7 @@ public class DataLoader {
     public List<Routes> getRoutes(){
     	return routings;
     }
+    public List<ControlApp> getApps(){
+    	return CAs;
+    }
 }
