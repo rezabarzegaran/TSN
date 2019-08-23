@@ -22,7 +22,7 @@ public class Romon {
 		Topen = new IntVar[NOutports][];
 		Tclose = new IntVar[NOutports][];
 		Paff = new IntVar[NOutports][];
-		Jitters = new IntVar[2];
+		Jitters = new IntVar[3];
 		TotalVars = AssignVars(Topen, Tclose, Paff);
 	}
 	public void addConstraints() {
@@ -35,12 +35,13 @@ public class Romon {
 		Constraint5(Topen, Tclose, Paff);
 		Constraint6(Topen, Tclose, Paff);
 		Constraint7(Topen, Tclose, Paff);
-		Constraint8(Topen, Tclose, Paff);
-		Constraint9(Topen, Tclose, Paff);
+		//Constraint8(Topen, Tclose, Paff);
+		//Constraint9(Topen, Tclose, Paff);
 	}
 	public void addCosts() {
 		Cost0(Topen, Tclose, Paff, Jitters);
 		Cost1(Topen, Tclose, Paff, Jitters);
+		Cost2(Topen, Tclose, Paff, Jitters);
 	}
 	public void addDecision() {
 		IntVar[] x = new IntVar[TotalVars];
@@ -105,6 +106,7 @@ public class Romon {
 		}
 	}
 	private Solution AssignSolution(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[] Jitter)  {
+		Current.costValues.clear();
 		for (int i = 0; i < Jitter.length; i++) {
 			Current.costValues.add(Jitter[i].value());
 		}
@@ -390,6 +392,7 @@ public class Romon {
 
 	}
 	private void Cost0(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[] SenderJitter) {
+		IntExpr eExpr = null;
 		for (Stream stream : Current.streams) {
 			String firstSwitch = stream.getFirstSwitch();
 			int firstIndex = FindPortIndex(firstSwitch, stream.Id);
@@ -400,16 +403,24 @@ public class Romon {
 						IntExpr bExpr = solver.makeAbs(solver.makeDifference((i * stream.Period), Topen[firstIndex][getPortObject(firstSwitch, stream.Id).indexMap[getStreamIndex(firstSwitch, stream.Id)][i]]));
 						IntExpr cExpr = solver.makeAbs(solver.makeDifference(aExpr, bExpr));
 						IntExpr dExpr = solver.makeAbs(solver.makeDifference(stream.Transmit_Time, cExpr));
-						SenderJitter[0] = dExpr.var();
-						solver.makeMinimize(SenderJitter[0], 2);
+						if(eExpr == null) {
+							eExpr = dExpr;
+						}else {
+							eExpr = solver.makeSum(eExpr, dExpr);
+						}
+
 					}
 				}
 			}
 			
 		}
+		SenderJitter[0] = eExpr.var();
+		solver.makeMinimize(SenderJitter[0],10);
 	}
 	private void Cost1(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[] ReciverJitter) {
+		IntExpr eExpr = null;
 		for (Stream stream : Current.streams) {
+
 			String lastswitch = stream.getLastSwitch();
 			int lastIndex = FindPortIndex(lastswitch, stream.Id);
 			if(lastIndex != -1) {
@@ -419,13 +430,43 @@ public class Romon {
 						IntExpr bExpr = solver.makeAbs(solver.makeDifference((i * stream.Period), Topen[lastIndex][getPortObject(lastswitch, stream.Id).indexMap[getStreamIndex(lastswitch, stream.Id)][i]]));
 						IntExpr cExpr = solver.makeAbs(solver.makeDifference(aExpr, bExpr));
 						IntExpr dExpr = solver.makeAbs(solver.makeDifference(stream.Transmit_Time, cExpr));
-						ReciverJitter[1] = dExpr.var();
-						solver.makeMinimize(ReciverJitter[1], 1);
+						if(eExpr == null) {
+							eExpr = dExpr;
+						}else {
+							eExpr = solver.makeSum(eExpr, dExpr);
+						}
+
 					}
 				}
 			}
 			
 		}
+		ReciverJitter[1] = eExpr.var();
+		solver.makeMinimize(ReciverJitter[1], 10);
+	}
+	private void Cost2(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[] ReciverJitter) {
+		IntExpr bExpr= null;
+		IntExpr aExpr = null;
+		for (Stream stream : Current.streams) {
+			String lastswitch = stream.getLastSwitch();
+			int lastIndex = FindPortIndex(lastswitch, stream.Id);
+			String firstSwitch = stream.getFirstSwitch();
+			int firstIndex = FindPortIndex(firstSwitch, stream.Id);
+			if(lastIndex != -1) {
+				for (int i = 0; i < stream.N_instances; i++) {
+					aExpr = solver.makeDifference(Tclose[lastIndex][getPortObject(lastswitch, stream.Id).indexMap[getStreamIndex(lastswitch, stream.Id)][i]], Topen[firstIndex][getPortObject(firstSwitch, stream.Id).indexMap[getStreamIndex(firstSwitch, stream.Id)][i]]);
+					if(bExpr == null) {
+						bExpr = aExpr;
+					}else {
+						bExpr = solver.makeSum(bExpr, aExpr);
+					}
+
+				}
+			}	
+		}
+		
+		solver.makeMinimize(bExpr.var(), 1);
+		ReciverJitter[2] = bExpr.var();
 	}
 	private int FindPortIndex(String swName, int mID) {
 		int counter = 0;

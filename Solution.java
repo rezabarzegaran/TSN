@@ -19,6 +19,7 @@ public class Solution {
         ES = new ArrayList<EndSystems>();
         SW = new ArrayList<Switches>();
         costValues = new ArrayList<Long>();
+        costValues.clear();
         
         for (Long val : _costs) {
 			costValues.add(val);
@@ -168,6 +169,7 @@ public class Solution {
     	int valCostLong =  0;
     	for (Long a : costValues) {
     		valCostLong += a;
+    		System.out.println(a);
 		}
     	return valCostLong;
     }

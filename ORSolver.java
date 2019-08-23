@@ -73,7 +73,7 @@ public class ORSolver {
 			outData.UnloadOnce(method.cloneSolution(), name, counter);
 			counter++;
 			
-			if(counter >= 10) {
+			if(counter >= 20) {
 				break;
 			}
 		    

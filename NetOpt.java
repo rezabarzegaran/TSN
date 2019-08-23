@@ -13,9 +13,9 @@ public class NetOpt {
 		
 		
 		
-        //String inputPath = "src/TSN/input.xml";
+        String inputPath = "src/TSN/input.xml";
         //String inputPath = "src/TSN/GM.xml";
-        String inputPath = "src/TSN/GMM.xml";
+        //String inputPath = "src/TSN/GMM.xml";
         List<Solution> OptimizedSolutions = new ArrayList<Solution>();
         
         

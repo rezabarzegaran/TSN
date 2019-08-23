@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import javax.annotation.processing.RoundEnvironment;
+
 
 public class Switches {
 	String Name;
@@ -190,14 +192,19 @@ class Port {
 		}
 		int counter = 0;
 		if(outPort) {
-			for (int t = 0; t < AssignedStreams.get(0).Hyperperiod; t++) {
-				for (int i = 0; i < AssignedStreams.size(); i++) {
-					if((t % AssignedStreams.get(i).Period) == 0) {
-						indexMap[i][t / AssignedStreams.get(i).Period] = counter;
-						counter++ ;
-					}
+			
+			for (int i = 0; i < AssignedStreams.size(); i++) {
+				int N_istances = AssignedStreams.get(i).Hyperperiod / AssignedStreams.get(i).Period;
+				for (int j = 0; j < N_istances; j++) {
+					indexMap[i][j] = counter;
+					//indexMap[i][j] = (int) Math.round((7*j)/8.0);
+					counter++ ;
 				}
 			}
+			
+			
+			
+
 			
 		}
 
