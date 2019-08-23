@@ -11,6 +11,7 @@ public class Romon {
 	Solution Current;
 	Solver solver;
 	DecisionBuilder db;
+	int MaxFlat = 0;
 	public Romon(Solver _solver) {
 		solver = _solver;
 	}
@@ -22,8 +23,9 @@ public class Romon {
 		Topen = new IntVar[NOutports][];
 		Tclose = new IntVar[NOutports][];
 		Paff = new IntVar[NOutports][];
+		Waff = new IntVar[NOutports][][];
 		Jitters = new IntVar[2];
-		TotalVars = AssignVars(Topen, Tclose, Paff);
+		TotalVars = AssignVars(Topen, Tclose, Paff, Waff);
 	}
 	public void addConstraints() {
 		Constraint0(Topen, Tclose, Paff);
@@ -43,14 +45,18 @@ public class Romon {
 		IntVar[] x = new IntVar[TotalVars];
 		IntVar[] y = new IntVar[TotalVars];
 		IntVar[] z = new IntVar[TotalVars];
+		IntVar[] w = new IntVar[MaxFlat];
 		FlatArray(Topen, x, NOutports);
 		FlatArray(Tclose, y, NOutports);
 		FlatArray(Paff, z, NOutports);
+		FlatArray3(Waff, w, NOutports);
 	    DecisionBuilder db1 = solver.makePhase(x, solver.CHOOSE_FIRST_UNBOUND, solver.INT_VALUE_DEFAULT);
 	    DecisionBuilder db2 = solver.makePhase(y, solver.CHOOSE_FIRST_UNBOUND, solver.INT_VALUE_DEFAULT);
 	    DecisionBuilder db3 = solver.makePhase(z, solver.CHOOSE_FIRST_UNBOUND, solver.INT_VALUE_DEFAULT);
-	    DecisionBuilder db4 = solver.compose(db1, db2);
-	    db = solver.compose(db4, db3);
+	    DecisionBuilder db4 = solver.makePhase(w, solver.CHOOSE_FIRST_UNBOUND, solver.INT_VALUE_DEFAULT);
+	    DecisionBuilder db5 = solver.compose(db1, db2);
+	    DecisionBuilder db6 = solver.compose(db5, db3);
+	    db = solver.compose(db6, db4);
 	}
 	public DecisionBuilder getDecision() {
 		return db;
@@ -64,24 +70,39 @@ public class Romon {
 	IntVar[][] Topen;
 	IntVar[][] Tclose;
 	IntVar[][] Paff;
+	IntVar[][][] Waff;
 	IntVar[] Jitters;
 	
 	
-	private int AssignVars(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff) {
+	private int AssignVars(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[][][] Waff) {
 		int counter = 0;
 		int Totalvars = 0;
+		int Totalvars3 = 0;
 		for (Switches sw : Current.SW) {
 			for (Port port : sw.ports) {
 				if(port.outPort) {
 					Topen[counter] = new IntVar[port.GCLSize];
 					Tclose[counter] = new IntVar[port.GCLSize];
 					Paff[counter] = new IntVar[port.GCLSize];
+					Waff[counter] = new IntVar[port.AssignedStreams.size()][];
+					
+					for (int i = 0; i < port.AssignedStreams.size(); i++) {
+						Waff[counter][i] = new IntVar[port.AssignedStreams.get(i).N_instances];
+						
+						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
+							Waff[counter][i][j] = solver.makeIntVar(0, port.GCLSize, ("W_" + sw.Name + "_"+ port.connectedTo + "_"+i+"_"+j) );
+							Totalvars3++;
+						}
+					}
+					
+					
 					
 					for (int i = 0; i < port.GCLSize; i++) {
 
 						Topen[counter][i] = solver.makeIntVar(0, Current.Hyperperiod, ("O_" + sw.Name + "_"+ port.connectedTo + "_"+i));
 						Tclose[counter][i] = solver.makeIntVar(0, Current.Hyperperiod, ("C_" + sw.Name + "_"+ port.connectedTo + "_"+i));
 						Paff[counter][i] = solver.makeIntVar(0, port.GetNQue(), ("A_" + sw.Name + "_"+ port.connectedTo + "_"+i));
+						
 						Totalvars++;
 					}
 					
@@ -90,6 +111,7 @@ public class Romon {
 				}
 			}
 		}
+		MaxFlat = Totalvars3;
 		return Totalvars;
 	}
 	private void FlatArray(IntVar[][] source, IntVar[] destination, int sourcesize) {
@@ -97,6 +119,18 @@ public class Romon {
 		for (int i = 0; i < sourcesize; i++) {
 			for (int j = 0; j < source[i].length; j++) {
 				destination[counter] = source[i][j];
+				counter++;
+			}
+		}
+	}
+	private void FlatArray3(IntVar[][][] source, IntVar[] destination, int sourcesize) {
+		int counter = 0;
+		for (int i = 0; i < sourcesize; i++) {
+			for (int j = 0; j < source[i].length; j++) {
+				for (int j2 = 0; j2 < source[i][j].length; j2++) {
+					destination[counter] = source[i][j][j2];
+				}
+				
 				counter++;
 			}
 		}
