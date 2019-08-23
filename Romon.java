@@ -1,10 +1,13 @@
 package TSN;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import com.google.ortools.constraintsolver.DecisionBuilder;
 import com.google.ortools.constraintsolver.IntExpr;
 import com.google.ortools.constraintsolver.IntVar;
+import com.google.ortools.constraintsolver.OptimizeVar;
 import com.google.ortools.constraintsolver.Solver;
 
 public class Romon {
@@ -39,9 +42,9 @@ public class Romon {
 		//Constraint9(Topen, Tclose, Paff);
 	}
 	public void addCosts() {
-		Cost0(Topen, Tclose, Paff, Jitters);
-		Cost1(Topen, Tclose, Paff, Jitters);
-		Cost2(Topen, Tclose, Paff, Jitters);
+		Opt1 = Cost0(Topen, Tclose, Paff, Jitters);
+		Opt2 = Cost1(Topen, Tclose, Paff, Jitters);
+		Opt3 = Cost2(Topen, Tclose, Paff, Jitters);
 	}
 	public void addDecision() {
 		IntVar[] x = new IntVar[TotalVars];
@@ -50,9 +53,9 @@ public class Romon {
 		FlatArray(Topen, x, NOutports);
 		FlatArray(Tclose, y, NOutports);
 		FlatArray(Paff, z, NOutports);
-	    DecisionBuilder db1 = solver.makePhase(x, solver.CHOOSE_FIRST_UNBOUND, solver.INT_VALUE_DEFAULT);
-	    DecisionBuilder db2 = solver.makePhase(y, solver.CHOOSE_FIRST_UNBOUND, solver.INT_VALUE_DEFAULT);
-	    DecisionBuilder db3 = solver.makePhase(z, solver.CHOOSE_FIRST_UNBOUND, solver.INT_VALUE_DEFAULT);
+	    DecisionBuilder db1 = solver.makePhase(x, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
+	    DecisionBuilder db2 = solver.makePhase(y, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
+	    DecisionBuilder db3 = solver.makePhase(z, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
 	    DecisionBuilder db4 = solver.compose(db1, db2);
 	    db = solver.compose(db4, db3);
 	}
@@ -69,6 +72,10 @@ public class Romon {
 	IntVar[][] Tclose;
 	IntVar[][] Paff;
 	IntVar[] Jitters;
+	OptimizeVar Opt1;
+	OptimizeVar Opt2;
+	OptimizeVar Opt3;
+	
 	
 	
 	private int AssignVars(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff) {
@@ -391,8 +398,8 @@ public class Romon {
 		
 
 	}
-	private void Cost0(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[] SenderJitter) {
-		IntExpr eExpr = null;
+	private OptimizeVar Cost0(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[] SenderJitter) {
+		IntVar eExpr = null;
 		for (Stream stream : Current.streams) {
 			String firstSwitch = stream.getFirstSwitch();
 			int firstIndex = FindPortIndex(firstSwitch, stream.Id);
@@ -404,9 +411,9 @@ public class Romon {
 						IntExpr cExpr = solver.makeAbs(solver.makeDifference(aExpr, bExpr));
 						IntExpr dExpr = solver.makeAbs(solver.makeDifference(stream.Transmit_Time, cExpr));
 						if(eExpr == null) {
-							eExpr = dExpr;
+							eExpr = dExpr.var();
 						}else {
-							eExpr = solver.makeSum(eExpr, dExpr);
+							eExpr = solver.makeSum(eExpr, dExpr.var()).var();
 						}
 
 					}
@@ -414,11 +421,11 @@ public class Romon {
 			}
 			
 		}
-		SenderJitter[0] = eExpr.var();
-		solver.makeMinimize(SenderJitter[0],10);
+		SenderJitter[0] = eExpr;
+		return solver.makeMaximize(SenderJitter[0],1);
 	}
-	private void Cost1(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[] ReciverJitter) {
-		IntExpr eExpr = null;
+	private OptimizeVar Cost1(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[] ReciverJitter) {
+		IntVar eExpr = null;
 		for (Stream stream : Current.streams) {
 
 			String lastswitch = stream.getLastSwitch();
@@ -431,9 +438,9 @@ public class Romon {
 						IntExpr cExpr = solver.makeAbs(solver.makeDifference(aExpr, bExpr));
 						IntExpr dExpr = solver.makeAbs(solver.makeDifference(stream.Transmit_Time, cExpr));
 						if(eExpr == null) {
-							eExpr = dExpr;
+							eExpr = dExpr.var();
 						}else {
-							eExpr = solver.makeSum(eExpr, dExpr);
+							eExpr = solver.makeSum(eExpr, dExpr.var()).var();
 						}
 
 					}
@@ -441,12 +448,11 @@ public class Romon {
 			}
 			
 		}
-		ReciverJitter[1] = eExpr.var();
-		solver.makeMinimize(ReciverJitter[1], 10);
+		ReciverJitter[1] = eExpr;
+		return solver.makeMaximize(ReciverJitter[1], 1);
 	}
-	private void Cost2(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[] ReciverJitter) {
-		IntExpr bExpr= null;
-		IntExpr aExpr = null;
+	private OptimizeVar Cost2(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[] ReciverJitter) {
+		IntVar bExpr= null;
 		for (Stream stream : Current.streams) {
 			String lastswitch = stream.getLastSwitch();
 			int lastIndex = FindPortIndex(lastswitch, stream.Id);
@@ -454,19 +460,19 @@ public class Romon {
 			int firstIndex = FindPortIndex(firstSwitch, stream.Id);
 			if(lastIndex != -1) {
 				for (int i = 0; i < stream.N_instances; i++) {
-					aExpr = solver.makeDifference(Tclose[lastIndex][getPortObject(lastswitch, stream.Id).indexMap[getStreamIndex(lastswitch, stream.Id)][i]], Topen[firstIndex][getPortObject(firstSwitch, stream.Id).indexMap[getStreamIndex(firstSwitch, stream.Id)][i]]);
+					IntExpr aExpr = solver.makeDifference(Tclose[lastIndex][getPortObject(lastswitch, stream.Id).indexMap[getStreamIndex(lastswitch, stream.Id)][i]], Topen[firstIndex][getPortObject(firstSwitch, stream.Id).indexMap[getStreamIndex(firstSwitch, stream.Id)][i]]);
 					if(bExpr == null) {
-						bExpr = aExpr;
+						bExpr = aExpr.var();
 					}else {
-						bExpr = solver.makeSum(bExpr, aExpr);
+						bExpr = solver.makeSum(bExpr, aExpr.var()).var();
 					}
 
 				}
 			}	
 		}
-		
-		solver.makeMinimize(bExpr.var(), 1);
-		ReciverJitter[2] = bExpr.var();
+		ReciverJitter[2] = bExpr;
+		return solver.makeMinimize(bExpr, 5);
+
 	}
 	private int FindPortIndex(String swName, int mID) {
 		int counter = 0;

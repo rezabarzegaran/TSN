@@ -3,6 +3,7 @@ package TSN;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.ortools.constraintsolver.OptimizeVar;
 import com.google.ortools.constraintsolver.Solver;
 
 public class ORSolver {
@@ -53,7 +54,7 @@ public class ORSolver {
 		
 		
 	    
-	    solver.newSearch(method.getDecision());
+	    solver.newSearch(method.getDecision(),method.Opt1, method.Opt2, method.Opt3);
 
  
 	    
@@ -70,6 +71,7 @@ public class ORSolver {
 	    int counter = 0;
 	    while (solver.nextSolution()) {
 			//optSolutions.add(method.cloneSolution());
+	    	System.out.println(" found");
 			outData.UnloadOnce(method.cloneSolution(), name, counter);
 			counter++;
 			
