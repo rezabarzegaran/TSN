@@ -90,7 +90,7 @@ public class Romon {
 						Waff[counter][i] = new IntVar[port.AssignedStreams.get(i).N_instances];
 						
 						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
-							Waff[counter][i][j] = solver.makeIntVar(0, port.GCLSize, ("W_" + sw.Name + "_"+ port.connectedTo + "_"+i+"_"+j) );
+							Waff[counter][i][j] = solver.makeIntVar(0, (port.GCLSize - 1), ("W_" + sw.Name + "_"+ port.connectedTo + "_"+i+"_"+j) );
 							Totalvars3++;
 						}
 					}
@@ -164,7 +164,8 @@ public class Romon {
 				if(port.outPort) {
 					for (int i = 0; i < port.AssignedStreams.size(); i++) {
 						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
-							solver.addConstraint(solver.makeEquality(Paff[counter][port.indexMap[i][j]], port.AssignedStreams.get(i).Priority ));
+							int index1 = (int) Waff[counter][i][j].value();
+							solver.addConstraint(solver.makeEquality(Paff[counter][index1], port.AssignedStreams.get(i).Priority ));
 						}
 						
 					}
