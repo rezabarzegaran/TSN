@@ -3,18 +3,21 @@ package TSN;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.ortools.constraintsolver.OptimizeVar;
 import com.google.ortools.constraintsolver.Solver;
 
 public class ORSolver {
-	//CpModel model;
+
     Solver solver;
     Solution Current;
     List<Solution> optSolutions;
     DataUnloader outData = new DataUnloader();
-    Romon method;
     String name;
+    
+    
+    Romon method;
     //Niklas method;
+    //Michele method;
+    
 	static { System.loadLibrary("jniortools");}
 
 	public ORSolver(String _method) {
@@ -29,6 +32,9 @@ public class ORSolver {
 		case "Niklas":
 			//method = new Niklas(solver);
 			break;
+		case "Michele":
+			//method = new Micehle(solver);
+			break;
 		default:
 			method = new Romon(solver);
 
@@ -38,7 +44,7 @@ public class ORSolver {
 	public void setSolution(Solution current) {
 		Current = current;
 	}
-	public void Run() {
+	public void Run(boolean debogmode) {
 		
 		method.setInit(Current);
 		method.initVariables();
@@ -50,14 +56,12 @@ public class ORSolver {
 		
 		method.addDecision();
 		
-		System.out.println(solver.model_name() + " Initiated");
 		
 		
-	    
 	    solver.newSearch(method.getDecision(),method.Opt1, method.Opt2, method.Opt3);
-
- 
-	    
+	    //solver.newSearch(method.getDecision(),method.Opt1, method.Opt2);
+	    System.out.println(solver.model_name() + " Initiated");
+    
 	    //int counter = 0;
 	    //while (solver.wallTime() <= 15000) {
 	    	//solver.nextSolution();
@@ -67,21 +71,30 @@ public class ORSolver {
 
 	    //}
 	    
+	    
+	    Solution optimomSolution = null;
 	    long start=System.currentTimeMillis();
-	    int counter = 0;
 	    while (solver.nextSolution()) {
-			//optSolutions.add(method.cloneSolution());
-	    	System.out.println(" found");
-			outData.UnloadOnce(method.cloneSolution(), name, counter);
-			counter++;
+	    	
+	    	if(debogmode) {
+	    		//optSolutions.add(method.cloneSolution());
+	    		outData.UnloadOnce(method.cloneSolution(), name, method.TotalRuns);
+	    	}else {
+	    		optimomSolution = method.cloneSolution();
+	    	}
 			
-			if(counter >= 20) {
-				break;
-			}
-		    
+	    	
+	    	if(method.Monitor(start)) {
+	    		break;
+	    	}
 
 	    }
+    	if(!debogmode) {
+    		//optSolutions.add(method.cloneSolution());
+    		outData.UnloadOnce(optimomSolution, name, method.TotalRuns);
+    	}
 	    solver.endSearch();
+
 	    long end=System.currentTimeMillis();
 	    int duration = (int) (end - start);
 	    outData.CreateReport(duration);
@@ -94,17 +107,5 @@ public class ORSolver {
 	    System.out.println("Branches: " + solver.branches());
 	    System.out.println("Wall time: " + solver.wallTime() + "ms");
 
-	
-
-	}
-
-
-
-
-
-
-	
-	public List<Solution> getOptimizedSolutions(){
-		return optSolutions;
 	}
 }

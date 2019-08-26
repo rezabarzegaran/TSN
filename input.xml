@@ -3,7 +3,7 @@
         <Message id = "1" deadline="6000" period="4000" size="200" priority="1" offset="0">
         </Message>
         <Message id="2" deadline="12000" period="6000" size="1000" priority="2" offset="0"></Message>
-        <Message id="3" deadline="12000" period="8000" size="500" priority="2" offset="0"></Message>
+        <Message id="3" deadline="12000" period="4000" size="500" priority="2" offset="0"></Message>
         <Message id="4" deadline="15000" period="8000" size="300" priority="4" offset="0"></Message>
         <Message id="5" deadline="9500" period="8000" size="1000" priority="4" offset="0"></Message>
         <Message id="6" deadline="4000" period="4000" size="400" priority="5" offset="0"></Message>

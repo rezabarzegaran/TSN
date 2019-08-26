@@ -23,50 +23,68 @@ import org.w3c.dom.Element;
 
 public class DataUnloader {
 	
-
 	boolean CreateLuxiOutput;
-	String defaltDirPath;
-	List<Integer> costValues;
+	String defaltDirPath = "Results";
+	List<List<Integer>> costValues;
 	int hyperperiod = 0;
     DataVisualizer visualizer = new DataVisualizer();
+    String defaultPath = "Results";
     public DataUnloader(){
     	CreateLuxiOutput = true;
-    	costValues = new ArrayList<Integer>();
+    	costValues = new ArrayList<List<Integer>>();
     }
     public void UnloadAll(List<Solution> solutions, String name) {
     	int counter = 1;
+    	defaultPath = defaultPath + "/" + name; 
     	for (Solution solution : solutions) {
-    		String pathStringStreams = "streams/"+ name;
-    		String pathStringSwitches = "switchs/"+ name;
-    		String fileNameStream = "S_" + counter + ".xml";
-			UnloadStreams(solution, pathStringStreams, fileNameStream);
-			UnloadPorts(solution, pathStringSwitches, fileNameStream);
+    		String streamPath = defaultPath + "/Streams";
+    		String switchPath = defaultPath + "/Switches";
+    		String solutionFile = "S_" + counter + ".xml";
+			UnloadStreams(solution, streamPath, solutionFile);
+			UnloadPorts(solution, switchPath, solutionFile);
 			counter++;
 		}
     	if(CreateLuxiOutput) {
-    		String pathStringStreams = "luxiTool/"+ name;
-    		UnloadLuxi(solutions.get(solutions.size() - 1), pathStringStreams);
+    		String luxiToolPath = "Results/LuxiInterface/"+ name;
+    		UnloadLuxi(solutions.get(solutions.size() - 1), luxiToolPath);
     	}
     	
     }
     public void UnloadOnce(Solution solution, String name, int counter) {
-		String pathStringStreams = "streams/"+ name;
-		String pathStringJitters = "jitters/"+ name;
-		String pathStringSwitches = "switchs/"+ name;
-		String fileNameStream = "S_" + counter + ".xml";
+    	
+    	if (!defaultPath.contains(name)) {
+    		defaultPath = defaultPath + "/" + name; 
+    	}
+		String streamPath = defaultPath + "/Streams";
+		String switchPath = defaultPath + "/Switches";
+		String schedulePath = defaultPath + "/Schedule/" + "S_" + counter;
+		String solutionFile = "S_" + counter + ".xml";
+		String jitterPath = defaultPath + "/Jitters";
 		hyperperiod = solution.Hyperperiod;
-		UnloadStreams(solution, pathStringStreams, fileNameStream);
-		UnloadJitterStreams(solution, pathStringJitters, fileNameStream);
-		UnloadPorts(solution, pathStringSwitches, fileNameStream);
-	    visualizer.CreateTotalSVG(solution, "visual/"+ name + "/Solution " + counter, solution.Hyperperiod, false);
-    	costValues.add(solution.getCost());
+		
+		
+		UnloadStreams(solution, streamPath, solutionFile);
+		UnloadJitterStreams(solution, jitterPath, solutionFile);
+		UnloadPorts(solution, switchPath, solutionFile);
+		
+	    visualizer.CreateTotalSVG(solution, schedulePath, solution.Hyperperiod, false);
+    	getCostValues(solution);
+    	CreateJitterTimeInterface(solution, jitterPath, "S_"+counter);
     	if(CreateLuxiOutput) {
-    		String pathStringStreamsLuxi = "luxiTool/"+ name;
-    		UnloadLuxi(solution, pathStringStreamsLuxi);
+    		String luxiToolPath = "Results/LuxiInterface/"+ name;
+    		UnloadLuxi(solution, luxiToolPath);
     	}
     	
     }
-    public void UnloadLuxi(Solution solution, String DirPath){
+    private void getCostValues(Solution solution) {
+    	List<Integer> costs = new ArrayList<Integer>();
+    	for (int val : solution.getCosts()) {
+			costs.add(val);
+		}
+    	costs.add(solution.getTotalCost());
+    	costValues.add(costs);
+    }
+    private void UnloadLuxi(Solution solution, String DirPath){
     	try {
     		Files.createDirectories(Paths.get(DirPath));
     		PrintWriter writer = new PrintWriter(DirPath + "/historySCHED1.txt", "UTF-8");
@@ -93,7 +111,7 @@ public class DataUnloader {
     	
     }
     
-    public void UnloadPorts(Solution solution, String DirPath, String fName) {
+    private void UnloadPorts(Solution solution, String DirPath, String fName) {
         try{
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -150,7 +168,9 @@ public class DataUnloader {
     }
     public void CreateReport(int dur) {
     	try {
-    		PrintWriter writer = new PrintWriter("report.txt", "UTF-8");
+    		String Reportpath = defaltDirPath + "/report.txt";
+    		//String Reportpath = "/report.txt";
+    		PrintWriter writer = new PrintWriter(Reportpath, "UTF-8");
     		String lineString = "Optimization Finished";
     		writer.println(lineString);
     		lineString = "The hyperPeriod is: " + hyperperiod;
@@ -162,18 +182,21 @@ public class DataUnloader {
     		writer.println(lineString);
     		
     		for (int i = 0; i < costValues.size(); i++) {
-        		lineString = "Solution " + i + ":\t" + costValues.get(i);
-        		writer.println(lineString);
-			}
-    		
+    			lineString = "Solution " + i + ":\t";
+    			for (int val : costValues.get(i)) {
+            		lineString += val + ",\t";
+            		
+				}
+    			writer.println(lineString);
 
+			}
     		
     		writer.close();
     	} catch (Exception e){
             e.printStackTrace();
         }
     }
-    public void UnloadStreams(Solution solution, String DirPath, String fName){
+    private void UnloadStreams(Solution solution, String DirPath, String fName){
         try{
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -217,10 +240,7 @@ public class DataUnloader {
 				
 				
 			}
-            
-            
-            
-            
+                 
             
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
@@ -237,7 +257,56 @@ public class DataUnloader {
 
 
     }
-    public void UnloadJitterStreams(Solution solution, String DirPath, String fName){
+    private void CreateJitterTimeInterface(Solution solution, String DirPath, String solutionName) {
+    	try {
+            Files.createDirectories(Paths.get(DirPath));
+    		String filename = DirPath + "/" + solutionName + ".txt" ;
+    		PrintWriter writer = new PrintWriter(filename, "UTF-8");
+    		String lineString = "M recived at PNode, M recived at ACT";
+    		writer.println(lineString);
+    		
+    		for (App CA : solution.Apps) {
+        		Optional<Stream> inStream = solution.streams.stream().filter(x -> x.Id == CA.inputMessages.get(0)).findFirst();
+        		Stream inputStream = null ;
+        		if (!inStream.isEmpty()) {
+        			inputStream = inStream.get();
+        		}
+        		
+        		Optional<Stream> outStream = solution.streams.stream().filter(x -> x.Id == CA.outputMessages.get(0)).findFirst();
+        		Stream outputStream = null;
+        		if (!outStream.isEmpty()) {
+        			outputStream = outStream.get();
+        		}
+        		
+        		if((inputStream != null) && (outputStream != null)) {
+        			String inSwitchName = inputStream.getLastSwitch();
+					Port InportObj = getPortObject(solution, inSwitchName, inputStream.Id);
+					int InstramIndex = getStreamIndex(solution, inSwitchName, inputStream.Id);
+					
+        			String outSwitchName = outputStream.getLastSwitch();
+					Port OutportObj = getPortObject(solution, outSwitchName, outputStream.Id);
+					int OutstramIndex = getStreamIndex(solution, outSwitchName, outputStream.Id);
+					
+					for (int i = 0; i < inputStream.N_instances; i++) {
+						String treciveAtP = String.valueOf(InportObj.Tclose[InportObj.indexMap[InstramIndex][i]]);
+						String treciveAtACT = String.valueOf(OutportObj.Tclose[OutportObj.indexMap[OutstramIndex][i]]);
+						lineString = treciveAtP +"," + treciveAtACT;
+						writer.println(lineString);
+					}
+					
+					
+					
+        		}
+        		
+        		
+			}
+    		  		
+    		writer.close();
+    	} catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    private void UnloadJitterStreams(Solution solution, String DirPath, String fName){
         try{
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();

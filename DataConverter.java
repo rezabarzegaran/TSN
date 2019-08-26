@@ -1,8 +1,6 @@
 package TSN;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,11 +17,14 @@ import org.w3c.dom.Element;
 
 public class DataConverter {
 	
+	//Covertes the test cases from Niklas to .xml File
 	Map<String, String> map = new HashMap<String, String>();
-
+	
+	//Constructor
 	public DataConverter() {
 		
 	}
+	//Convert txt Files containing streams and pathes to xml File
 	public void txt2xml(String StraminputPath, String RouteinputPath, String outputPath) {
 		try {
             FileReader fileReader = new FileReader(StraminputPath);
@@ -76,25 +77,16 @@ public class DataConverter {
 					
 					map.put(parts[3], String.valueOf(counter));
 					System.out.println(map.get(parts[3]));
-
-					
-					
-					
+		
             		counter++;
-            	}
-            	
-                
+            	}              
             }
-
-
-            // Always close files.
             bufferedReader.close();
             
             FileReader fileReader2 = new FileReader(RouteinputPath);
             BufferedReader bufferedReader2 = new BufferedReader(fileReader2);
         	Element routes = doc.createElement("Routing");
-        	root.appendChild(routes);
-            
+        	root.appendChild(routes);           
             
             String l = null;
             int c = 1;
@@ -135,28 +127,12 @@ public class DataConverter {
 		            mId.appendChild(doc.createTextNode(map.get(firstparts[0])));
 		            ms.appendChild(mId);
 					
-					
-
-					
-		            
-					
-					
-					
-					
-					
 					c++;
 					
-            	}
-            	
+            	}      	
             
             }
-            
-            
-            
-            
-            
-            
-            
+             
             bufferedReader2.close();
             
             TransformerFactory transformerFactory = TransformerFactory.newInstance();

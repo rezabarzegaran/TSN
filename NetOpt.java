@@ -1,48 +1,62 @@
 package TSN;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class NetOpt {
 
 	public static void main(String[] args) {
+		
+		
+        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		//Input Data Loader
+        DataLoader inData = new DataLoader();
+		// Use the Converter If you need to Convert the test cases form Niklas to .xml
         
 		//DataConverter converter = new DataConverter();
 		//converter.txt2xml("orion.streams", "orion.vls", "src/TSN/orion.xml");
 		
 		
-		
-		
-        String inputPath = "src/TSN/input.xml";
-        //String inputPath = "src/TSN/GM.xml";
+		//Loading test Cases
+        //String inputPath = "src/TSN/input.xml";
+        //String inputPath = "src/TSN/orion.xml";
+        String inputPath = "src/TSN/GM.xml";
         //String inputPath = "src/TSN/GMM.xml";
-        List<Solution> OptimizedSolutions = new ArrayList<Solution>();
         
-        
-        
-        DataLoader inData = new DataLoader();
+
         inData.Load(inputPath);
+
+        //Loading Completed
+        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        //Creating Solutions
+ 
         Solution initial_Solution = new Solution();
-        String solutionName = "Romon";
-        ORSolver optimizer = new ORSolver(solutionName);
         initial_Solution.Create(inData.getMessages(), inData.getRoutes(), inData.getApps());
         initial_Solution.Initialize();
+         
+        //Solution Created
+        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        //Creating Solver
+
+        //Select Between Methods
+        
+        String solutionName = "Romon";
+        //String solutionName = "Niklas";
+        //String solutionName = "Michele";
+        ORSolver optimizer = new ORSolver(solutionName);
+        
+        
+        //Run optimizer
         optimizer.setSolution(initial_Solution);
-        optimizer.Run();
-        OptimizedSolutions = optimizer.getOptimizedSolutions();
-        System.out.println("total Solution is: " + OptimizedSolutions.size() );
-        //System.out.println("Best Cost is " + OptimizedSolutions.get(OptimizedSolutions.size() - 1).getCost());
+        boolean debugmode = true;
+        optimizer.Run(debugmode);
         
-        //DataUnloader outData = new DataUnloader();
-        //outData.UnloadAll(OptimizedSolutions, solutionName);
-        inData.UnloadLuxi();
-        inData.exportGraph();
+        //optimization Finished
+        //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        //Creating Reports
+        //Create Input Related Reports
+       inData.CreateInputReport();
         
-
+        //Create Best Solution Report
         
-
-        //System.out.println("Cost 0 is " + current_Solution.costValues[0]);
-        //System.out.println("Cost 1 is " + current_Solution.costValues[1]);
+          
 
 	}
 

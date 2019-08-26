@@ -5,16 +5,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.xml.parsers.DocumentBuilderFactory;
-
-
 import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
+// Input Messages Class
 class Messages{
     Messages(int _id, int _period,int _deadline, int _size, int _priority, int _offset){
         id = _id;
@@ -33,9 +31,9 @@ class Messages{
     int offset;
     public Messages DeepClone(){
         return new Messages(id, period, deadline, size, priority, offset);
-    }
-    
+    }    
 }
+//Input Routing Class
 class Routes{
 	Routes(int _id, List<String> _nodes, List<Integer> _IDs){
 		id = _id;
@@ -55,6 +53,7 @@ class Routes{
 		return new Routes(id , nodes, messsageIDs);
 	}
 }
+//Input Control Applications Class
 class ControlApp{
 	ControlApp(int _id, List<Integer> _inIDs, List<Integer> _outIDs){
 		id = _id;
@@ -71,6 +70,7 @@ class ControlApp{
 	List<Integer> inIDs = new ArrayList<Integer>();
 	List<Integer> outIDs = new ArrayList<Integer>();
 }
+// This Class Loads Data form xml File and also creates relevant outputs
 public class DataLoader {
 	public GraphExporter graphicExporter = new GraphExporter();
     public List<Messages> messages = new ArrayList<Messages>();
@@ -85,15 +85,12 @@ public class DataLoader {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(fXmlFile);
-
             doc.getDocumentElement().normalize();
                     
             NodeList messageList = doc.getElementsByTagName("Message");
             NodeList routingList = doc.getElementsByTagName("Route");
             NodeList appList = doc.getElementsByTagName("APP");
             
-
-        
             for (int temp = 0; temp < messageList.getLength(); temp++) {
 
                 Node nNode = messageList.item(temp);
@@ -109,8 +106,6 @@ public class DataLoader {
                     int _offset = Integer.parseInt(eElement.getAttribute("offset"));
                     Messages tc = new Messages(_id,_period,_deadline,_size, _priority, _offset);
                     messages.add(tc);
-        
-        
                 }
             }
             for (int temp = 0; temp < routingList.getLength(); temp++) {
@@ -133,13 +128,11 @@ public class DataLoader {
 
 
                     Routes tc = new Routes(_id,nodenameList,IDnameList);
-                    routings.add(tc);
-        
-        
+                    routings.add(tc);  
                 }
             }
             for (int i = 0; i < appList.getLength(); i++) {
-            	Node nNode = routingList.item(i);
+            	Node nNode = appList.item(i);
             	List<Integer> inIDList = new ArrayList<Integer>();
             	List<Integer> outIDList = new ArrayList<Integer>();
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
@@ -149,7 +142,7 @@ public class DataLoader {
                     for (int j = 0; j < listednotes.getLength(); j++) {
                     	inIDList.add(Integer.valueOf(listednotes.item(i).getTextContent()));
 					}
-                    NodeList listednotes2 = eElement.getElementsByTagName("in");
+                    NodeList listednotes2 = eElement.getElementsByTagName("out");
                     for (int j = 0; j < listednotes2.getLength(); j++) {
                     	outIDList.add(Integer.valueOf(listednotes2.item(i).getTextContent()));
 					}
@@ -161,15 +154,20 @@ public class DataLoader {
         } catch (Exception e){
             e.printStackTrace();
         }
-
-
     }
-    public void exportGraph() {
-    	graphicExporter.Export( messages,routings, "visual");
+    //Creates Reports relevant to Input
+    public void CreateInputReport() {
+    	CreateLuxiInterface();
+    	exportNetworkGraph();
     }
-    public void UnloadLuxi() {
+    //Creates Graphviz File for Network Graph
+    private void exportNetworkGraph() {
+    	graphicExporter.Export( messages,routings, "Results");
+    }
+    //Creates text File for Luxi's Tool
+    private void CreateLuxiInterface() {
     	try {
-    		String DirPath = "luxiTool";
+    		String DirPath = "Results/LuxiInterface";
     		Files.createDirectories(Paths.get(DirPath));
     		PrintWriter writer = new PrintWriter(DirPath + "/vis.txt", "UTF-8");
     		for (Routes r : routings) {
@@ -179,7 +177,6 @@ public class DataLoader {
 				}
         		writer.println(routeLink);
 			}
-
     		writer.close();
     		
     		PrintWriter mwriter = new PrintWriter(DirPath + "/msg.txt", "UTF-8");
@@ -204,25 +201,8 @@ public class DataLoader {
         }
     }
 
-    public List<Messages> getCloneMessages(){
-
-        List<Messages> out_messages = new ArrayList<Messages>();
-        for (Messages item : messages) {
-            out_messages.add(item.DeepClone());
-        }
-        return out_messages;
-    }
-
-    public List<Messages> getMessages(){
-
+	public List<Messages> getMessages(){
         return messages;
-    }
-    public List<Routes> getCloneRoutes(){
-    	List<Routes> out_routesList = new ArrayList<Routes>();
-    	for (Routes item : routings) {
-			out_routesList.add(item.DeepClone());
-		}
-    	return out_routesList;
     }
     public List<Routes> getRoutes(){
     	return routings;

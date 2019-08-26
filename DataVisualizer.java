@@ -50,15 +50,11 @@ public class DataVisualizer {
 							addFrame(doc, svg, x_1 + offset , rowH * counter + Toffset, width, rowH, String.valueOf(stream.Id), stream.Priority);
 						}
 
-
-
 					}
 					counter++;
 				}
 	            
-				
-	            
-	            
+           	            
 	            TransformerFactory transformerFactory = TransformerFactory.newInstance();
 	            Transformer transformer = transformerFactory.newTransformer();
 	            DOMSource domSource = new DOMSource(doc);
@@ -67,11 +63,8 @@ public class DataVisualizer {
 	            StreamResult streamResult = new StreamResult(new File(path));
 	            transformer.transform(domSource, streamResult);
 				
-				
 			}
-			
-			      
-			
+		
 		} catch (Exception e){
             e.printStackTrace();
         }
@@ -99,8 +92,6 @@ public class DataVisualizer {
 						if( (x_1 <= Duration) && (x_2 <= Duration)) {
 							addFrame(doc, svg, x_1 + offset , rowH * port_index + Toffset, width, rowH, String.valueOf(stream.Id), stream.Priority);
 						}
-
-
 
 					}
 				}

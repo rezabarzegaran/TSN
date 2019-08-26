@@ -1,9 +1,6 @@
 package TSN;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-
 import com.google.ortools.constraintsolver.DecisionBuilder;
 import com.google.ortools.constraintsolver.IntExpr;
 import com.google.ortools.constraintsolver.IntVar;
@@ -75,8 +72,21 @@ public class Romon {
 	OptimizeVar Opt1;
 	OptimizeVar Opt2;
 	OptimizeVar Opt3;
+	int TotalRuns = 0;
 	
-	
+	public boolean Monitor(long started) {
+		TotalRuns++;
+		long duration = System.currentTimeMillis() - started;
+    	System.out.println("Solution Found!!, in Time: " + duration);
+    	
+    	if((TotalRuns >= 400) || (duration >= 10000000)){
+    		return true;
+    	}else {
+    		return false;
+    	}
+
+	}
+
 	
 	private int AssignVars(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff) {
 		int counter = 0;
@@ -422,7 +432,7 @@ public class Romon {
 			
 		}
 		SenderJitter[0] = eExpr;
-		return solver.makeMaximize(SenderJitter[0],1);
+		return solver.makeMinimize(SenderJitter[0],1);
 	}
 	private OptimizeVar Cost1(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[] ReciverJitter) {
 		IntVar eExpr = null;
@@ -449,7 +459,7 @@ public class Romon {
 			
 		}
 		ReciverJitter[1] = eExpr;
-		return solver.makeMaximize(ReciverJitter[1], 1);
+		return solver.makeMinimize(ReciverJitter[1], 1);
 	}
 	private OptimizeVar Cost2(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[] ReciverJitter) {
 		IntVar bExpr= null;
@@ -471,7 +481,7 @@ public class Romon {
 			}	
 		}
 		ReciverJitter[2] = bExpr;
-		return solver.makeMinimize(bExpr, 5);
+		return solver.makeMinimize(bExpr, 1);
 
 	}
 	private int FindPortIndex(String swName, int mID) {

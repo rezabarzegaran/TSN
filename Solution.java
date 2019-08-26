@@ -3,21 +3,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-
-
-
 public class Solution {
 	public Solution(){
         streams = new ArrayList<Stream>();
         ES = new ArrayList<EndSystems>();
         SW = new ArrayList<Switches>();
         costValues = new ArrayList<Long>();
+        Apps = new ArrayList<App>();
         
     }
-	public Solution(List<Stream> _streams, List<EndSystems> _es, List<Switches> _sw, List<Long> _costs, int _hyperperiod) {
+	public Solution(List<Stream> _streams, List<EndSystems> _es, List<Switches> _sw, List<App> _apps, List<Long> _costs, int _hyperperiod) {
         streams = new ArrayList<Stream>();
         ES = new ArrayList<EndSystems>();
         SW = new ArrayList<Switches>();
+        Apps = new ArrayList<App>();
         costValues = new ArrayList<Long>();
         costValues.clear();
         
@@ -33,12 +32,18 @@ public class Solution {
         for (Switches sw : _sw) {
 			SW.add(sw.Clone());
 		}
+        for (App _app : _apps) {
+			Apps.add(_app.Clone());
+		}
         Hyperperiod = _hyperperiod;
 	}
-    public List<Stream> streams;
+    
+	public List<Stream> streams;
     public List<EndSystems> ES;
     public List<Switches> SW;
+    public List<App> Apps;
     public List<Long> costValues;
+    
     public int Hyperperiod = 1;
     public void Create(List<Messages> _messages, List<Routes> routes, List<ControlApp> CAs){
 
@@ -83,8 +88,19 @@ public class Solution {
 				}
 			}
 		}
+        
+        for (ControlApp controlApp : CAs) {
+        	App tc = new App(controlApp.id);
+        	for (int id : controlApp.inIDs) {
+				tc.AddInMessage(id);
+			}
+        	for (int id : controlApp.outIDs) {
+				tc.AddOutMessage(id);
+			}
+        	Apps.add(tc);
+		}
     }
-    public void setSourceES(Routes item) {
+    private void setSourceES(Routes item) {
     	Optional<EndSystems> tempSourcEndSystems = ES.stream().filter(x -> x.Name.equals(item.nodes.get(0))).findFirst();
     	if(tempSourcEndSystems.isEmpty()) {
     		EndSystems temp = new EndSystems(item.nodes.get(0));
@@ -99,7 +115,7 @@ public class Solution {
     		
     	}
     }
-    public void setSinkES(Routes item) {
+    private void setSinkES(Routes item) {
     	int NodeSize = item.nodes.size();
     	Optional<EndSystems> tempSinkEndSystems = ES.stream().filter(x -> x.Name.equals(item.nodes.get(NodeSize-1))).findFirst();
     	if(tempSinkEndSystems.isEmpty()) {
@@ -125,10 +141,8 @@ public class Solution {
 			
 			sw.initiate();
 		}
-
-
     }
-    public int LCM(int a, int b) {
+    private int LCM(int a, int b) {
 		int lcm = (a > b) ? a : b;
         while(true)
         {
@@ -163,15 +177,21 @@ public class Solution {
 		return nameStrings;
     }
     public Solution Clone() {
-    	return new Solution(streams, ES, SW, costValues, Hyperperiod);
+    	return new Solution(streams, ES, SW, Apps, costValues, Hyperperiod);
     }
-    public int getCost() {
-    	int valCostLong =  0;
-    	for (Long a : costValues) {
-    		valCostLong += a;
-    		System.out.println(a);
+    public List<Integer> getCosts() {
+    	List<Integer> CostTerms = new ArrayList<Integer>(); 
+    	for (Long temp : costValues) {
+    		CostTerms.add(temp.intValue());
 		}
-    	return valCostLong;
+    	return CostTerms;
+    }
+    public int getTotalCost() {
+    	int TotalCost = 0;
+    	for (Long temp : costValues) {
+    		TotalCost += temp.intValue();
+		}
+    	return TotalCost;
     }
 
 }

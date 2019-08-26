@@ -10,21 +10,26 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class GraphExporter {
-	
+	// GraphViz Interface For Network Graph Visualization
 	public boolean isDirectedGraph = true;
 	public GraphExporter() {
 		
 	}
+	//Use the following Command in cmd
+	// dot -Tsvg graph.txt -o graph.svg
+	// dot -Tpng graph.txt -o graph.png
 	public void Export(List<Messages> messages, List<Routes> routes, String DirPath) {
 		try {
-			Files.createDirectories(Paths.get(DirPath));
-			PrintWriter writer = new PrintWriter(DirPath + "/graph.txt", "UTF-8");
+			String folderpath = DirPath + "/GraphViz";
+			Files.createDirectories(Paths.get(folderpath));
+			PrintWriter writer = new PrintWriter(folderpath + "/graph.txt", "UTF-8");
 			String indent = "  ";
 			String connector;
 			//String header = (g instanceof AbstractBaseGraph && !((AbstractBaseGraph<V, E>) g).isAllowingMultipleEdges()) ? DOTUtils.DONT_ALLOW_MULTIPLE_EDGES_KEYWORD + " " : "";
 			String header = "";
 			String graphId = "network";
 			if (!DOTUtils.isValidID(graphId)) {
+				writer.close();
 				throw new RuntimeException(
 						"Generated graph ID '" + graphId + "' is not valid with respect to the .dot language");
 			}
@@ -59,14 +64,10 @@ public class GraphExporter {
 
 				writer.println(";");
 			}
-
 	
-			
 			writer.println("}");
-
 			writer.flush();
-
-			
+		
 		} catch (Exception e){
             e.printStackTrace();
         }
