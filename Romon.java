@@ -79,10 +79,11 @@ public class Romon {
 		long duration = System.currentTimeMillis() - started;
     	System.out.println("Solution Found!!, in Time: " + duration);
     	
-    	if((TotalRuns >= 400) || (duration >= 10000000)){
+    	if((TotalRuns >= 20) || (duration >= 10000000)){
     		return true;
     	}else {
     		return false;
+
     	}
 
 	}

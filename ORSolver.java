@@ -59,17 +59,10 @@ public class ORSolver {
 		
 		
 	    solver.newSearch(method.getDecision(),method.Opt1, method.Opt2, method.Opt3);
+	    //solver.newSearch(method.getDecision(), method.Opt3);
 	    //solver.newSearch(method.getDecision(),method.Opt1, method.Opt2);
 	    System.out.println(solver.model_name() + " Initiated");
     
-	    //int counter = 0;
-	    //while (solver.wallTime() <= 15000) {
-	    	//solver.nextSolution();
-			////optSolutions.add(method.cloneSolution());
-	    	//outData.UnloadOnce(method.cloneSolution(), name, counter);
-		    //counter++;
-
-	    //}
 	    
 	    
 	    Solution optimomSolution = null;
