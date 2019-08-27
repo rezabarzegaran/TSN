@@ -58,7 +58,8 @@ public class ORSolver {
 		
 		
 		
-	    solver.newSearch(method.getDecision(),method.Opt1, method.Opt2, method.Opt3);
+		solver.newSearch(method.getDecision(),method.Opt5);
+	    //solver.newSearch(method.getDecision(),method.Opt1, method.Opt2, method.Opt3);
 	    //solver.newSearch(method.getDecision(), method.Opt3);
 	    //solver.newSearch(method.getDecision(),method.Opt1, method.Opt2);
 	    System.out.println(solver.model_name() + " Initiated");
