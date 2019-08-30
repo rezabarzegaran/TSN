@@ -56,20 +56,20 @@ public class ORSolver {
 		
 		method.addDecision();
 		
-		
-		
-		solver.newSearch(method.getDecision(),method.Opt5);
+		var limit = solver.makeTimeLimit(4000000);
+		//solver.newSearch(method.getDecision());
+		solver.newSearch(method.getDecision(),method.Opt5, limit);
 	    //solver.newSearch(method.getDecision(),method.Opt1, method.Opt2, method.Opt3);
 	    //solver.newSearch(method.getDecision(), method.Opt3);
 	    //solver.newSearch(method.getDecision(),method.Opt1, method.Opt2);
 	    System.out.println(solver.model_name() + " Initiated");
+	   
     
 	    
 	    
 	    Solution optimomSolution = null;
 	    long start=System.currentTimeMillis();
-	    while (solver.nextSolution()) {
-	    	
+	    while (solver.nextSolution()) { 
 	    	if(debogmode) {
 	    		//optSolutions.add(method.cloneSolution());
 	    		outData.UnloadOnce(method.cloneSolution(), name, method.TotalRuns);

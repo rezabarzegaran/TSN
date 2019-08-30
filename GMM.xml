@@ -20,13 +20,6 @@
         <Message id="18" deadline="4000" period="10000" size="400" priority="4" offset="0"></Message>
         <Message id="19" deadline="10000" period="30000" size="1500" priority="7" offset="0"></Message>
         <Message id="20" deadline="10000" period="30000" size="1500" priority="7" offset="0"></Message>
-        <Message id="21" deadline="4000" period="8000" size="400" priority="1" offset="0"></Message>
-        <Message id="22" deadline="4000" period="10000" size="400" priority="3" offset="0"></Message>
-        <Message id="23" deadline="4000" period="15000" size="600" priority="2" offset="0"></Message>
-        <Message id="24" deadline="4000" period="10000" size="400" priority="1" offset="0"></Message>
-        <Message id="25" deadline="10000" period="30000" size="1500" priority="0" offset="0"></Message>
-        <Message id="26" deadline="5000" period="1000" size="100" priority="4" offset="0"></Message>
-        <Message id="27" deadline="5000" period="2000" size="200" priority="6" offset="0"></Message>
     </Messages>
     <Routing>
     	<Route id="1">
@@ -86,49 +79,6 @@
     			<node>ES_CTRL1</node></Nodes>
     		<messages>
     			<messageID>20</messageID></messages></Route>
-    	<Route id="8">
-    		<Nodes>
-    			<node>ES_LEFT_REAR_RAD</node>
-    			<node>SW_B13</node>
-    			<node>SW_B19</node>
-    			<node>ES_CTRL2</node></Nodes>
-    		<messages>
-    			<messageID>21</messageID></messages></Route>
-    	<Route id="9">
-    		<Nodes>
-    			<node>ES_RIGHT_REAR_RAD</node>
-    			<node>SW_B14</node>
-    			<node>SW_B19</node>
-    			<node>ES_CTRL2</node></Nodes>
-    		<messages>
-    			<messageID>22</messageID></messages></Route>
-    	<Route id="10">
-    		<Nodes>
-    			<node>ES_REAR_CAM</node>
-    			<node>SW_B5</node>
-    			<node>SW_B13</node>
-    			<node>SW_B19</node>
-    			<node>ES_CTRL2</node></Nodes>
-    		<messages>
-    			<messageID>23</messageID></messages></Route>
-    	<Route id="11">
-    		<Nodes>
-    			<node>ES_REAR_RAD</node>
-    			<node>SW_B15</node>
-    			<node>SW_B13</node>
-    			<node>SW_B19</node>
-    			<node>ES_CTRL2</node></Nodes>
-    		<messages>
-    			<messageID>24</messageID></messages></Route>
-    	<Route id="12">
-    		<Nodes>
-    			<node>ES_REAR_SVCAM</node>
-    			<node>SW_B6</node>
-    			<node>SW_B20</node>
-    			<node>SW_B18</node>
-    			<node>ES_CTRL1</node></Nodes>
-    		<messages>
-    			<messageID>25</messageID></messages></Route>
     	<Route id="13">
     		<Nodes>
     			<node>ES_CTRL1</node>
@@ -239,25 +189,4 @@
     			<node>ES_MAPLOC</node></Nodes>
     		<messages>
     			<messageID>13</messageID></messages></Route>
-    	<Route id="26">
-    		<Nodes>
-    			<node>ES_MAPLOC</node>
-    			<node>SW_B16</node>
-    			<node>SW_B17</node>
-    			<node>SW_B20</node>
-    			<node>SW_B19</node>
-    			<node>ES_CTRL2</node></Nodes>
-    		<messages>
-    			<messageID>26</messageID></messages></Route>
-    	<Route id="27">
-    		<Nodes>
-    			<node>ES_FRONT_CAM</node>
-    			<node>SW_B1</node>
-    			<node>SW_B18</node>
-    			<node>SW_B20</node>
-    			<node>SW_B17</node>
-    			<node>SW_B16</node>
-    			<node>ES_MAPLOC</node></Nodes>
-    		<messages>
-    			<messageID>27</messageID></messages></Route>
     			</Routing></Network>

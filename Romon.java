@@ -36,8 +36,10 @@ public class Romon {
 		Constraint5(Topen, Tclose, Paff, Waff);
 		Constraint6(Topen, Tclose, Paff, Waff);
 		Constraint7(Topen, Tclose, Paff, Waff);
-		//Constraint8(Topen, Tclose, Paff, Waff);
-		//Constraint9(Topen, Tclose, Paff, Waff);
+		Constraint8(Topen, Tclose, Paff, Waff);
+		Constraint9(Topen, Tclose, Paff, Waff);
+		Constraint10(Topen, Tclose, Paff, Waff);
+		SetDefaultSolution(Topen, Tclose, Paff, Waff);
 	}
 	public void addCosts() {
 		Opt1 = Cost0(Topen, Tclose, Paff, Waff, Jitters);
@@ -51,17 +53,20 @@ public class Romon {
 		IntVar[] y = new IntVar[TotalVars];
 		IntVar[] z = new IntVar[TotalVars];
 		IntVar[] w = new IntVar[get3DarraySize(Waff)];
+		IntVar[] T = new IntVar[3*TotalVars + get3DarraySize(Waff)];
 		FlatArray(Topen, x, NOutports);
 		FlatArray(Tclose, y, NOutports);
 		FlatArray(Paff, z, NOutports);
 		FlatArray3D(Waff, w, NOutports);
-	    DecisionBuilder db1 = solver.makePhase(x, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
-	    DecisionBuilder db2 = solver.makePhase(y, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
-	    DecisionBuilder db3 = solver.makePhase(z, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
-	    DecisionBuilder db4 = solver.makePhase(w, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
-	    DecisionBuilder db5 = solver.compose(db1, db2);
-	    DecisionBuilder db6 = solver.compose(db5, db3);
-	    db = solver.compose(db6, db4);
+		FlatAll(w, x, y, z, T);
+		db = solver.makePhase(T,  solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
+	    //DecisionBuilder db1 = solver.makePhase(w, solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_RANDOM_VALUE);
+	    //DecisionBuilder db2 = solver.makePhase(x, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
+	    //DecisionBuilder db3 = solver.makePhase(y, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
+	    //DecisionBuilder db4 = solver.makePhase(z, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
+	    //DecisionBuilder db5 = solver.compose(db1, db2);
+	    //DecisionBuilder db6 = solver.compose(db5, db3);
+	    //db = solver.compose(db6, db4);
 	}
 	public DecisionBuilder getDecision() {
 		return db;
@@ -89,7 +94,7 @@ public class Romon {
 		long duration = System.currentTimeMillis() - started;
     	System.out.println("Solution Found!!, in Time: " + duration);
     	
-    	if((TotalRuns >= 20) || (duration >= 10000000)){
+    	if((TotalRuns >= 3000) || (duration >= 10000000)){
     		return true;
     	}else {
     		return false;
@@ -131,6 +136,26 @@ public class Romon {
 			}
 		}
 		return Totalvars;
+	}
+	private void FlatAll(IntVar[] source1, IntVar[] source2, IntVar[] source3, IntVar[] source4, IntVar[] destination) {
+		int counter = 0;
+		for (int i = 0; i < source1.length; i++) {
+			destination[counter] = source1[i];
+			counter++;
+		}
+		for (int i = 0; i < source2.length; i++) {
+			destination[counter] = source2[i];
+			counter++;
+		}
+		for (int i = 0; i < source3.length; i++) {
+			destination[counter] = source3[i];
+			counter++;
+		}
+		for (int i = 0; i < source4.length; i++) {
+			destination[counter] = source4[i];
+			counter++;
+		}
+		System.out.println("Total Number of Variables are:" + counter);
 	}
 	private void FlatArray(IntVar[][] source, IntVar[] destination, int sourcesize) {
 		int counter = 0;
@@ -206,7 +231,7 @@ public class Romon {
 							//solver.addConstraint(solver.makeEquality(Paff[counter][port.indexMap[i][j]], port.AssignedStreams.get(i).Priority ));
 							
 							
-							var indexvar= solver.makeElement(Paff[counter], Waff[counter][i][j]);
+							var indexvar= solver.makeElement(Paff[counter], Waff[counter][i][j]).var();
 							solver.addConstraint(solver.makeEquality(indexvar, port.AssignedStreams.get(i).Priority ));
 							
 						}
@@ -226,11 +251,11 @@ public class Romon {
 				if(port.outPort) {
 					for (int i = 0; i < port.AssignedStreams.size(); i++) {
 						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
-							var indexvar= solver.makeElement(Topen[counter], Waff[counter][i][j]);
+							var indexvar= solver.makeElement(Topen[counter], Waff[counter][i][j]).var();
 							//solver.addConstraint(solver.makeGreaterOrEqual(Topen[counter][port.indexMap[i][j]], j * port.AssignedStreams.get(i).Period));
 							solver.addConstraint(solver.makeGreaterOrEqual(indexvar, j * port.AssignedStreams.get(i).Period));
 							//solver.addConstraint(solver.makeLess(Tclose[counter][port.indexMap[i][j]], (j+1) * port.AssignedStreams.get(i).Period));
-							var indexvar2= solver.makeElement(Tclose[counter], Waff[counter][i][j]);
+							var indexvar2= solver.makeElement(Tclose[counter], Waff[counter][i][j]).var();
 							solver.addConstraint(solver.makeLess(indexvar2, (j+1) * port.AssignedStreams.get(i).Period));
 						}
 						
@@ -249,11 +274,11 @@ public class Romon {
 				if(port.outPort) {
 					for (int i = 0; i < port.AssignedStreams.size(); i++) {
 						for (int j = 0; j < (port.AssignedStreams.get(i).N_instances - 1); j++) {
-							var indexvar= solver.makeElement(Topen[counter], Waff[counter][i][j+1]);
-							var indexvar2= solver.makeElement(Topen[counter], Waff[counter][i][j]);
+							var indexvar= solver.makeElement(Topen[counter], Waff[counter][i][j+1]).var();
+							var indexvar2= solver.makeElement(Topen[counter], Waff[counter][i][j]).var();
 							//solver.addConstraint(solver.makeEquality(solver.makeDifference(Topen[counter][port.indexMap[i][j+1]], Topen[counter][port.indexMap[i][j]]), port.AssignedStreams.get(i).Period));
 							//solver.addConstraint(solver.makeGreaterOrEqual(solver.makeDifference(Topen[counter][port.indexMap[i][j+1]], Topen[counter][port.indexMap[i][j]]), port.AssignedStreams.get(i).Period));
-							solver.addConstraint(solver.makeGreaterOrEqual(solver.makeDifference(indexvar, indexvar2), port.AssignedStreams.get(i).Period));
+							solver.addConstraint(solver.makeGreaterOrEqual(solver.makeDifference(indexvar, indexvar2).var(), port.AssignedStreams.get(i).Period));
 
 						}
 						
@@ -273,11 +298,26 @@ public class Romon {
 				if(port.outPort) {
 					for (int i = 0; i < port.AssignedStreams.size(); i++) {
 						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {	
-							var indexvar= solver.makeElement(Tclose[counter], Waff[counter][i][j]);
-							var indexvar2= solver.makeElement(Topen[counter], Waff[counter][i][j]);
+							var indexvar= solver.makeElement(Tclose[counter], Waff[counter][i][j]).var();
+							var indexvar2= solver.makeElement(Topen[counter], Waff[counter][i][j]).var();
 							//solver.addConstraint(solver.makeEquality(solver.makeDifference(Tclose[counter][port.indexMap[i][j]], Topen[counter][port.indexMap[i][j]]), port.AssignedStreams.get(i).Transmit_Time));
 							//solver.addConstraint(solver.makeGreaterOrEqual(solver.makeDifference(Tclose[counter][port.indexMap[i][j]], Topen[counter][port.indexMap[i][j]]), port.AssignedStreams.get(i).Transmit_Time));
-							solver.addConstraint(solver.makeGreaterOrEqual(solver.makeDifference(indexvar, indexvar2), port.AssignedStreams.get(i).Transmit_Time));
+							//solver.addConstraint(solver.makeGreaterOrEqual(solver.makeDifference(indexvar, indexvar2).var(), port.AssignedStreams.get(i).Transmit_Time));
+							IntVar duration = null;
+							for (int k = 0; k < port.AssignedStreams.size(); k++) {
+								for (int l = 0; l < port.AssignedStreams.get(k).N_instances; l++) {
+									
+										if (duration == null) {
+											duration = solver.makeProd(solver.makeIsEqualVar(Waff[counter][i][j], Waff[counter][k][l]), port.AssignedStreams.get(k).Transmit_Time).var();
+										
+										}else {
+											duration = solver.makeSum(duration, solver.makeProd(solver.makeIsEqualVar(Waff[counter][i][j], Waff[counter][k][l]), port.AssignedStreams.get(k).Transmit_Time).var()).var();
+
+										}
+
+								}
+							}
+							solver.addConstraint(solver.makeGreaterOrEqual(solver.makeDifference(indexvar, indexvar2).var(), duration));
 
 							
 						}
@@ -296,6 +336,25 @@ public class Romon {
 		for (Switches sw : Current.SW) {
 			for (Port port : sw.ports) {
 				if(port.outPort) {
+					
+					for (int i = 0; i < port.AssignedStreams.size(); i++) {
+						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
+						
+							for (int k = 0; k < port.AssignedStreams.size(); k++) {
+								for (int l = 0; l < port.AssignedStreams.get(k).N_instances; l++) {
+									
+										var indexvar= solver.makeElement(Tclose[counter], Waff[counter][i][j]).var();
+										var indexvar2= solver.makeElement(Topen[counter], Waff[counter][k][l]).var();
+										var indexvar3= solver.makeElement(Topen[counter], Waff[counter][i][j]).var();
+										var indexvar4= solver.makeElement(Tclose[counter], Waff[counter][k][l]).var();
+										var aExpr = solver.makeIsEqualVar(Waff[counter][i][j], Waff[counter][k][l]).var();
+										var bExpr = solver.makeDifference(1, aExpr);
+										solver.addConstraint(solver.makeEquality(solver.makeSum(solver.makeIsLessOrEqualVar(indexvar, indexvar2).var(),solver.makeIsGreaterOrEqualVar(indexvar3, indexvar4).var()), bExpr));
+									
+								}
+							}
+						}
+					}
 										
 					for (int i = 0; i < port.GCLSize; i++) {
 						for (int j = 0; j < port.GCLSize; j++) {
@@ -303,7 +362,7 @@ public class Romon {
 								
 								
 							
-								solver.addConstraint(solver.makeEquality(solver.makeSum(solver.makeIsLessOrEqualVar(Tclose[counter][i], Topen[counter][j]),solver.makeIsGreaterOrEqualVar(Topen[counter][i], Tclose[counter][j])), 1));
+								//solver.addConstraint(solver.makeEquality(solver.makeSum(solver.makeIsLessOrEqualVar(Tclose[counter][i], Topen[counter][j]),solver.makeIsGreaterOrEqualVar(Topen[counter][i], Tclose[counter][j])), 1));
 								//solver.makeSum(solver.makeIsGreaterOrEqualVar(Tclose[counter][i], Topen[counter][j]),solver.makeIsGreaterOrEqualVar(Topen[counter][i], Tclose[counter][j]));
 								//solver.makeIsGreaterOrEqualVar(Tclose[counter][i], Topen[counter][j]);
 								//solver.makeIsGreaterOrEqualVar(Topen[counter][i], Tclose[counter][j]);
@@ -357,14 +416,14 @@ public class Romon {
 												for (int l = 0; l < nextPort.AssignedStreams.size(); l++) {
 													if(nextPort.AssignedStreams.get(l).Id == port.AssignedStreams.get(j).Id) {
 														
-														var indexvar= solver.makeElement(Tclose[counter], Waff[counter][j][k]);
+														var indexvar= solver.makeElement(Tclose[counter], Waff[counter][j][k]).var();
 														
-														var indexvar2= solver.makeElement(Topen[secondcounter], Waff[counter][l][k]);
+														var indexvar2= solver.makeElement(Topen[secondcounter], Waff[secondcounter][l][k]).var();
 														
 														//solver.addConstraint(solver.makeLessOrEqual(solver.makeSum(Tclose[counter][port.indexMap[j][k]],sw.clockAsync), Topen[secondcounter][nextPort.indexMap[l][k]]));
 
 														
-														solver.addConstraint(solver.makeLessOrEqual(solver.makeSum(indexvar,sw.clockAsync), indexvar2));
+														solver.addConstraint(solver.makeLessOrEqual(solver.makeSum(indexvar,sw.clockAsync).var(), indexvar2));
 
 													}
 												}
@@ -397,38 +456,43 @@ public class Romon {
 					for (int i = 0; i < port.AssignedStreams.size(); i++) {
 						if(!port.AssignedStreams.get(i).isThisFirstSwtich(sw.Name)) {
 							for (int j = 0; j < port.AssignedStreams.size(); j++) {
-								if(!port.AssignedStreams.get(j).isThisFirstSwtich(sw.Name) && (i != j)) {
-									int counter2 = FindPortIndex(port.AssignedStreams.get(j).getpreviousSwitch(sw.Name), port.AssignedStreams.get(j).Id);
-									Port prevport = getPortObject(port.AssignedStreams.get(j).getpreviousSwitch(sw.Name), port.AssignedStreams.get(j).Id);
-									int Previndex = getStreamIndex(port.AssignedStreams.get(j).getpreviousSwitch(sw.Name), port.AssignedStreams.get(j).Id);
+								if(!port.AssignedStreams.get(j).isThisFirstSwtich(sw.Name) && !port.AssignedStreams.get(i).isThisFirstSwtich(sw.Name) &&(i != j)) {
+									int counterprej = FindPortIndex(port.AssignedStreams.get(j).getpreviousSwitch(sw.Name), port.AssignedStreams.get(j).Id);
+									Port portprevj = getPortObject(port.AssignedStreams.get(j).getpreviousSwitch(sw.Name), port.AssignedStreams.get(j).Id);
+									int indexprevj = getStreamIndex(port.AssignedStreams.get(j).getpreviousSwitch(sw.Name), port.AssignedStreams.get(j).Id);
+									
+									int counterprei = FindPortIndex(port.AssignedStreams.get(i).getpreviousSwitch(sw.Name), port.AssignedStreams.get(i).Id);
+									Port portprevi = getPortObject(port.AssignedStreams.get(i).getpreviousSwitch(sw.Name), port.AssignedStreams.get(i).Id);
+									int indexprevi = getStreamIndex(port.AssignedStreams.get(i).getpreviousSwitch(sw.Name), port.AssignedStreams.get(i).Id);
 									
 									for (int k = 0; k < port.AssignedStreams.get(i).N_instances; k++) {
 										
 										for (int l = 0; l < port.AssignedStreams.get(j).N_instances; l++) {
 											
-											var indexvar= solver.makeElement(Tclose[counter], Waff[counter][i][k]);
+											var indexvar= solver.makeElement(Tclose[counter], Waff[counter][i][k]).var();
 											
 											//IntExpr aExpr = solver.makeSum(Tclose[counter][port.indexMap[i][k]] ,sw.clockAsync);
-											IntExpr aExpr = solver.makeSum(indexvar ,sw.clockAsync);
+											IntVar aExpr = solver.makeSum(indexvar ,sw.clockAsync).var();
 											
-											var indexvar2= solver.makeElement(Topen[counter2], Waff[counter2][Previndex][l]);
+											var indexvar2= solver.makeElement(Topen[counterprej], Waff[counterprej][indexprevj][l]).var();
 											//IntExpr bExpr = solver.makeIsLessOrEqualVar(aExpr, Topen[counter2][prevport.indexMap[Previndex][l]]);
-											IntExpr bExpr = solver.makeIsLessOrEqualVar(aExpr, indexvar2);
+											IntVar bExpr = solver.makeIsLessOrEqualVar(aExpr, indexvar2).var();
 											
 											
-											var indexvar3= solver.makeElement(Tclose[counter2], Waff[counter2][Previndex][l]);
+											var indexvar3= solver.makeElement(Tclose[counter], Waff[counter][j][l]).var();
 											//IntExpr cExpr = solver.makeSum(Tclose[counter2][prevport.indexMap[Previndex][l]] ,sw.clockAsync);
-											IntExpr cExpr = solver.makeSum(indexvar3 ,sw.clockAsync);
-											var indexvar4= solver.makeElement(Topen[counter], Waff[counter][i][k]);
+											IntVar cExpr = solver.makeSum(indexvar3 ,sw.clockAsync).var();
+											var indexvar4= solver.makeElement(Topen[counterprei], Waff[counterprei][indexprevi][k]).var();
 											//IntExpr dExpr = solver.makeIsLessOrEqualVar(cExpr, Topen[counter][port.indexMap[i][k]]);
-											IntExpr dExpr = solver.makeIsLessOrEqualVar(cExpr, indexvar4);
+											IntVar dExpr = solver.makeIsLessOrEqualVar(cExpr, indexvar4).var();
 											
-											var indexvar5= solver.makeElement(Paff[counter], Waff[counter][i][k]);
-											var indexvar6= solver.makeElement(Paff[counter], Waff[counter][j][l]);
+											var indexvar5= solver.makeElement(Paff[counter], Waff[counter][i][k]).var();
+											var indexvar6= solver.makeElement(Paff[counter], Waff[counter][j][l]).var();
 											//IntExpr eExpr = solver.makeIsEqualVar(Paff[counter][port.indexMap[i][k]], Paff[counter][port.indexMap[j][l]]);
 											
-											IntExpr eExpr = solver.makeIsEqualVar(indexvar5, indexvar6);
-											IntExpr fExpr = solver.makeSum(eExpr, 0);
+											IntVar eExpr = solver.makeIsEqualVar(indexvar5, indexvar6).var();
+											IntVar fExpr = solver.makeDifference(1, eExpr).var();
+											//IntVar fExpr = solver.makeSum(eExpr, 0).var();
 											//IntExpr fExpr = solver.makeIsEqualVar(port.indexMap[i][k], port.indexMap[j][l]);
 											//if(port.indexMap[i][k] == port.indexMap[j][l]) {
 
@@ -436,12 +500,13 @@ public class Romon {
 												
 											//}
 											
-											IntExpr zExpr = solver.makeIsEqualVar(Waff[counter][i][k], Waff[counter][j][l]);
-											fExpr = solver.makeSum(eExpr, zExpr);
+											IntVar zExpr = solver.makeIsEqualVar(Waff[counter][i][k], Waff[counter][j][l]).var();
+											//fExpr = solver.makeSum(eExpr, zExpr).var();
 											
-											IntExpr gExpr = solver.makeSum(bExpr, dExpr);
-											IntExpr hExpr = solver.makeSum(gExpr, fExpr);
-											solver.addConstraint(solver.makeLess(hExpr, 3));
+											IntVar gExpr = solver.makeSum(bExpr, dExpr).var();
+											IntVar hExpr = solver.makeSum(gExpr, fExpr).var();
+											IntVar iExpr = solver.makeSum(hExpr, zExpr).var();
+											solver.addConstraint(solver.makeLess(iExpr, 3));
 											
 										}
 										
@@ -468,12 +533,12 @@ public class Romon {
 			if((firstIndex != -1) && (lastIndex != -1)) {
 				for (int i = 0; i < stream.N_instances; i++) {
 					
-					var indexvar= solver.makeElement(Tclose[lastIndex], Waff[lastIndex][getStreamIndex(lastSwitch, stream.Id)][i]);
-					var indexvar2= solver.makeElement(Topen[firstIndex], Waff[firstIndex][getStreamIndex(firstSwitch, stream.Id)][i]);
+					var indexvar= solver.makeElement(Tclose[lastIndex], Waff[lastIndex][getStreamIndex(lastSwitch, stream.Id)][i]).var();
+					var indexvar2= solver.makeElement(Topen[firstIndex], Waff[firstIndex][getStreamIndex(firstSwitch, stream.Id)][i]).var();
 					
 					//solver.addConstraint(solver.makeLessOrEqual(solver.makeDifference(Tclose[lastIndex][getPortObject(lastSwitch, stream.Id).indexMap[getStreamIndex(lastSwitch, stream.Id)][i]], Topen[firstIndex][getPortObject(firstSwitch, stream.Id).indexMap[getStreamIndex(firstSwitch, stream.Id)][i]]), (stream.Deadline -  Current.SW.get(0).clockAsync)));
 
-					solver.addConstraint(solver.makeLessOrEqual(solver.makeDifference(indexvar, indexvar2), (stream.Deadline -  Current.SW.get(0).clockAsync)));
+					solver.addConstraint(solver.makeLessOrEqual(solver.makeDifference(indexvar, indexvar2).var(), (stream.Deadline -  Current.SW.get(0).clockAsync)));
 				}
 			}
 			
@@ -489,7 +554,7 @@ public class Romon {
 			int firstIndex = FindPortIndex(firstSwitch, stream.Id);
 			if(firstIndex != -1) {
 				
-				var indexvar= solver.makeElement(Topen[firstIndex], Waff[firstIndex][getStreamIndex(firstSwitch, stream.Id)][0]);
+				var indexvar= solver.makeElement(Topen[firstIndex], Waff[firstIndex][getStreamIndex(firstSwitch, stream.Id)][0]).var();
 				
 				//solver.addConstraint(solver.makeGreaterOrEqual(Topen[firstIndex][getPortObject(firstSwitch, stream.Id).indexMap[getStreamIndex(firstSwitch, stream.Id)][0]], stream.offset));
 
@@ -508,7 +573,7 @@ public class Romon {
 			int lastIndex = FindPortIndex(lastSwitch, stream.Id);
 			if(lastIndex != -1) {
 				
-				var indexvar= solver.makeElement(Tclose[lastIndex], Waff[lastIndex][getStreamIndex(lastSwitch, stream.Id)][0]);
+				var indexvar= solver.makeElement(Tclose[lastIndex], Waff[lastIndex][getStreamIndex(lastSwitch, stream.Id)][0]).var();
 				
 				//solver.addConstraint(solver.makeLessOrEqual(Tclose[lastIndex][getPortObject(lastSwitch, stream.Id).indexMap[getStreamIndex(lastSwitch, stream.Id)][0]], stream.Deadline));
 
@@ -516,17 +581,36 @@ public class Romon {
 			}
 			
 		}
-		
+	
+	}
+	private void Constraint10(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[][][] Waff) {
+		// AboluteDeadline
+		//The opeening should be after offset
+		int counter = 0;
+		for (Switches sw : Current.SW) {
+			for (Port port : sw.ports) {
+				if(port.outPort) {
+					for (int i = 0; i < port.AssignedStreams.size(); i++) {
+						for (int j = 0; j < (port.AssignedStreams.get(i).N_instances -1); j++) {
+							solver.addConstraint(solver.makeLessOrEqual(Waff[counter][i][j], Waff[counter][i][j+1]));
+						}
+					}
+					
+					counter++;
+				}
+			}
+		}
 
+	
 	}
 	private OptimizeVar CostMinimizer(IntVar[] Costs) {
 		IntVar tempIntVar = null;
 		tempIntVar = solver.makeProd(Costs[0], 1).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 1).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 2).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 3).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 10).var()).var();
 		Costs[4] = tempIntVar;
-		return solver.makeMinimize(Costs[4],1);
+		return solver.makeMinimize(Costs[4],3);
 		
 
 	}
@@ -539,17 +623,17 @@ public class Romon {
 				for (int i = 0; i < stream.N_instances; i++) {
 					for (int j = 0; j < stream.N_instances; j++) {
 						
-						var indexvar= solver.makeElement(Tclose[firstIndex], Waff[firstIndex][getStreamIndex(firstSwitch, stream.Id)][j]);
+						var indexvar= solver.makeElement(Tclose[firstIndex], Waff[firstIndex][getStreamIndex(firstSwitch, stream.Id)][j]).var();
 						//IntExpr aExpr = solver.makeAbs(solver.makeDifference((j * stream.Period), Tclose[firstIndex][getPortObject(firstSwitch, stream.Id).indexMap[getStreamIndex(firstSwitch, stream.Id)][j]]));
 
-						IntExpr aExpr = solver.makeAbs(solver.makeDifference((j * stream.Period), indexvar));
+						IntVar aExpr = solver.makeAbs(solver.makeDifference((j * stream.Period), indexvar)).var();
 						
-						var indexvar2= solver.makeElement(Topen[firstIndex], Waff[firstIndex][getStreamIndex(firstSwitch, stream.Id)][i]);
+						var indexvar2= solver.makeElement(Topen[firstIndex], Waff[firstIndex][getStreamIndex(firstSwitch, stream.Id)][i]).var();
 						//IntExpr bExpr = solver.makeAbs(solver.makeDifference((i * stream.Period), Topen[firstIndex][getPortObject(firstSwitch, stream.Id).indexMap[getStreamIndex(firstSwitch, stream.Id)][i]]));
 
-						IntExpr bExpr = solver.makeAbs(solver.makeDifference((i * stream.Period), indexvar2));
-						IntExpr cExpr = solver.makeAbs(solver.makeDifference(aExpr, bExpr));
-						IntExpr dExpr = solver.makeAbs(solver.makeDifference(stream.Transmit_Time, cExpr));
+						IntVar bExpr = solver.makeAbs(solver.makeDifference((i * stream.Period), indexvar2)).var();
+						IntVar cExpr = solver.makeAbs(solver.makeDifference(aExpr, bExpr)).var();
+						IntVar dExpr = solver.makeAbs(solver.makeDifference(stream.Transmit_Time, cExpr)).var();
 						if(eExpr == null) {
 							eExpr = dExpr.var();
 						}else {
@@ -573,17 +657,17 @@ public class Romon {
 			if(lastIndex != -1) {
 				for (int i = 0; i < stream.N_instances; i++) {
 					for (int j = 0; j < stream.N_instances; j++) {
-						var indexvar= solver.makeElement(Tclose[lastIndex], Waff[lastIndex][getStreamIndex(lastswitch, stream.Id)][j]);
+						var indexvar= solver.makeElement(Tclose[lastIndex], Waff[lastIndex][getStreamIndex(lastswitch, stream.Id)][j]).var();
 						//IntExpr aExpr = solver.makeAbs(solver.makeDifference((j * stream.Period), Tclose[lastIndex][getPortObject(lastswitch, stream.Id).indexMap[getStreamIndex(lastswitch, stream.Id)][j]]));
 
-						IntExpr aExpr = solver.makeAbs(solver.makeDifference((j * stream.Period), indexvar));
+						IntVar aExpr = solver.makeAbs(solver.makeDifference((j * stream.Period), indexvar)).var();
 						
-						var indexvar2= solver.makeElement(Topen[lastIndex], Waff[lastIndex][getStreamIndex(lastswitch, stream.Id)][i]);
+						var indexvar2= solver.makeElement(Topen[lastIndex], Waff[lastIndex][getStreamIndex(lastswitch, stream.Id)][i]).var();
 						//IntExpr bExpr = solver.makeAbs(solver.makeDifference((i * stream.Period), Topen[lastIndex][getPortObject(lastswitch, stream.Id).indexMap[getStreamIndex(lastswitch, stream.Id)][i]]));
 
-						IntExpr bExpr = solver.makeAbs(solver.makeDifference((i * stream.Period), indexvar2));
-						IntExpr cExpr = solver.makeAbs(solver.makeDifference(aExpr, bExpr));
-						IntExpr dExpr = solver.makeAbs(solver.makeDifference(stream.Transmit_Time, cExpr));
+						IntVar bExpr = solver.makeAbs(solver.makeDifference((i * stream.Period), indexvar2)).var();
+						IntVar cExpr = solver.makeAbs(solver.makeDifference(aExpr, bExpr)).var();
+						IntVar dExpr = solver.makeAbs(solver.makeDifference(stream.Transmit_Time, cExpr)).var();
 						if(eExpr == null) {
 							eExpr = dExpr.var();
 						}else {
@@ -607,11 +691,11 @@ public class Romon {
 			int firstIndex = FindPortIndex(firstSwitch, stream.Id);
 			if(lastIndex != -1) {
 				for (int i = 0; i < stream.N_instances; i++) {
-					var indexvar= solver.makeElement(Tclose[lastIndex], Waff[lastIndex][getStreamIndex(lastswitch, stream.Id)][i]);
-					var indexvar2= solver.makeElement(Topen[firstIndex], Waff[firstIndex][getStreamIndex(firstSwitch, stream.Id)][i]);
+					var indexvar= solver.makeElement(Tclose[lastIndex], Waff[lastIndex][getStreamIndex(lastswitch, stream.Id)][i]).var();
+					var indexvar2= solver.makeElement(Topen[firstIndex], Waff[firstIndex][getStreamIndex(firstSwitch, stream.Id)][i]).var();
 					//IntExpr aExpr = solver.makeDifference(Tclose[lastIndex][getPortObject(lastswitch, stream.Id).indexMap[getStreamIndex(lastswitch, stream.Id)][i]], Topen[firstIndex][getPortObject(firstSwitch, stream.Id).indexMap[getStreamIndex(firstSwitch, stream.Id)][i]]);
 
-					IntExpr aExpr = solver.makeDifference(indexvar, indexvar2);
+					IntVar aExpr = solver.makeDifference(indexvar, indexvar2).var();
 					if(bExpr == null) {
 						bExpr = aExpr.var();
 					}else {
@@ -622,7 +706,7 @@ public class Romon {
 			}	
 		}
 		ReciverJitter[2] = bExpr;
-		return solver.makeMinimize(bExpr, 1);
+		return solver.makeMinimize(ReciverJitter[2], 1);
 
 	}
 	private OptimizeVar Cost3(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[][][] Waff, IntVar[] ReciverJitter) {
@@ -632,16 +716,18 @@ public class Romon {
 			for (Port port : sw.ports) {
 				if(port.outPort) {
 					for (int i = 0; i < port.AssignedStreams.size(); i++) {
-						
-						if(aExpr == null) {
-							aExpr = solver.makeMax(Waff[counter][i]).var();
-						}else {
+						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
+							IntVar cExpr = Waff[counter][i][j];
+							if(aExpr == null) {
+								aExpr = cExpr;
+							}else {
+								aExpr = solver.makeMax(aExpr, cExpr).var();
+							}
+							
 							
 						}
-						aExpr = solver.makeSum(aExpr,solver.makeMax(Waff[counter][i]).var()).var();
-					}
-					
-					
+						
+					}					
 					counter++;
 					
 				}
@@ -649,7 +735,7 @@ public class Romon {
 		}
 		
 		ReciverJitter[3] = aExpr;
-		return solver.makeMinimize(aExpr, 1);
+		return solver.makeMinimize(ReciverJitter[3], 1);
 
 	}
 	
@@ -702,5 +788,24 @@ public class Romon {
 			}
 		}
 		return -1;
+	}
+	private void SetDefaultSolution(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[][][] Waff) {
+		int counter = 0;
+		for (Switches sw : Current.SW) {
+			for (Port port : sw.ports) {
+				if(port.outPort) {
+					int GCLrecord = 0;
+					for (int i = 0; i < port.AssignedStreams.size(); i++) {
+						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
+							Waff[counter][i][j].setValue(GCLrecord);
+							GCLrecord++;
+						}
+						
+					}
+					
+					counter++;
+				}
+			}
+		}
 	}
 }

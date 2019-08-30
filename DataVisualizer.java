@@ -16,6 +16,10 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+
 
 
 public class DataVisualizer {
@@ -329,9 +333,16 @@ public class DataVisualizer {
 		}
 		
 		Element rect = addBox(doc, x, y, width, height, colorString);
-		root.appendChild(rect);
-		Element textElement = addText(doc, txt, x + (width/2), y + (2*rowH/3), "frameTag");
-		root.appendChild(textElement);
+		if(isthereNode(root, rect)) {
+			Element textElement = addText(doc, txt, x + (width/2), y + (2*rowH/3), "frameTag");
+			ReplaceNode(root, textElement);
+		}else {
+			root.appendChild(rect);
+			Element textElement = addText(doc, txt, x + (width/2), y + (2*rowH/3), "frameTag");
+			root.appendChild(textElement);
+		}
+		
+
 	}
 	private Element addBox(Document doc, int x, int y, int width, int height, String color) {
 		Element box = doc.createElement("rect");
@@ -361,7 +372,7 @@ public class DataVisualizer {
     	box.setAttributeNode(ryAttr);
     	
     	Attr styleAttr = doc.createAttribute("style");
-    	String styleString = "fill:"+ color + ";stroke:black;stroke-width:1;opacity:0.7" ;
+    	String styleString = "fill:"+ color + ";stroke:black;stroke-width:1;opacity:0.75" ;
     	styleAttr.setValue(styleString);
     	box.setAttributeNode(styleAttr);
     	
@@ -453,5 +464,34 @@ public class DataVisualizer {
     	line.setAttributeNode(styleAttr);
     	
     	return line;
+	}
+	private boolean isthereNode(Element root, Element rect) {
+		NodeList rectsList = root.getElementsByTagName(rect.getTagName());
+		for (int i = 0; i < rectsList.getLength(); i++) {
+			Node nNode = rectsList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+            	Element eElement = (Element) nNode;
+    			if(eElement.isEqualNode(rect)) {
+    				return true;
+    			}
+            }
+
+		}
+		return false;
+	}
+	private void ReplaceNode(Element root, Element text) {
+		NodeList textList = root.getElementsByTagName(text.getTagName());
+		for (int i = 0; i < textList.getLength(); i++) {
+			Node nNode = textList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+            	Element eElement = (Element) nNode;
+            	if((eElement.getAttribute("x").equals(text.getAttribute("x"))) && (eElement.getAttribute("y").equals(text.getAttribute("y")))) {
+            		String contentString = eElement.getTextContent()+ ";" + text.getTextContent();
+            		eElement.setTextContent(contentString);
+            	}
+            	
+            }
+
+		}
 	}
 }
