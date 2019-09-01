@@ -1,36 +1,25 @@
 <Network>
     <Messages>
-        <Message id = "1" deadline="60" period="60" size="2" priority="1" offset="0"></Message>
-        <Message id="2" deadline="120" period="40" size="10" priority="2" offset="0"></Message>
-        <Message id="4" deadline="60" period="60" size="3" priority="2" offset="0"></Message>
-        <Message id="6" deadline="70" period="40" size="4" priority="5" offset="0"></Message>
+        <Message id="1" deadline="3" period="3" size="1" priority="2" offset="0"></Message>
+        <Message id="2" deadline="3" period="4" size="1" priority="2" offset="0"></Message>
+        <Message id="3" deadline="4" period="3" size="1" priority="2" offset="0"></Message>
     </Messages>
     <Routing>
     	<Route id="1">
     		<Nodes>
     			<node>ES1</node>
-    			<node>SW2</node>
     			<node>SW1</node>
-    			<node>ES3</node></Nodes>
+    			<node>ES2</node></Nodes>
     		<messages>
     			<messageID>1</messageID>
-    			<messageID>6</messageID></messages></Route>
+    			<messageID>2</messageID></messages></Route>
     	<Route id="2">
     		<Nodes>
     			<node>ES2</node>
     			<node>SW1</node>
-    			<node>SW2</node>
     			<node>ES1</node></Nodes>
     		<messages>
-    			<messageID>2</messageID></messages></Route>
-    	<Route id="4">
-    		<Nodes>
-    			<node>ES4</node>
-    			<node>SW1</node>
-    			<node>SW2</node>
-    			<node>ES1</node></Nodes>
-    		<messages>
-    			<messageID>4</messageID></messages></Route>
+    			<messageID>3</messageID></messages></Route>
     			</Routing>
     <CA>
     	<APP id="1">

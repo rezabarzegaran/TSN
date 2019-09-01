@@ -38,7 +38,7 @@ public class Romon {
 		Constraint7(Topen, Tclose, Paff, Waff);
 		//Constraint8(Topen, Tclose, Paff, Waff);
 		//Constraint9(Topen, Tclose, Paff, Waff);
-		//Constraint10(Topen, Tclose, Paff, Waff);
+		Constraint10(Topen, Tclose, Paff, Waff);
 		//SetDefaultSolution(Topen, Tclose, Paff, Waff);
 	}
 	public void addCosts() {
@@ -59,6 +59,10 @@ public class Romon {
 		FlatArray(Paff, z, NOutports);
 		FlatArray3D(Waff, w, NOutports);
 		FlatAll(w, x, y, z, T);
+		long allvariables = TotalVars * TotalVars * TotalVars * (3*TotalVars + get3DarraySize(Waff));
+		System.out.println("There are " + allvariables + "Variables");
+		long timer = (allvariables * Current.Hyperperiod * Current.Hyperperiod * 8 * NOutports * 10 ) / 5000000;
+		System.out.println("It takes " + timer + " minutes to solve");
 		db = solver.makePhase(T,  solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
 	    //DecisionBuilder db1 = solver.makePhase(w, solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_RANDOM_VALUE);
 	    //DecisionBuilder db2 = solver.makePhase(x, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
@@ -92,16 +96,16 @@ public class Romon {
 	public boolean Monitor(long started) {
 		TotalRuns++;
 		long duration = System.currentTimeMillis() - started;
-    	//System.out.println("Solution Found!!, in Time: " + duration);
+    	System.out.println("Solution Found!!, in Time: " + duration);
 		
-		return false;
-    	
-		//if((TotalRuns >= 10000000) || (duration >= 90000000)){
-		//return true;
-		//}else {
 		//return false;
+    	
+		if((TotalRuns >= 10000)){
+			return true;
+		}else {
+			return false;
 
-		//}
+		}
 
 	}
 
@@ -608,17 +612,17 @@ public class Romon {
 			}
 		}
 
-	
 	}
+
 
 	private OptimizeVar CostMinimizer(IntVar[] Costs) {
 		IntVar tempIntVar = null;
-		tempIntVar = solver.makeProd(Costs[0], 1).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 1).var()).var();
+		tempIntVar = solver.makeProd(Costs[0], 3).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 3).var()).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 1).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 2).var()).var();
 		Costs[4] = tempIntVar;
-		return solver.makeMinimize(Costs[4],3);
+		return solver.makeMinimize(Costs[4],2000);
 		
 
 	}
@@ -720,29 +724,32 @@ public class Romon {
 	private OptimizeVar Cost3(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[][][] Waff, IntVar[] ReciverJitter) {
 		int counter = 0;
 		IntVar aExpr= null;
+		IntVar bExpr= null;
 		for (Switches sw : Current.SW) {
 			for (Port port : sw.ports) {
 				if(port.outPort) {
 					for (int i = 0; i < port.AssignedStreams.size(); i++) {
-						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
-							IntVar cExpr = Waff[counter][i][j];
-							if(aExpr == null) {
-								aExpr = cExpr;
-							}else {
-								aExpr = solver.makeSum(aExpr, cExpr).var();
-							}
-							
-							
+						IntVar cExpr = solver.makeMax(Waff[counter][i]).var();
+						if(aExpr == null) {
+							aExpr = cExpr;
+						}else {
+							aExpr = solver.makeSum(aExpr, cExpr).var();
 						}
 						
 					}					
 					counter++;
+					if(bExpr == null) {
+						bExpr = aExpr;
+					}else {
+						bExpr = solver.makeSum(bExpr, aExpr).var();
+					}
+					aExpr = null;
 					
 				}
 			}
 		}
 		
-		ReciverJitter[3] = aExpr;
+		ReciverJitter[3] = bExpr;
 		return solver.makeMinimize(ReciverJitter[3], 1);
 
 	}

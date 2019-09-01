@@ -177,7 +177,7 @@ public class Solution {
 		return nameStrings;
     }
     public Solution Clone() {
-    	return new Solution(streams, ES, SW, Apps, costValues, Hyperperiod);
+    	return new Solution(streams, ES, SW, Apps, costValues, (Hyperperiod));
     }
     public List<Integer> getCosts() {
     	List<Integer> CostTerms = new ArrayList<Integer>(); 

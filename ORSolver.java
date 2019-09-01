@@ -57,11 +57,11 @@ public class ORSolver {
 		method.addDecision();
 		
 		//var limit = solver.makeTimeLimit(55000000);
-		solver.newSearch(method.getDecision());
+		//solver.newSearch(method.getDecision());
 		//solver.newSearch(method.getDecision(), limit);
 		//solver.newSearch(method.getDecision(),method.Opt5, limit);
 	    //solver.newSearch(method.getDecision(),method.Opt1, method.Opt2, method.Opt3);
-	    //solver.newSearch(method.getDecision(), method.Opt3);
+	    solver.newSearch(method.getDecision(), method.Opt5);
 	    //solver.newSearch(method.getDecision(),method.Opt1, method.Opt2);
 	    System.out.println(solver.model_name() + " Initiated");
 	   
