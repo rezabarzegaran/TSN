@@ -24,13 +24,15 @@ import org.w3c.dom.Element;
 public class DataUnloader {
 	
 	boolean CreateLuxiOutput;
+	boolean CreateReports;
 	String defaltDirPath = "Results";
 	List<List<Integer>> costValues;
 	int hyperperiod = 0;
     DataVisualizer visualizer = new DataVisualizer();
     String defaultPath = "Results";
     public DataUnloader(){
-    	CreateLuxiOutput = true;
+    	CreateLuxiOutput = false;
+    	CreateReports = false;
     	costValues = new ArrayList<List<Integer>>();
     }
     public void UnloadAll(List<Solution> solutions, String name) {
@@ -52,24 +54,34 @@ public class DataUnloader {
     }
     public void UnloadOnce(Solution solution, String name, int counter) {
     	
-    	if (!defaultPath.contains(name)) {
-    		defaultPath = defaultPath + "/" + name; 
+    	if(CreateReports) {
+    		if (!defaultPath.contains(name)) {
+        		defaultPath = defaultPath + "/" + name; 
+        	}
+    		String streamPath = defaultPath + "/Streams";
+    		String switchPath = defaultPath + "/Switches";
+    		String schedulePath = defaultPath + "/Schedule/" + "S_" + counter;
+    		String solutionFile = "S_" + counter + ".xml";
+    		String jitterPath = defaultPath + "/Jitters";
+    		hyperperiod = solution.Hyperperiod;
+    		
+    		UnloadStreams(solution, streamPath, solutionFile);
+    		UnloadJitterStreams(solution, jitterPath, solutionFile);
+    		UnloadPorts(solution, switchPath, solutionFile);
+    		
+    		visualizer.CreateTotalSVG(solution, schedulePath, solution.Hyperperiod, false);
+    		CreateJitterTimeInterface(solution, jitterPath, "S_"+counter);
     	}
-		String streamPath = defaultPath + "/Streams";
-		String switchPath = defaultPath + "/Switches";
-		String schedulePath = defaultPath + "/Schedule/" + "S_" + counter;
-		String solutionFile = "S_" + counter + ".xml";
-		String jitterPath = defaultPath + "/Jitters";
-		hyperperiod = solution.Hyperperiod;
+    	
+    	
+    	
 		
 		
-		UnloadStreams(solution, streamPath, solutionFile);
-		UnloadJitterStreams(solution, jitterPath, solutionFile);
-		UnloadPorts(solution, switchPath, solutionFile);
+
 		
-	    visualizer.CreateTotalSVG(solution, schedulePath, solution.Hyperperiod, false);
+	    
     	getCostValues(solution);
-    	CreateJitterTimeInterface(solution, jitterPath, "S_"+counter);
+    	
     	if(CreateLuxiOutput) {
     		String luxiToolPath = "Results/LuxiInterface/"+ name;
     		UnloadLuxi(solution, luxiToolPath);

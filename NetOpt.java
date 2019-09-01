@@ -15,10 +15,10 @@ public class NetOpt {
 		
 		
 		//Loading test Cases
-        //String inputPath = "src/TSN/input.xml";
+        String inputPath = "src/TSN/input.xml";
         //String inputPath = "src/TSN/orion.xml";
         //String inputPath = "src/TSN/GM.xml";
-        String inputPath = "src/TSN/GMM.xml";
+        //String inputPath = "src/TSN/GMM.xml";
         
 
         inData.Load(inputPath);
@@ -45,7 +45,7 @@ public class NetOpt {
         
         //Run optimizer
         optimizer.setSolution(initial_Solution);
-        boolean debugmode = true;
+        boolean debugmode = false;
         optimizer.Run(debugmode);
         
         //optimization Finished

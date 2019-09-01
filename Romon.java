@@ -36,10 +36,10 @@ public class Romon {
 		Constraint5(Topen, Tclose, Paff, Waff);
 		Constraint6(Topen, Tclose, Paff, Waff);
 		Constraint7(Topen, Tclose, Paff, Waff);
-		Constraint8(Topen, Tclose, Paff, Waff);
-		Constraint9(Topen, Tclose, Paff, Waff);
-		Constraint10(Topen, Tclose, Paff, Waff);
-		SetDefaultSolution(Topen, Tclose, Paff, Waff);
+		//Constraint8(Topen, Tclose, Paff, Waff);
+		//Constraint9(Topen, Tclose, Paff, Waff);
+		//Constraint10(Topen, Tclose, Paff, Waff);
+		//SetDefaultSolution(Topen, Tclose, Paff, Waff);
 	}
 	public void addCosts() {
 		Opt1 = Cost0(Topen, Tclose, Paff, Waff, Jitters);
@@ -92,14 +92,16 @@ public class Romon {
 	public boolean Monitor(long started) {
 		TotalRuns++;
 		long duration = System.currentTimeMillis() - started;
-    	System.out.println("Solution Found!!, in Time: " + duration);
+    	//System.out.println("Solution Found!!, in Time: " + duration);
+		
+		return false;
     	
-    	if((TotalRuns >= 3000) || (duration >= 10000000)){
-    		return true;
-    	}else {
-    		return false;
+		//if((TotalRuns >= 10000000) || (duration >= 90000000)){
+		//return true;
+		//}else {
+		//return false;
 
-    	}
+		//}
 
 	}
 
@@ -139,23 +141,28 @@ public class Romon {
 	}
 	private void FlatAll(IntVar[] source1, IntVar[] source2, IntVar[] source3, IntVar[] source4, IntVar[] destination) {
 		int counter = 0;
+		int totalvars = 0;
 		for (int i = 0; i < source1.length; i++) {
 			destination[counter] = source1[i];
 			counter++;
+			totalvars += Current.Hyperperiod;
 		}
 		for (int i = 0; i < source2.length; i++) {
 			destination[counter] = source2[i];
 			counter++;
+			totalvars += Current.Hyperperiod;
 		}
 		for (int i = 0; i < source3.length; i++) {
 			destination[counter] = source3[i];
 			counter++;
+			totalvars += Current.Hyperperiod;
 		}
 		for (int i = 0; i < source4.length; i++) {
 			destination[counter] = source4[i];
 			counter++;
+			totalvars += 8;
 		}
-		System.out.println("Total Number of Variables are:" + counter);
+		System.out.println("Total Number of Variables are:" + totalvars);
 	}
 	private void FlatArray(IntVar[][] source, IntVar[] destination, int sourcesize) {
 		int counter = 0;
@@ -317,7 +324,7 @@ public class Romon {
 
 								}
 							}
-							solver.addConstraint(solver.makeGreaterOrEqual(solver.makeDifference(indexvar, indexvar2).var(), duration));
+							solver.addConstraint(solver.makeEquality(solver.makeDifference(indexvar, indexvar2).var(), duration));
 
 							
 						}
@@ -603,12 +610,13 @@ public class Romon {
 
 	
 	}
+
 	private OptimizeVar CostMinimizer(IntVar[] Costs) {
 		IntVar tempIntVar = null;
 		tempIntVar = solver.makeProd(Costs[0], 1).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 1).var()).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 10).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 1).var()).var();
 		Costs[4] = tempIntVar;
 		return solver.makeMinimize(Costs[4],3);
 		
@@ -721,7 +729,7 @@ public class Romon {
 							if(aExpr == null) {
 								aExpr = cExpr;
 							}else {
-								aExpr = solver.makeMax(aExpr, cExpr).var();
+								aExpr = solver.makeSum(aExpr, cExpr).var();
 							}
 							
 							
