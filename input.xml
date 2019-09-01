@@ -1,7 +1,6 @@
 <Network>
     <Messages>
-        <Message id = "1" deadline="60" period="60" size="2" priority="1" offset="0">
-        </Message>
+        <Message id = "1" deadline="60" period="60" size="2" priority="1" offset="0"></Message>
         <Message id="2" deadline="120" period="40" size="10" priority="2" offset="0"></Message>
         <Message id="4" deadline="60" period="60" size="3" priority="2" offset="0"></Message>
         <Message id="6" deadline="70" period="40" size="4" priority="5" offset="0"></Message>

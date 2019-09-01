@@ -24,7 +24,6 @@ import org.w3c.dom.Element;
 public class DataUnloader {
 	
 	boolean CreateLuxiOutput;
-	boolean CreateReports;
 	String defaltDirPath = "Results";
 	List<List<Integer>> costValues;
 	int hyperperiod = 0;
@@ -32,29 +31,12 @@ public class DataUnloader {
     String defaultPath = "Results";
     public DataUnloader(){
     	CreateLuxiOutput = false;
-    	CreateReports = false;
     	costValues = new ArrayList<List<Integer>>();
     }
-    public void UnloadAll(List<Solution> solutions, String name) {
-    	int counter = 1;
-    	defaultPath = defaultPath + "/" + name; 
-    	for (Solution solution : solutions) {
-    		String streamPath = defaultPath + "/Streams";
-    		String switchPath = defaultPath + "/Switches";
-    		String solutionFile = "S_" + counter + ".xml";
-			UnloadStreams(solution, streamPath, solutionFile);
-			UnloadPorts(solution, switchPath, solutionFile);
-			counter++;
-		}
-    	if(CreateLuxiOutput) {
-    		String luxiToolPath = "Results/LuxiInterface/"+ name;
-    		UnloadLuxi(solutions.get(solutions.size() - 1), luxiToolPath);
-    	}
-    	
-    }
-    public void UnloadOnce(Solution solution, String name, int counter) {
-    	
-    	if(CreateReports) {
+    public void UnloadOnce(Solution solution, String name, int counter, boolean debugmode) {
+    	getCostValues(solution);
+    	hyperperiod = solution.Hyperperiod;
+    	if(debugmode) {
     		if (!defaultPath.contains(name)) {
         		defaultPath = defaultPath + "/" + name; 
         	}
@@ -63,30 +45,19 @@ public class DataUnloader {
     		String schedulePath = defaultPath + "/Schedule/" + "S_" + counter;
     		String solutionFile = "S_" + counter + ".xml";
     		String jitterPath = defaultPath + "/Jitters";
-    		hyperperiod = solution.Hyperperiod;
     		
     		UnloadStreams(solution, streamPath, solutionFile);
     		UnloadJitterStreams(solution, jitterPath, solutionFile);
     		UnloadPorts(solution, switchPath, solutionFile);
-    		
-    		visualizer.CreateTotalSVG(solution, schedulePath, solution.Hyperperiod, false);
+    		boolean CreateStreamWise = false;
+    		visualizer.CreateTotalSVG(solution, schedulePath, solution.Hyperperiod, CreateStreamWise);
     		CreateJitterTimeInterface(solution, jitterPath, "S_"+counter);
+        	if(CreateLuxiOutput) {
+        		String luxiToolPath = "Results/LuxiInterface/"+ name;
+        		UnloadLuxi(solution, luxiToolPath);
+        	}
     	}
-    	
-    	
-    	
-		
-		
-
-		
-	    
-    	getCostValues(solution);
-    	
-    	if(CreateLuxiOutput) {
-    		String luxiToolPath = "Results/LuxiInterface/"+ name;
-    		UnloadLuxi(solution, luxiToolPath);
-    	}
-    	
+    		
     }
     private void getCostValues(Solution solution) {
     	List<Integer> costs = new ArrayList<Integer>();
@@ -180,8 +151,8 @@ public class DataUnloader {
     }
     public void CreateReport(int dur) {
     	try {
+    		Files.createDirectories(Paths.get(defaltDirPath));
     		String Reportpath = defaltDirPath + "/report.txt";
-    		//String Reportpath = "/report.txt";
     		PrintWriter writer = new PrintWriter(Reportpath, "UTF-8");
     		String lineString = "Optimization Finished";
     		writer.println(lineString);

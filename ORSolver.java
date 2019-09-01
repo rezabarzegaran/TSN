@@ -44,7 +44,7 @@ public class ORSolver {
 	public void setSolution(Solution current) {
 		Current = current;
 	}
-	public void Run(boolean debogmode) {
+	public void Run(boolean debugmode) {
 		
 		method.setInit(Current);
 		method.initVariables();
@@ -71,23 +71,15 @@ public class ORSolver {
 	    Solution optimomSolution = null;
 	    long start=System.currentTimeMillis();
 	    while (solver.nextSolution()) { 
-	    	if(debogmode) {
-	    		//optSolutions.add(method.cloneSolution());
-	    		outData.UnloadOnce(method.cloneSolution(), name, method.TotalRuns);
-	    	}else {
-	    		optimomSolution = method.cloneSolution();
-	    	}
+	    	optimomSolution = method.cloneSolution();
+	    	outData.UnloadOnce(method.cloneSolution(), name, method.TotalRuns, debugmode );
 			
-	    	
 	    	if(method.Monitor(start)) {
 	    		break;
 	    	}
 
 	    }
-    	if(!debogmode) {
-    		//optSolutions.add(method.cloneSolution());
-    		outData.UnloadOnce(optimomSolution, name, method.TotalRuns);
-    	}
+	    outData.UnloadOnce(optimomSolution, name, method.TotalRuns, true);
 	    solver.endSearch();
 
 	    long end=System.currentTimeMillis();
