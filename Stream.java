@@ -12,7 +12,7 @@ public class Stream {
         Priority = priority;
         offset = _offset;
         // 1 Byte takes 0.008us at 1000Mbits, 42bit header for ethernet packet. Round down.
-        Transmit_Time = (int) Math.ceil((Size + 42)*0.195);
+        Transmit_Time = (int) Math.ceil((Size + 4)*0.008);
         //Transmit_Time = (int) Math.ceil((Size)*0.02);
         routingList = new ArrayList<String>();
         CroutingList = new ArrayList<String>();
@@ -26,7 +26,7 @@ public class Stream {
         Priority = priority;
         offset = _offset;
         // 1 Byte takes 0.008us at 1000Mbits, 42bit header for ethernet packet. Round down.
-        Transmit_Time = (int) Math.ceil((Size + 42)*0.1);
+        Transmit_Time = (int) Math.ceil((Size + 42)*0.01);
         routingList = new ArrayList<String>();
         CroutingList = new ArrayList<String>();
         Hyperperiod = _hyper;
@@ -83,7 +83,7 @@ public class Stream {
     public String getpreviousSwitch(String currentSW) {
     	for (int i = 0; i < routingList.size(); i++) {
 			if(routingList.get(i).equals(currentSW)) {
-				return routingList.get(i -1);
+				return routingList.get(i - 1);
 			}
 		}
     	return null;

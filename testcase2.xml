@@ -1,0 +1,66 @@
+<Network>
+    <Messages>
+        <Message id = "1" deadline="150" period="120" size="200" priority="1" offset="0">
+        </Message>
+        <Message id="2" deadline="100" period="90" size="1000" priority="3" offset="0"></Message>
+        <Message id="3" deadline="120" period="80" size="500" priority="2" offset="0"></Message>
+        <Message id="4" deadline="150" period="90" size="300" priority="3" offset="0"></Message>
+        <Message id="5" deadline="200" period="60" size="1000" priority="4" offset="0"></Message>
+        <Message id="6" deadline="120" period="80" size="400" priority="5" offset="0"></Message>
+        <Message id="7" deadline="80" period="80" size="600" priority="0" offset="0"></Message>
+        <Message id="8" deadline="100" period="80" size="1000" priority="6" offset="0"></Message>
+    </Messages>
+    <Routing>
+    	<Route id="1">
+    		<Nodes>
+    			<node>ES1</node>
+    			<node>SW2</node>
+    			<node>SW1</node>
+    			<node>ES3</node></Nodes>
+    		<messages>
+    			<messageID>1</messageID>
+    			<messageID>8</messageID></messages></Route>
+    	<Route id="2">
+    		<Nodes>
+    			<node>ES2</node>
+    			<node>SW1</node>
+    			<node>SW2</node>
+    			<node>ES1</node></Nodes>
+    		<messages>
+    			<messageID>2</messageID></messages></Route>
+    	<Route id="3">
+    		<Nodes>
+    			<node>ES3</node>
+    			<node>SW2</node>
+    			<node>ES2</node></Nodes>
+    		<messages>
+    			<messageID>3</messageID>
+    			<messageID>7</messageID></messages></Route>
+    	<Route id="4">
+    		<Nodes>
+    			<node>ES4</node>
+    			<node>SW1</node>
+    			<node>SW2</node>
+    			<node>ES1</node></Nodes>
+    		<messages>
+    			<messageID>4</messageID></messages></Route>
+    	<Route id="5">
+    		<Nodes>
+    			<node>ES1</node>
+    			<node>SW2</node>
+    			<node>ES4</node></Nodes>
+    		<messages>
+    			<messageID>5</messageID></messages></Route>
+    	<Route id="6">
+    		<Nodes>
+    			<node>ES2</node>
+    			<node>SW1</node>
+    			<node>SW2</node>
+    			<node>ES4</node></Nodes>
+    		<messages>
+    			<messageID>6</messageID></messages></Route>
+    			</Routing>
+     <CA>
+    	<APP id="1">
+    		<in>1</in>
+    		<out>3</out></APP></CA></Network>

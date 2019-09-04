@@ -28,6 +28,7 @@ public class DataVisualizer {
 	int Toffset = 30;
 	int rowH = 30;
 	int maxH = 0;
+	int mlt = 10;
 	public DataVisualizer() {
 		
 	}
@@ -47,8 +48,8 @@ public class DataVisualizer {
 					Port crr_Port = getPortObject(solution, node, stream.Id);
 					int s_index = getStreamIndex(solution, node, stream.Id);
 					for (int i = 0; i < crr_Port.indexMap[s_index].length; i++) {
-						int x_1 = crr_Port.Topen[crr_Port.indexMap[s_index][i]];
-						int x_2 = crr_Port.Tclose[crr_Port.indexMap[s_index][i]];
+						int x_1 = crr_Port.Topen[crr_Port.indexMap[s_index][i]] * mlt;
+						int x_2 = crr_Port.Tclose[crr_Port.indexMap[s_index][i]] * mlt;
 						int width = x_2 - x_1;
 						if( (x_1 <= Duration) && (x_2 <= Duration)) {
 							addFrame(doc, svg, x_1 + offset , rowH * counter + Toffset, width, rowH, String.valueOf(stream.Id), stream.Priority);
@@ -75,7 +76,7 @@ public class DataVisualizer {
 	}
 	public void CreateTotalSVG(Solution solution, String DirPath, int duration, boolean createstreamwise) {
 		try {
-			Duration = duration;
+			Duration = duration * mlt;
 			maxH = solution.getNOutPorts();
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -90,8 +91,8 @@ public class DataVisualizer {
 					int s_index = getStreamIndex(solution, node, stream.Id);
 					int port_index = getPortIndex(solution, node, stream.Id);
 					for (int i = 0; i < crr_Port.indexMap[s_index].length; i++) {
-						int x_1 = crr_Port.Topen[crr_Port.indexMap[s_index][i]];
-						int x_2 = crr_Port.Tclose[crr_Port.indexMap[s_index][i]];
+						int x_1 = crr_Port.Topen[crr_Port.indexMap[s_index][i]] * mlt;
+						int x_2 = crr_Port.Tclose[crr_Port.indexMap[s_index][i]] * mlt;
 						int width = x_2 - x_1;
 						if( (x_1 <= Duration) && (x_2 <= Duration)) {
 							addFrame(doc, svg, x_1 + offset , rowH * port_index + Toffset, width, rowH, String.valueOf(stream.Id), stream.Priority);
@@ -216,7 +217,7 @@ public class DataVisualizer {
 		}
 		
 		for (int i = 0; i <= (Duration/100); i++) {
-			Element txtElement = addText(doc, String.valueOf(i * 100), (offset + (i* 100)), ((rowH * (maxh + 1)) + Toffset), "timeTag");
+			Element txtElement = addText(doc, String.valueOf(i * 100 / mlt), (offset + (i* 100)), ((rowH * (maxh + 1)) + Toffset), "timeTag");
 			root.appendChild(txtElement);
 		}
 		
@@ -282,7 +283,7 @@ public class DataVisualizer {
 		}
 		
 		for (int i = 0; i <= (Duration/100); i++) {
-			Element txtElement = addText(doc, String.valueOf(i * 100), (offset + (i* 100)), ((rowH * (maxH + 1)) + Toffset), "timeTag");
+			Element txtElement = addText(doc, String.valueOf(i * 100 * mlt), (offset + (i* 100)), ((rowH * (maxH + 1)) + Toffset), "timeTag");
 			root.appendChild(txtElement);
 		}
 		

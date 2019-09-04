@@ -2,9 +2,9 @@ package TSN;
 
 import java.util.Optional;
 import com.google.ortools.constraintsolver.DecisionBuilder;
-import com.google.ortools.constraintsolver.IntExpr;
 import com.google.ortools.constraintsolver.IntVar;
 import com.google.ortools.constraintsolver.OptimizeVar;
+import com.google.ortools.constraintsolver.SearchMonitor;
 import com.google.ortools.constraintsolver.Solver;
 
 public class Romon {
@@ -53,24 +53,30 @@ public class Romon {
 		IntVar[] y = new IntVar[TotalVars];
 		IntVar[] z = new IntVar[TotalVars];
 		IntVar[] w = new IntVar[get3DarraySize(Waff)];
-		IntVar[] T = new IntVar[3*TotalVars + get3DarraySize(Waff)];
+		IntVar[] T1 = new IntVar[3*TotalVars + get3DarraySize(Waff)];
+		IntVar[] T2 = new IntVar[3*TotalVars];
+		IntVar[] T3 = new IntVar[2*TotalVars];
 		FlatArray(Topen, x, NOutports);
 		FlatArray(Tclose, y, NOutports);
 		FlatArray(Paff, z, NOutports);
 		FlatArray3D(Waff, w, NOutports);
-		FlatAll(w, x, y, z, T);
+		FlatAll(w, x, y, z, T1);
+		FlatAll(x, y, z, T2);
+		FlatAll(x, y, T3);
 		long allvariables = TotalVars * TotalVars * TotalVars * (3*TotalVars + get3DarraySize(Waff));
 		System.out.println("There are " + allvariables + "Variables");
-		long timer = (allvariables * Current.Hyperperiod * Current.Hyperperiod * 8 * NOutports * 10 ) / 5000000;
-		System.out.println("It takes " + timer + " minutes to solve");
-		db = solver.makePhase(T,  solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
-	    //DecisionBuilder db1 = solver.makePhase(w, solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_RANDOM_VALUE);
-	    //DecisionBuilder db2 = solver.makePhase(x, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
+		//long timer = (allvariables * Current.Hyperperiod * Current.Hyperperiod * 8 * NOutports * 10 ) / 5000000;
+		//System.out.println("It takes " + timer + " minutes to solve");
+		//db = solver.makePhase(T1,  solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
+	    DecisionBuilder db1 = solver.makePhase(w, solver.ASSIGN_RANDOM_VALUE, solver.CHOOSE_FIRST_UNBOUND);
+	    DecisionBuilder db2 = solver.makePhase(T3, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
+	    DecisionBuilder db3 = solver.makePhase(z, solver.CHOOSE_FIRST_UNBOUND, solver.CHOOSE_FIRST_UNBOUND);
+	    DecisionBuilder db4 = solver.makeSolveOnce(db3);
 	    //DecisionBuilder db3 = solver.makePhase(y, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
 	    //DecisionBuilder db4 = solver.makePhase(z, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
-	    //DecisionBuilder db5 = solver.compose(db1, db2);
+	    DecisionBuilder db5 = solver.compose(db1, db2);
 	    //DecisionBuilder db6 = solver.compose(db5, db3);
-	    //db = solver.compose(db6, db4);
+	    db = solver.compose(db5, db4);
 	}
 	public DecisionBuilder getDecision() {
 		return db;
@@ -100,7 +106,7 @@ public class Romon {
 		
 		//return false;
     	
-		if((TotalRuns >= 10000)){
+		if((TotalRuns >= 5)){
 			return true;
 		}else {
 			return false;
@@ -165,6 +171,41 @@ public class Romon {
 			destination[counter] = source4[i];
 			counter++;
 			totalvars += 8;
+		}
+		System.out.println("Total Number of Variables are:" + totalvars);
+	}
+	private void FlatAll(IntVar[] source1, IntVar[] source2, IntVar[] source3, IntVar[] destination) {
+		int counter = 0;
+		int totalvars = 0;
+		for (int i = 0; i < source1.length; i++) {
+			destination[counter] = source1[i];
+			counter++;
+			totalvars += Current.Hyperperiod;
+		}
+		for (int i = 0; i < source2.length; i++) {
+			destination[counter] = source2[i];
+			counter++;
+			totalvars += Current.Hyperperiod;
+		}
+		for (int i = 0; i < source3.length; i++) {
+			destination[counter] = source3[i];
+			counter++;
+			totalvars += 8;
+		}
+		System.out.println("Total Number of Variables are:" + totalvars);
+	}
+	private void FlatAll(IntVar[] source1, IntVar[] source2, IntVar[] destination) {
+		int counter = 0;
+		int totalvars = 0;
+		for (int i = 0; i < source1.length; i++) {
+			destination[counter] = source1[i];
+			counter++;
+			totalvars += Current.Hyperperiod;
+		}
+		for (int i = 0; i < source2.length; i++) {
+			destination[counter] = source2[i];
+			counter++;
+			totalvars += Current.Hyperperiod;
 		}
 		System.out.println("Total Number of Variables are:" + totalvars);
 	}
@@ -622,7 +663,7 @@ public class Romon {
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 2).var()).var();
 		Costs[4] = tempIntVar;
-		return solver.makeMinimize(Costs[4],2000);
+		return solver.makeMinimize(Costs[4],100);
 		
 
 	}

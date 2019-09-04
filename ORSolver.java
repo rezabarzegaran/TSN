@@ -16,7 +16,7 @@ public class ORSolver {
     
     Romon method;
     //Niklas method;
-    //Michele method;
+    //Silviu method;
     
 	static { System.loadLibrary("jniortools");}
 
@@ -32,11 +32,11 @@ public class ORSolver {
 		case "Niklas":
 			//method = new Niklas(solver);
 			break;
-		case "Michele":
-			//method = new Micehle(solver);
+		case "Silviu":
+			//method = new Silviu(solver);
 			break;
 		default:
-			method = new Romon(solver);
+			//method = new Silviu(solver);
 
 		}
 		
@@ -79,7 +79,7 @@ public class ORSolver {
 	    	}
 
 	    }
-	    outData.UnloadOnce(optimomSolution, name, method.TotalRuns, true);
+	    //outData.UnloadOnce(optimomSolution, name, method.TotalRuns, true);
 	    solver.endSearch();
 
 	    long end=System.currentTimeMillis();

@@ -64,8 +64,9 @@ public class DataUnloader {
     	for (int val : solution.getCosts()) {
 			costs.add(val);
 		}
-    	costs.add(solution.getTotalCost());
+    	//costs.add(solution.getTotalCost());
     	costValues.add(costs);
+    	System.out.println(costs.get(costs.size() - 1));
     }
     private void UnloadLuxi(Solution solution, String DirPath){
     	try {

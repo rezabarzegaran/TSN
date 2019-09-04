@@ -16,10 +16,13 @@ public class NetOpt {
 		
 		//Loading test Cases
         //String inputPath = "src/TSN/input.xml";
-        String inputPath = "src/TSN/input1.xml";
+        //String inputPath = "src/TSN/input1.xml";
+        //String inputPath = "src/TSN/input2.xml";
         //String inputPath = "src/TSN/orion.xml";
         //String inputPath = "src/TSN/GM.xml";
         //String inputPath = "src/TSN/GMM.xml";
+        //String inputPath = "src/TSN/testcase1.xml";
+        String inputPath = "src/TSN/testcase2.xml";
         
 
         inData.Load(inputPath);
@@ -40,7 +43,7 @@ public class NetOpt {
         
         String solutionName = "Romon";
         //String solutionName = "Niklas";
-        //String solutionName = "Michele";
+        //String solutionName = "Silviu";
         ORSolver optimizer = new ORSolver(solutionName);
         
         
