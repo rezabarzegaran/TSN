@@ -1,8 +1,8 @@
 <Network>
     <Messages>
-        <Message id="1" deadline="3000" period="3000" size="100" priority="2" offset="0"></Message>
-        <Message id="2" deadline="3000" period="4000" size="100" priority="2" offset="0"></Message>
-        <Message id="3" deadline="4000" period="3000" size="100" priority="2" offset="0"></Message>
+        <Message id="1" deadline="30" period="30" size="240" priority="2" offset="0"></Message>
+        <Message id="2" deadline="30" period="40" size="110" priority="2" offset="0"></Message>
+        <Message id="3" deadline="40" period="30" size="170" priority="2" offset="0"></Message>
     </Messages>
     <Routing>
     	<Route id="1">

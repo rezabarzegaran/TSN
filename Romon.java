@@ -39,7 +39,7 @@ public class Romon {
 		//Constraint8(Topen, Tclose, Paff, Waff);
 		//Constraint9(Topen, Tclose, Paff, Waff);
 		Constraint10(Topen, Tclose, Paff, Waff);
-		//SetDefaultSolution(Topen, Tclose, Paff, Waff);
+		SetDefaultSolution(Topen, Tclose, Paff, Waff);
 	}
 	public void addCosts() {
 		Opt1 = Cost0(Topen, Tclose, Paff, Waff, Jitters);
@@ -47,6 +47,7 @@ public class Romon {
 		Opt3 = Cost2(Topen, Tclose, Paff, Waff, Jitters);
 		Opt4 = Cost3(Topen, Tclose, Paff, Waff, Jitters);
 		Opt5 = CostMinimizer(Jitters);
+		Cost4(Topen, Tclose, Paff, Waff, Jitters);
 	}
 	public void addDecision() {
 		IntVar[] x = new IntVar[TotalVars];
@@ -106,7 +107,7 @@ public class Romon {
 		
 		//return false;
     	
-		if((TotalRuns >= 5)){
+		if((TotalRuns >= 20)){
 			return true;
 		}else {
 			return false;
@@ -658,12 +659,12 @@ public class Romon {
 
 	private OptimizeVar CostMinimizer(IntVar[] Costs) {
 		IntVar tempIntVar = null;
-		tempIntVar = solver.makeProd(Costs[0], 3).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 3).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 2).var()).var();
+		tempIntVar = solver.makeProd(Costs[0], 1).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 1).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 0).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 0).var()).var();
 		Costs[4] = tempIntVar;
-		return solver.makeMinimize(Costs[4],100);
+		return solver.makeMinimize(Costs[4],1);
 		
 
 	}
@@ -792,6 +793,11 @@ public class Romon {
 		
 		ReciverJitter[3] = bExpr;
 		return solver.makeMinimize(ReciverJitter[3], 1);
+
+	}
+	
+	private void Cost4(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[][][] Waff, IntVar[] ReciverJitter) {
+			solver.addConstraint(solver.makeLessOrEqual(ReciverJitter[4], 12000));
 
 	}
 	

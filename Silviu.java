@@ -400,11 +400,11 @@ public class Silviu {
 
 	private OptimizeVar CostMinimizer(IntVar[] Costs) {
 		IntVar tempIntVar = null;
-		tempIntVar = solver.makeProd(Costs[0], 1).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 1).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
+		tempIntVar = solver.makeProd(Costs[0], 3).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 3).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 0).var()).var();
 		Costs[3] = tempIntVar;
-		return solver.makeMinimize(Costs[3],1);
+		return solver.makeMinimize(Costs[3],100);
 		
 
 	}
