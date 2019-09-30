@@ -21,7 +21,7 @@ public class NetOpt {
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// Loading Data
         DataLoader dataLoader = new DataLoader();
-        dataLoader.Load(testcase6);
+        dataLoader.Load(testcase5);
         //Method call for old input version
         //dataLoader.Load(testcase9a, testcase9b);  
 

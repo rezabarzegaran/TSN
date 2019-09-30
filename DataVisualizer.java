@@ -28,7 +28,7 @@ public class DataVisualizer {
 	int Toffset = 30;
 	int rowH = 30;
 	int maxH = 0;
-	int mlt = 10;
+	int mlt = 1;
 	int co = 1;
 	public DataVisualizer() {
 		

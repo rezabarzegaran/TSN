@@ -33,9 +33,9 @@ class DataUnloader {
     DataVisualizer visualizer = new DataVisualizer();
     String defaultPath = "Results";
     public DataUnloader(){
-    	LuxiInterface = false;
-    	JitterTimeInterface = false;
-    	StreamWiseInterface = true;
+    	LuxiInterface = true;
+    	JitterTimeInterface = true;
+    	StreamWiseInterface = false;
     	GeneralInterface = true;
     	costValues = new ArrayList<List<Integer>>();
     }

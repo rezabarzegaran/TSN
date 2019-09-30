@@ -42,8 +42,8 @@ class DataLoader {
         
                     Element eElement = (Element) nNode;
                     int _id = Integer.parseInt(eElement.getAttribute("id"));
-                    int _deadline = Integer.parseInt(eElement.getAttribute("deadline")) / 10;
-                    int _period = Integer.parseInt(eElement.getAttribute("period")) / 10;
+                    int _deadline = Integer.parseInt(eElement.getAttribute("deadline"));
+                    int _period = Integer.parseInt(eElement.getAttribute("period"));
                     int _size = Integer.parseInt(eElement.getAttribute("size"));
                     int _priority = Integer.parseInt(eElement.getAttribute("priority"));
                     int _offset = Integer.parseInt(eElement.getAttribute("offset"));
