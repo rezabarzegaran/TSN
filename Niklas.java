@@ -6,13 +6,17 @@ import com.google.ortools.constraintsolver.IntExpr;
 import com.google.ortools.constraintsolver.IntVar;
 import com.google.ortools.constraintsolver.Solver;
 
-public class Niklas {
+public class Niklas extends SolutionMethod {
 	
 	Solution Current;
 	Solver solver;
 	DecisionBuilder db;
 	public Niklas(Solver _solver) {
 		solver = _solver;
+	}
+	public void Initialize(Solution current) {
+		setInit(current);
+		initVariables();
 	}
 	public void setInit(Solution init) {
 		Current = init;
@@ -27,6 +31,9 @@ public class Niklas {
 
 	}
 	public void addDecision() {
+
+	}
+	public void addSolverLimits() {
 
 	}
 	public DecisionBuilder getDecision() {

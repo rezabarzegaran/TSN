@@ -29,12 +29,13 @@ public class DataVisualizer {
 	int rowH = 30;
 	int maxH = 0;
 	int mlt = 10;
+	int co = 1;
 	public DataVisualizer() {
 		
 	}
-	public void CreateStreamWiseSVG(Solution solution, String DirPath) {
+	public void CreateStreamWiseSVG(Solution solution, String DirPath, int duration) {
 		try {
-			
+			Duration = duration * mlt;
 			for (Stream stream : solution.streams) {
 	            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 	            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -74,7 +75,7 @@ public class DataVisualizer {
             e.printStackTrace();
         }
 	}
-	public void CreateTotalSVG(Solution solution, String DirPath, int duration, boolean createstreamwise) {
+	public void CreateTotalSVG(Solution solution, String DirPath, int duration) {
 		try {
 			Duration = duration * mlt;
 			maxH = solution.getNOutPorts();
@@ -110,10 +111,6 @@ public class DataVisualizer {
             StreamResult streamResult = new StreamResult(new File(path));
             transformer.transform(domSource, streamResult);
             
-            
-            if(createstreamwise) {
-            	CreateStreamWiseSVG(solution, DirPath);
-            }
 			
 		} catch (Exception e){
             e.printStackTrace();
@@ -217,7 +214,7 @@ public class DataVisualizer {
 		}
 		
 		for (int i = 0; i <= (Duration/100); i++) {
-			Element txtElement = addText(doc, String.valueOf(i * 100 / mlt), (offset + (i* 100)), ((rowH * (maxh + 1)) + Toffset), "timeTag");
+			Element txtElement = addText(doc, String.valueOf(i * 100 * co), (offset + (i* 100)), ((rowH * (maxh + 1)) + Toffset), "timeTag");
 			root.appendChild(txtElement);
 		}
 		
@@ -283,7 +280,7 @@ public class DataVisualizer {
 		}
 		
 		for (int i = 0; i <= (Duration/100); i++) {
-			Element txtElement = addText(doc, String.valueOf(i * 100 * mlt), (offset + (i* 100)), ((rowH * (maxH + 1)) + Toffset), "timeTag");
+			Element txtElement = addText(doc, String.valueOf(i * 100 * co), (offset + (i* 100)), ((rowH * (maxH + 1)) + Toffset), "timeTag");
 			root.appendChild(txtElement);
 		}
 		

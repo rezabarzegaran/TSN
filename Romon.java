@@ -4,20 +4,23 @@ import java.util.Optional;
 import com.google.ortools.constraintsolver.DecisionBuilder;
 import com.google.ortools.constraintsolver.IntVar;
 import com.google.ortools.constraintsolver.OptimizeVar;
-import com.google.ortools.constraintsolver.SearchMonitor;
 import com.google.ortools.constraintsolver.Solver;
 
-public class Romon {
+class Romon extends SolutionMethod{
 	Solution Current;
 	Solver solver;
 	DecisionBuilder db;
 	public Romon(Solver _solver) {
 		solver = _solver;
 	}
-	public void setInit(Solution init) {
-		Current = init;
+	public void Initialize(Solution current) {
+		setInit(current);
+		initVariables();
 	}
-	public void initVariables() {
+	private void setInit(Solution init) {
+		Current = init;	
+	}
+	private void initVariables() {
 		NOutports = Current.getNOutPorts();
 		Topen = new IntVar[NOutports][];
 		Tclose = new IntVar[NOutports][];
@@ -42,48 +45,51 @@ public class Romon {
 		SetDefaultSolution(Topen, Tclose, Paff, Waff);
 	}
 	public void addCosts() {
-		Opt1 = Cost0(Topen, Tclose, Paff, Waff, Jitters);
-		Opt2 = Cost1(Topen, Tclose, Paff, Waff, Jitters);
-		Opt3 = Cost2(Topen, Tclose, Paff, Waff, Jitters);
-		Opt4 = Cost3(Topen, Tclose, Paff, Waff, Jitters);
-		Opt5 = CostMinimizer(Jitters);
-		Cost4(Topen, Tclose, Paff, Waff, Jitters);
+		Cost0(Topen, Tclose, Paff, Waff, Jitters);
+		Cost1(Topen, Tclose, Paff, Waff, Jitters);
+		Cost2(Topen, Tclose, Paff, Waff, Jitters);
+		Cost3(Topen, Tclose, Paff, Waff, Jitters);
+		//Cost4(Topen, Tclose, Paff, Waff, Jitters);
+		OptVar = CostMinimizer(Jitters);
+		
 	}
 	public void addDecision() {
 		IntVar[] x = new IntVar[TotalVars];
 		IntVar[] y = new IntVar[TotalVars];
 		IntVar[] z = new IntVar[TotalVars];
 		IntVar[] w = new IntVar[get3DarraySize(Waff)];
-		IntVar[] T1 = new IntVar[3*TotalVars + get3DarraySize(Waff)];
-		IntVar[] T2 = new IntVar[3*TotalVars];
-		IntVar[] T3 = new IntVar[2*TotalVars];
+		IntVar[] T = new IntVar[2*TotalVars];
 		FlatArray(Topen, x, NOutports);
 		FlatArray(Tclose, y, NOutports);
 		FlatArray(Paff, z, NOutports);
 		FlatArray3D(Waff, w, NOutports);
-		FlatAll(w, x, y, z, T1);
-		FlatAll(x, y, z, T2);
-		FlatAll(x, y, T3);
-		long allvariables = TotalVars * TotalVars * TotalVars * (3*TotalVars + get3DarraySize(Waff));
-		System.out.println("There are " + allvariables + "Variables");
-		//long timer = (allvariables * Current.Hyperperiod * Current.Hyperperiod * 8 * NOutports * 10 ) / 5000000;
-		//System.out.println("It takes " + timer + " minutes to solve");
-		//db = solver.makePhase(T1,  solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
-	    DecisionBuilder db1 = solver.makePhase(w, solver.ASSIGN_RANDOM_VALUE, solver.CHOOSE_FIRST_UNBOUND);
-	    DecisionBuilder db2 = solver.makePhase(T3, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
+		//FlatAll(w, x, y, z, T1);
+		//FlatAll(x, y, z, T2);
+		FlatAll(x, y, T);
+	    DecisionBuilder db0 = solver.makePhase(w, solver.ASSIGN_RANDOM_VALUE, solver.CHOOSE_FIRST_UNBOUND);
+	    DecisionBuilder db1 = solver.makeSolveOnce(db0);
+	    DecisionBuilder db2 = solver.makePhase(T, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
 	    DecisionBuilder db3 = solver.makePhase(z, solver.CHOOSE_FIRST_UNBOUND, solver.CHOOSE_FIRST_UNBOUND);
 	    DecisionBuilder db4 = solver.makeSolveOnce(db3);
-	    //DecisionBuilder db3 = solver.makePhase(y, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
-	    //DecisionBuilder db4 = solver.makePhase(z, solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
 	    DecisionBuilder db5 = solver.compose(db1, db2);
-	    //DecisionBuilder db6 = solver.compose(db5, db3);
 	    db = solver.compose(db5, db4);
+	}
+	public void addSolverLimits() {
+		int hours = 10;
+		int minutes = 0;
+		int dur = (hours * 3600 + minutes * 60) * 1000; 
+		var limit = solver.makeTimeLimit(dur);
+		solver.newSearch(getDecision(),OptVar, limit);
+	    System.out.println(solver.model_name() + " Initiated");
 	}
 	public DecisionBuilder getDecision() {
 		return db;
 	}
 	public Solution cloneSolution() {
 		return AssignSolution(Topen, Tclose, Paff, Waff, Jitters);
+	}
+	public int getSolutionNumber() {
+		return TotalRuns;
 	}
 	int NOutports;
 	int TotalVars;
@@ -93,11 +99,7 @@ public class Romon {
 	IntVar[][] Paff;
 	IntVar[][][] Waff;
 	IntVar[] Jitters;
-	OptimizeVar Opt1;
-	OptimizeVar Opt2;
-	OptimizeVar Opt3;
-	OptimizeVar Opt4;
-	OptimizeVar Opt5;
+	OptimizeVar OptVar;
 	int TotalRuns = 0;
 	
 	public boolean Monitor(long started) {
@@ -107,7 +109,7 @@ public class Romon {
 		
 		//return false;
     	
-		if((TotalRuns >= 20)){
+		if((TotalRuns >= 1)){
 			return true;
 		}else {
 			return false;
@@ -661,8 +663,8 @@ public class Romon {
 		IntVar tempIntVar = null;
 		tempIntVar = solver.makeProd(Costs[0], 1).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 1).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 0).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 0).var()).var();
+		//tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 0).var()).var();
+		//tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 0).var()).var();
 		Costs[4] = tempIntVar;
 		return solver.makeMinimize(Costs[4],1);
 		
@@ -795,13 +797,10 @@ public class Romon {
 		return solver.makeMinimize(ReciverJitter[3], 1);
 
 	}
-	
 	private void Cost4(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[][][] Waff, IntVar[] ReciverJitter) {
 			solver.addConstraint(solver.makeLessOrEqual(ReciverJitter[4], 12000));
 
 	}
-	
-	
 	
 	private int FindPortIndex(String swName, int mID) {
 		int counter = 0;

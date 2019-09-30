@@ -6,12 +6,16 @@ import com.google.ortools.constraintsolver.IntVar;
 import com.google.ortools.constraintsolver.OptimizeVar;
 import com.google.ortools.constraintsolver.Solver;
 
-public class Silviu {
+public class Silviu extends SolutionMethod{
 	Solution Current;
 	Solver solver;
 	DecisionBuilder db;
 	public Silviu(Solver _solver) {
 		solver = _solver;
+	}
+	public void Initialize(Solution current) {
+		setInit(current);
+		initVariables();
 	}
 	public void setInit(Solution init) {
 		Current = init;

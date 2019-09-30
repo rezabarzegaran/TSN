@@ -21,42 +21,53 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 
-public class DataUnloader {
+class DataUnloader {
 	
-	boolean CreateLuxiOutput;
+	boolean LuxiInterface;
+	boolean JitterTimeInterface;
+	boolean StreamWiseInterface;
+	boolean GeneralInterface;
 	String defaltDirPath = "Results";
 	List<List<Integer>> costValues;
 	int hyperperiod = 0;
     DataVisualizer visualizer = new DataVisualizer();
     String defaultPath = "Results";
     public DataUnloader(){
-    	CreateLuxiOutput = false;
+    	LuxiInterface = false;
+    	JitterTimeInterface = false;
+    	StreamWiseInterface = true;
+    	GeneralInterface = true;
     	costValues = new ArrayList<List<Integer>>();
     }
-    public void UnloadOnce(Solution solution, String name, int counter, boolean debugmode) {
+    public void WriteData(Solution solution, String name, int counter) {
     	getCostValues(solution);
     	hyperperiod = solution.Hyperperiod;
-    	if(debugmode) {
-    		if (!defaultPath.contains(name)) {
-        		defaultPath = defaultPath + "/" + name; 
-        	}
-    		String streamPath = defaultPath + "/Streams";
-    		String switchPath = defaultPath + "/Switches";
-    		String schedulePath = defaultPath + "/Schedule/" + "S_" + counter;
-    		String solutionFile = "S_" + counter + ".xml";
-    		String jitterPath = defaultPath + "/Jitters";
-    		
-    		UnloadStreams(solution, streamPath, solutionFile);
-    		UnloadJitterStreams(solution, jitterPath, solutionFile);
-    		UnloadPorts(solution, switchPath, solutionFile);
-    		boolean CreateStreamWise = false;
-    		visualizer.CreateTotalSVG(solution, schedulePath, solution.Hyperperiod, CreateStreamWise);
-    		CreateJitterTimeInterface(solution, jitterPath, "S_"+counter);
-        	if(CreateLuxiOutput) {
-        		String luxiToolPath = "Results/LuxiInterface/"+ name;
-        		UnloadLuxi(solution, luxiToolPath);
-        	}
+		if (!defaultPath.contains(name)) {
+    		defaultPath = defaultPath + "/" + name; 
     	}
+		String streamPath = defaultPath + "/Streams";
+		String switchPath = defaultPath + "/Switches";
+		String schedulePath = defaultPath + "/Schedule/" + "S_" + counter;
+		String solutionFile = "S_" + counter + ".xml";
+		String jitterPath = defaultPath + "/Jitters";
+		
+		if (GeneralInterface) {
+    		visualizer.CreateTotalSVG(solution, schedulePath, solution.Hyperperiod);
+    		UnloadStreams(solution, streamPath, solutionFile);
+    		UnloadPorts(solution, switchPath, solutionFile);
+		}
+		if (JitterTimeInterface) {
+    		CreateJitterTimeInterface(solution, jitterPath, "S_"+counter);
+    		UnloadJitterStreams(solution, jitterPath, solutionFile);
+		}
+		if (LuxiInterface) {
+    		String luxiToolPath = "Results/LuxiInterface/"+ name;
+    		UnloadLuxi(solution, luxiToolPath);
+		}
+		if (StreamWiseInterface) {
+    		visualizer.CreateStreamWiseSVG(solution, schedulePath, solution.Hyperperiod);
+		}
+		
     		
     }
     private void getCostValues(Solution solution) {
@@ -64,9 +75,8 @@ public class DataUnloader {
     	for (int val : solution.getCosts()) {
 			costs.add(val);
 		}
-    	//costs.add(solution.getTotalCost());
     	costValues.add(costs);
-    	System.out.println(costs.get(costs.size() - 1));
+    	System.out.println("Current Cost is: " + costs.get(costs.size() - 1));
     }
     private void UnloadLuxi(Solution solution, String DirPath){
     	try {

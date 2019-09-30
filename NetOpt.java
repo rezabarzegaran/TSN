@@ -1,66 +1,52 @@
 package TSN;
 
+import TSN.ORSolver.methods;
+
 public class NetOpt {
 
 	public static void main(String[] args) {
-		
+		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		//Test Cases
+        String testcase1 = "src/TSN/input.xml";
+        String testcase2 = "src/TSN/input1.xml";
+        String testcase3 = "src/TSN/input2.xml";
+        String testcase4 = "src/TSN/orion.xml";
+        String testcase5 = "src/TSN/GM.xml";
+        String testcase6 = "src/TSN/GMM.xml";
+        String testcase7 = "src/TSN/testcase1.xml";
+        String testcase8 = "src/TSN/testcase2.xml";
+        String testcase9a = "src/TSN/orion.streams";
+        String testcase9b = "src/TSN/orion.vls";
 		
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-		//Input Data Loader
-        DataLoader inData = new DataLoader();
-		// Use the Converter If you need to Convert the test cases form Niklas to .xml
-        
-		//DataConverter converter = new DataConverter();
-		//converter.txt2xml("orion.streams", "orion.vls", "src/TSN/orion.xml");
-		
-		
-		//Loading test Cases
-        //String inputPath = "src/TSN/input.xml";
-        String inputPath = "src/TSN/input1.xml";
-        //String inputPath = "src/TSN/input2.xml";
-        //String inputPath = "src/TSN/orion.xml";
-        //String inputPath = "src/TSN/GM.xml";
-        //String inputPath = "src/TSN/GMM.xml";
-        //String inputPath = "src/TSN/testcase1.xml";
-        //String inputPath = "src/TSN/testcase2.xml";
-        
-
-        inData.Load(inputPath);
+		// Loading Data
+        DataLoader dataLoader = new DataLoader();
+        dataLoader.Load(testcase6);
+        //Method call for old input version
+        //dataLoader.Load(testcase9a, testcase9b);  
 
         //Loading Completed
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         //Creating Solutions
- 
-        Solution initial_Solution = new Solution();
-        initial_Solution.Create(inData.getMessages(), inData.getRoutes(), inData.getApps());
-        initial_Solution.Initialize();
+        Solution initial_Solution = new Solution(dataLoader);
          
         //Solution Created
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         //Creating Solver
 
         //Select Between Methods
+        methods chosenMethods = methods.Romon;
         
-        String solutionName = "Romon";
-        //String solutionName = "Niklas";
-        //String solutionName = "Silviu";
-        ORSolver optimizer = new ORSolver(solutionName);
+        boolean debugmode = true;
+        
+        ORSolver optimizer = new ORSolver(chosenMethods, initial_Solution, debugmode);
         
         
         //Run optimizer
-        optimizer.setSolution(initial_Solution);
-        boolean debugmode = true;
-        optimizer.Run(debugmode);
+        optimizer.Run();
         
         //optimization Finished
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        //Creating Reports
-        //Create Input Related Reports
-       inData.CreateInputReport();
-        
-        //Create Best Solution Report
-        
-          
 
 	}
 

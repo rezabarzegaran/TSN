@@ -15,7 +15,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class DataConverter {
+class DataConverter {
 	
 	//Covertes the test cases from Niklas to .xml File
 	Map<String, String> map = new HashMap<String, String>();

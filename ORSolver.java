@@ -1,91 +1,84 @@
 package TSN;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import com.google.ortools.constraintsolver.Solver;
 
-public class ORSolver {
+class ORSolver {
 
     Solver solver;
     Solution Current;
-    List<Solution> optSolutions;
-    DataUnloader outData = new DataUnloader();
-    String name;
+    DataUnloader dataUnloader = new DataUnloader();
+    methods chosenmethod;
+    boolean DebogMode;
     
-    
-    Romon method;
-    //Niklas method;
-    //Silviu method;
     
 	static { System.loadLibrary("jniortools");}
 
-	public ORSolver(String _method) {
-		//model = new CpModel();
-	    solver = new Solver(_method);
-	    name = _method;
-	    optSolutions = new ArrayList<Solution>();
-	    switch (_method) {
-		case "Romon":
-			method = new Romon(solver);
-			break;
-		case "Niklas":
-			//method = new Niklas(solver);
-			break;
-		case "Silviu":
-			//method = new Silviu(solver);
-			break;
-		default:
-			//method = new Silviu(solver);
-
-		}
-		
+	public ORSolver(methods _chosenmethod, Solution current, boolean debogstat) {
+		setSolution(current);
+		DebogMode = debogstat ;
+		chosenmethod = _chosenmethod ;
+	
 	}
-	public void setSolution(Solution current) {
+	private void setSolution(Solution current) {
 		Current = current;
 	}
-	public void Run(boolean debugmode) {
-		
-		method.setInit(Current);
-		method.initVariables();
-		
-		method.addConstraints();
-		
-		method.addCosts();
+	public enum methods {
+		Romon,
+		Niklas,
+		Silviu,
+		Reza
+	}
+	public void Run() {
 
-		
-		method.addDecision();
-		
-		var limit = solver.makeTimeLimit(5000000);
-		//solver.newSearch(method.getDecision());
-		//solver.newSearch(method.getDecision(), limit);
-		solver.newSearch(method.getDecision(),method.Opt4, limit);
-	    //solver.newSearch(method.getDecision(),method.Opt1, method.Opt2, method.Opt3);
-	    //solver.newSearch(method.getDecision(), method.Opt5);
-	    //solver.newSearch(method.getDecision(),method.Opt1, method.Opt2);
-	    System.out.println(solver.model_name() + " Initiated");
-	   
-    
+	    solver = new Solver(chosenmethod.toString());
+	    SolutionMethod method = null;
 	    
+	    switch (chosenmethod) {
+		case Romon:
+			method = new Romon(solver);
+			break;
+		case Niklas:
+			method = new Niklas(solver);
+			break;
+		case Silviu:
+			method = new Silviu(solver);
+			break;
+		default:
+			method = new Romon(solver);
+
+		}
 	    
-	    Solution optimomSolution = null;
+	    method.Initialize(Current);	
+		method.addConstraints();	
+		method.addCosts();
+		method.addDecision();		
+		method.addSolverLimits();
+		
+    	    
+	    
+	    Solution OptSolution = null;
 	    long start=System.currentTimeMillis();
 	    while (solver.nextSolution()) { 
-	    	optimomSolution = method.cloneSolution();
-	    	outData.UnloadOnce(method.cloneSolution(), name, method.TotalRuns, debugmode );
+	    	OptSolution = method.cloneSolution();
+	    	if(DebogMode) {
+	    		dataUnloader.WriteData(OptSolution, chosenmethod.toString(), method.getSolutionNumber());
+	    	}
 			
 	    	if(method.Monitor(start)) {
 	    		break;
 	    	}
 
 	    }
-	    //outData.UnloadOnce(optimomSolution, name, method.TotalRuns, true);
 	    solver.endSearch();
-
 	    long end=System.currentTimeMillis();
 	    int duration = (int) (end - start);
-	    outData.CreateReport(duration);
-    	
+	    
+	    if(OptSolution != null) {
+			dataUnloader.WriteData(OptSolution, chosenmethod.toString(), method.getSolutionNumber());
+		    dataUnloader.CreateReport(duration);
+	    }
+
 
 	    // Statistics
 	    System.out.println();

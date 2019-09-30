@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public class GraphExporter {
+class GraphExporter {
 	// GraphViz Interface For Network Graph Visualization
 	public boolean isDirectedGraph = true;
 	public GraphExporter() {

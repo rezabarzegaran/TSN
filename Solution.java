@@ -3,15 +3,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class Solution {
-	public Solution(){
+class Solution {
+	public Solution(DataLoader dataLoader) {
         streams = new ArrayList<Stream>();
         ES = new ArrayList<EndSystems>();
         SW = new ArrayList<Switches>();
         costValues = new ArrayList<Long>();
         Apps = new ArrayList<App>();
-        
-    }
+        Create(dataLoader.getMessages(), dataLoader.getRoutes(), dataLoader.getApps());
+        Initialize();
+	}
 	public Solution(List<Stream> _streams, List<EndSystems> _es, List<Switches> _sw, List<App> _apps, List<Long> _costs, int _hyperperiod) {
         streams = new ArrayList<Stream>();
         ES = new ArrayList<EndSystems>();
@@ -42,10 +43,10 @@ public class Solution {
     public List<EndSystems> ES;
     public List<Switches> SW;
     public List<App> Apps;
-    public List<Long> costValues;
-    
+    public List<Long> costValues;  
     public int Hyperperiod = 1;
-    public void Create(List<Messages> _messages, List<Routes> routes, List<ControlApp> CAs){
+    
+    private void Create(List<Messages> _messages, List<Routes> routes, List<ControlApp> CAs){
 
         for (Messages item : _messages) {
             streams.add(new Stream(item.id, item.period, item.deadline, item.size, item.priority, item.offset));
@@ -130,7 +131,7 @@ public class Solution {
 			}
     	}
     }
-    public void Initialize(){
+    private void Initialize(){
     	for (Stream s : streams) {
     		Hyperperiod = LCM(Hyperperiod, s.Period);
 		}
@@ -186,12 +187,6 @@ public class Solution {
 		}
     	return CostTerms;
     }
-    public int getTotalCost() {
-    	int TotalCost = 0;
-    	for (Long temp : costValues) {
-    		TotalCost += temp.intValue();
-		}
-    	return TotalCost;
-    }
+
 
 }
