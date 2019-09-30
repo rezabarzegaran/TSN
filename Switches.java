@@ -14,6 +14,7 @@ public class Switches {
 	List<Stream> streams =  new ArrayList<Stream>();
 	List<Port> ports = new ArrayList<Port>();
 	int clockAsync = 0;
+	int microtick = 1;
 	public Switches(String _name) {
 		Name = _name;
 		Random rndRandom = new Random();
@@ -51,10 +52,10 @@ public class Switches {
 		if(index != -1) {
 			if (!isExistInPort(nodes.get(index -1))) {
 				//System.out.println(nodes.get(index));
-				ports.add(new Port(nodes.get(index-1), false));
+				ports.add(new Port(nodes.get(index-1), false, microtick));
 			}
 			if(!isExistOutPort(nodes.get(index+1))) {
-				Port temPort = new Port(nodes.get(index+1), true);
+				Port temPort = new Port(nodes.get(index+1), true, microtick);
 				for (int _id : Ids) {
 					Optional<Stream> s = streams.stream().filter(x -> x.Id == _id).findFirst();
 					if(s.isPresent()) {
@@ -118,11 +119,13 @@ class Port {
 	boolean outPort;
 	String connectedTo;
 	boolean connectedToES;
+	int _microtick;
+	int propagationDelay = 0;
 	Que[] ques = new Que[8];
 	List<Stream> AssignedStreams =  new ArrayList<Stream>();
 	
 	
-	Port(String sideName, boolean isOut){
+	Port(String sideName, boolean isOut, int microtick){
 		connectedTo = sideName;
 		if(sideName.contains("ES")) {
 			connectedToES = true;
@@ -133,9 +136,10 @@ class Port {
 		for (int i = 0; i < ques.length; i++) {
 			ques[i] = new Que(i);
 		}
+	_microtick = microtick;
 		
 	}
-	Port(String sideName, boolean isOut, List<Stream> _assignedstreams, boolean _c_to_es, int gcl, int[] _affq, int[] _topen, int[] _tclose, int[][] _index){
+	Port(String sideName, boolean isOut, List<Stream> _assignedstreams, boolean _c_to_es, int gcl, int[] _affq, int[] _topen, int[] _tclose, int[][] _index, int microtick){
 		connectedTo = sideName;
 		outPort = isOut;
 		for (int i = 0; i < ques.length; i++) {
@@ -165,7 +169,7 @@ class Port {
 				indexMap[i][j] = _index[i][j];
 			}
 		}
-		
+		_microtick = microtick;
 		
 		
 	}
@@ -223,7 +227,7 @@ class Port {
 		
 	}
 	public Port Clone() {
-		return new Port(connectedTo, outPort, AssignedStreams, connectedToES, GCLSize, affiliatedQue, Topen, Tclose, indexMap);
+		return new Port(connectedTo, outPort, AssignedStreams, connectedToES, GCLSize, affiliatedQue, Topen, Tclose, indexMap, _microtick);
 	}
 
 }

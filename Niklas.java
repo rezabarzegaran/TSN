@@ -22,7 +22,7 @@ public class Niklas extends SolutionMethod {
 		Current = init;
 	}
 	public void initVariables() {
-
+		
 	}
 	public void addConstraints() {
 

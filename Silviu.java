@@ -10,7 +10,6 @@ public class Silviu extends SolutionMethod{
 	Solution Current;
 	Solver solver;
 	DecisionBuilder db;
-	int microtick = 1;
 	public Silviu(Solver _solver) {
 		solver = _solver;
 	}
@@ -94,7 +93,7 @@ public class Silviu extends SolutionMethod{
 					for (int i = 0; i < port.AssignedStreams.size(); i++) {
 						Offset[counter][i]  = new IntVar[port.AssignedStreams.get(i).N_instances];
 						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
-							Offset[counter][i][j] = solver.makeIntVar(0, ((port.AssignedStreams.get(i).Period - port.AssignedStreams.get(i).Transmit_Time) / microtick), ("F_" + counter + "_"+ i + "_"+j));
+							Offset[counter][i][j] = solver.makeIntVar(0, ((port.AssignedStreams.get(i).Period - port.AssignedStreams.get(i).Transmit_Time) / sw.microtick), ("F_" + counter + "_"+ i + "_"+j));
 							Totalvars++;
 						}
 						
@@ -132,7 +131,7 @@ public class Silviu extends SolutionMethod{
 					for (int i = 0; i < port.AssignedStreams.size(); i++) {
 						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
 							int offsetvalue = (int) Offset[counter][i][j].value();
-							port.Topen[gclcounter] = (offsetvalue * microtick) + j * port.AssignedStreams.get(i).Period;
+							port.Topen[gclcounter] = (offsetvalue * sw.microtick) + j * port.AssignedStreams.get(i).Period;
 							port.Tclose[gclcounter] = port.Topen[gclcounter] + port.AssignedStreams.get(i).Transmit_Time;
 							port.affiliatedQue[gclcounter] = port.AssignedStreams.get(i).Priority;
 							gclcounter++;
@@ -155,20 +154,20 @@ public class Silviu extends SolutionMethod{
 					for (int i = 0; i < port.AssignedStreams.size(); i++) {
 						for (int j = 0; j < port.AssignedStreams.size(); j++) {
 							if(i != j) {
-								int hp = LCM((port.AssignedStreams.get(i).Period / microtick), (port.AssignedStreams.get(j).Period / microtick));
+								int hp = LCM((port.AssignedStreams.get(i).Period / sw.microtick), (port.AssignedStreams.get(j).Period / sw.microtick));
 								
 								for (int k = 0; k < port.AssignedStreams.get(i).N_instances; k++) {
 									for (int l = 0; l < port.AssignedStreams.get(j).N_instances; l++) {
-										int hpi = hp/(port.AssignedStreams.get(i).Period / microtick);
+										int hpi = hp/(port.AssignedStreams.get(i).Period / sw.microtick);
 										
-										int hpj = hp/(port.AssignedStreams.get(j).Period / microtick);
+										int hpj = hp/(port.AssignedStreams.get(j).Period / sw.microtick);
 										for (int a = 0; a < hpi; a++) {
 											for (int b = 0; b < hpj; b++) {
-												IntVar aVar = solver.makeSum(Offset[counter][i][k], (a * (port.AssignedStreams.get(i).Period / microtick))).var();
-												IntVar bVar = solver.makeSum(Offset[counter][j][l], (b * (port.AssignedStreams.get(j).Period / microtick) + (port.AssignedStreams.get(j).Transmit_Time / microtick) )).var();
+												IntVar aVar = solver.makeSum(Offset[counter][i][k], (a * (port.AssignedStreams.get(i).Period / sw.microtick))).var();
+												IntVar bVar = solver.makeSum(Offset[counter][j][l], (b * (port.AssignedStreams.get(j).Period / sw.microtick) + (port.AssignedStreams.get(j).Transmit_Time / sw.microtick) )).var();
 												IntVar cVar = solver.makeIsGreaterOrEqualVar(aVar, bVar).var();
-												IntVar dVar = solver.makeSum(Offset[counter][j][l], (b * (port.AssignedStreams.get(j).Period / microtick))).var();
-												IntVar eVar = solver.makeSum(Offset[counter][i][k], (a * (port.AssignedStreams.get(i).Period / microtick) + (port.AssignedStreams.get(i).Transmit_Time / microtick) )).var();
+												IntVar dVar = solver.makeSum(Offset[counter][j][l], (b * (port.AssignedStreams.get(j).Period / sw.microtick))).var();
+												IntVar eVar = solver.makeSum(Offset[counter][i][k], (a * (port.AssignedStreams.get(i).Period / sw.microtick) + (port.AssignedStreams.get(i).Transmit_Time / sw.microtick) )).var();
 												IntVar fVar = solver.makeIsGreaterOrEqualVar(dVar, eVar).var();
 												IntVar gVar = solver.makeSum(cVar, fVar).var();
 												solver.addConstraint(solver.makeEquality(gVar, 1));
@@ -203,12 +202,12 @@ public class Silviu extends SolutionMethod{
 							Port prePort = getPortObject(prevSWname, port.AssignedStreams.get(i).Id);
 							int preportindex = FindPortIndex(prevSWname, port.AssignedStreams.get(i).Id);
 							int preindex = getStreamIndex(prevSWname, port.AssignedStreams.get(i).Id);
-							int prodelay = 0;
+							
 							for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
-								IntVar aVar = solver.makeProd(Offset[counter][i][j], microtick).var();
-								IntVar bVar = solver.makeProd(Offset[preportindex][preindex][j], microtick).var();
+								IntVar aVar = solver.makeProd(Offset[counter][i][j], sw.microtick).var();
+								IntVar bVar = solver.makeProd(Offset[preportindex][preindex][j], sw.microtick).var();
 								IntVar cVar = solver.makeSum(bVar, prePort.AssignedStreams.get(preindex).Transmit_Time).var();
-								IntVar dVar = solver.makeSum(cVar, (sw.clockAsync + prodelay)).var();
+								IntVar dVar = solver.makeSum(cVar, (sw.clockAsync + port.propagationDelay)).var();
 								solver.addConstraint(solver.makeGreaterOrEqual(aVar, dVar));
 							}
 						}
@@ -235,9 +234,9 @@ public class Silviu extends SolutionMethod{
 				int lastportindex = FindPortIndex(lastSWName, stream.Id);
 				int laststreamindex = getStreamIndex(lastSWName, stream.Id);
 				for (int i = 0; i < stream.N_instances; i++) {
-					IntVar aVar = solver.makeProd(Offset[firstportindex][firststreamindex][i], microtick).var();
+					IntVar aVar = solver.makeProd(Offset[firstportindex][firststreamindex][i], firstPort._microtick).var();
 					IntVar bVar = solver.makeSum(aVar, stream.Deadline).var();
-					IntVar cVar = solver.makeProd(Offset[lastportindex][laststreamindex][i], microtick).var();
+					IntVar cVar = solver.makeProd(Offset[lastportindex][laststreamindex][i], lastPort._microtick).var();
 					IntVar dVar = solver.makeSum(cVar, stream.Transmit_Time).var();
 					solver.addConstraint(solver.makeGreaterOrEqual(bVar, dVar));
 				}
@@ -275,24 +274,23 @@ public class Silviu extends SolutionMethod{
 									Port prePortJ = getPortObject(preswitchJ, port.AssignedStreams.get(j).Id);
 									int preportindexJ = FindPortIndex(preswitchJ, port.AssignedStreams.get(j).Id);
 									int prestreamindexJ = getStreamIndex(preswitchJ, port.AssignedStreams.get(j).Id);
-									int hp = LCM((port.AssignedStreams.get(i).Period / microtick), (port.AssignedStreams.get(j).Period / microtick));
+									int hp = LCM((port.AssignedStreams.get(i).Period / sw.microtick), (port.AssignedStreams.get(j).Period / sw.microtick));
 									for (int k = 0; k < port.AssignedStreams.get(i).N_instances; k++) {
 										for (int l = 0; l < port.AssignedStreams.get(j).N_instances; l++) {
-											int hpi = hp/(port.AssignedStreams.get(i).Period / microtick);
-											int hpj = hp/(port.AssignedStreams.get(j).Period / microtick);
-											int prodelay = 0;
+											int hpi = hp/(port.AssignedStreams.get(i).Period / sw.microtick);
+											int hpj = hp/(port.AssignedStreams.get(j).Period / sw.microtick);
 											for (int a = 0; a < hpi; a++) {
 												for (int b = 0; b < hpj; b++) {
-													IntVar aVar = solver.makeProd(Offset[counter][j][l], microtick).var();
+													IntVar aVar = solver.makeProd(Offset[counter][j][l], sw.microtick).var();
 													IntVar bVar = solver.makeSum(aVar, (b * port.AssignedStreams.get(j).Period + sw.clockAsync)).var();
-													IntVar cVar = solver.makeProd(Offset[preportindexI][prestreamindexI][k], microtick).var();
-													IntVar dVar = solver.makeSum(cVar, (a * port.AssignedStreams.get(i).Period + prodelay)).var();
+													IntVar cVar = solver.makeProd(Offset[preportindexI][prestreamindexI][k], sw.microtick).var();
+													IntVar dVar = solver.makeSum(cVar, (a * port.AssignedStreams.get(i).Period + port.propagationDelay)).var();
 													IntVar eVar = solver.makeIsLessOrEqualVar(bVar, dVar);
 													
-													IntVar fVar = solver.makeProd(Offset[counter][i][k], microtick).var();
+													IntVar fVar = solver.makeProd(Offset[counter][i][k], sw.microtick).var();
 													IntVar gVar = solver.makeSum(fVar, (a * port.AssignedStreams.get(i).Period + sw.clockAsync)).var();
-													IntVar hVar = solver.makeProd(Offset[preportindexJ][prestreamindexJ][l], microtick).var();
-													IntVar iVar = solver.makeSum(hVar, (b * port.AssignedStreams.get(j).Period + prodelay)).var();
+													IntVar hVar = solver.makeProd(Offset[preportindexJ][prestreamindexJ][l], sw.microtick).var();
+													IntVar iVar = solver.makeSum(hVar, (b * port.AssignedStreams.get(j).Period + port.propagationDelay)).var();
 													IntVar jVar = solver.makeIsLessOrEqualVar(gVar, iVar);
 													
 													IntVar kVar = solver.makeSum(eVar, jVar).var();
