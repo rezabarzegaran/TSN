@@ -21,7 +21,7 @@ public class NetOpt {
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// Loading Data
         DataLoader dataLoader = new DataLoader();
-        dataLoader.Load(testcase5);
+        dataLoader.Load(testcase6);
         //Method call for old input version
         //dataLoader.Load(testcase9a, testcase9b);  
 
@@ -35,7 +35,7 @@ public class NetOpt {
         //Creating Solver
 
         //Select Between Methods
-        methods chosenMethods = methods.Romon;
+        methods chosenMethods = methods.Silviu;
         
         boolean debugmode = true;
         
