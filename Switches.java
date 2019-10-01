@@ -176,6 +176,15 @@ class Port {
 	int GetNQue(){
 		return ques.length;
 	}
+	int getUsedQ() {
+		int used = 0;
+		for (Que Q : ques) {
+			if(Q.assignedStreams.size() > 0) {
+				used++;
+			}
+		}
+		return used;
+	}
 	void AssignStream(Stream s) {
 		AssignedStreams.add(s);
 	}
@@ -206,9 +215,6 @@ class Port {
 				}
 			}
 			
-			
-			
-
 			
 		}
 
