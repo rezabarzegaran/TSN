@@ -27,6 +27,7 @@ class ORSolver {
 		Romon,
 		Niklas,
 		Silviu,
+		Jorge,
 		Reza
 	}
 	public void Run() {
@@ -44,8 +45,11 @@ class ORSolver {
 		case Silviu:
 			method = new Silviu(solver);
 			break;
+		case Jorge:
+			method = new Jorge(solver);
+			break;
 		default:
-			method = new Romon(solver);
+			method = new Silviu(solver);
 
 		}
 	    
@@ -75,7 +79,10 @@ class ORSolver {
 	    int duration = (int) (end - start);
 	    
 	    if(OptSolution != null) {
-			dataUnloader.WriteData(OptSolution, chosenmethod.toString(), method.getSolutionNumber());
+	    	if(!DebogMode) {
+	    		dataUnloader.WriteData(OptSolution, chosenmethod.toString(), method.getSolutionNumber());
+	    	}
+			
 		    dataUnloader.CreateReport(duration);
 	    }
 

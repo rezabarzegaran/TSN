@@ -4,7 +4,10 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
@@ -17,6 +20,7 @@ class DataLoader {
 	private List<Messages> messages = new ArrayList<Messages>();
 	private List<Routes> routings = new ArrayList<Routes>();
 	private List<ControlApp> CAs = new ArrayList<ControlApp>();
+	private List<NetSwitch> SWs = new ArrayList<NetSwitch>();
 	//Constructor
     public DataLoader(){
 
@@ -33,6 +37,7 @@ class DataLoader {
             NodeList messageList = doc.getElementsByTagName("Message");
             NodeList routingList = doc.getElementsByTagName("Route");
             NodeList appList = doc.getElementsByTagName("APP");
+            NodeList switchList = doc.getElementsByTagName("Switches");
             
             for (int temp = 0; temp < messageList.getLength(); temp++) {
 
@@ -91,6 +96,25 @@ class DataLoader {
 					}
                 	ControlApp tc = new ControlApp(_id, inIDList, outIDList);
                 	CAs.add(tc);
+                }
+			}
+            for (int i = 0; i < switchList.getLength(); i++) {
+            	Node nNode = switchList.item(i);
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                	Element eElement = (Element) nNode;
+                	String id = eElement.getAttribute("Name");
+                	NetSwitch tc = new NetSwitch(id);
+                	NodeList delays = eElement.getElementsByTagName("Delay");
+                	for (int j = 0; j < delays.getLength(); j++) {
+                		Node newNode = delays.item(j);
+                		if (newNode.getNodeType() == Node.ELEMENT_NODE) {
+                			Element eNewElement = (Element) newNode;
+                			int Key = Integer.valueOf(eNewElement.getAttribute("Size"));
+                			int Value = Integer.valueOf(eNewElement.getAttribute("Value"));
+                			tc.delayTable.put(Key, Value);
+						}
+					}
+                	SWs.add(tc);
                 }
 			}
             
@@ -237,6 +261,10 @@ class DataLoader {
     public List<ControlApp> getApps(){
     	return CAs;
     }
+    public List<NetSwitch> getSwitches(){
+    	return SWs;
+    }
+    
 }
 //Input Messages Class
 class Messages{
@@ -295,4 +323,11 @@ class ControlApp{
 	int id;
 	List<Integer> inIDs = new ArrayList<Integer>();
 	List<Integer> outIDs = new ArrayList<Integer>();
+}
+class NetSwitch{
+	NetSwitch(String name){
+		Name = name;
+	}
+	String Name;
+	Map<Integer, Integer> delayTable = new HashMap<Integer, Integer>();
 }

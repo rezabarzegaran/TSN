@@ -1,11 +1,11 @@
 package TSN;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
-
-import javax.annotation.processing.RoundEnvironment;
 
 
 public class Switches {
@@ -15,12 +15,15 @@ public class Switches {
 	List<Port> ports = new ArrayList<Port>();
 	int clockAsync = 0;
 	int microtick = 1;
+	Map<Integer, Integer> delayTable = new HashMap<Integer, Integer>();
+
 	public Switches(String _name) {
 		Name = _name;
 		Random rndRandom = new Random();
 		//clockAsync =rndRandom.nextInt(10);
+		
 	}
-	public Switches(String _name, int _hyperperiod, int _clock, List<Stream> _s, List<Port> _ports) {
+	public Switches(String _name, int _hyperperiod, int _clock, List<Stream> _s, List<Port> _ports, Map<Integer, Integer> _delayTable) {
 		Name = _name;
 		Hyperperiod = _hyperperiod;
 		clockAsync = _clock;
@@ -29,6 +32,13 @@ public class Switches {
 		}
 		for (Port port : _ports) {
 			ports.add(port.Clone());
+		}
+		addHashTable(_delayTable);
+	}
+	public void addHashTable(Map<Integer, Integer> inTable) {
+		delayTable.clear();
+		for (Map.Entry<Integer, Integer> entry : inTable.entrySet()) {
+			delayTable.put(entry.getKey(), entry.getValue());
 		}
 	}
 	public void addSteams(Stream s) {
@@ -105,8 +115,47 @@ public class Switches {
 			port.initiate();
 		}
 	}
+	public int getDelay(Stream s) {
+		int totalDelay = clockAsync;
+		int size = s.Size;
+		totalDelay += ItterateValue(size);
+		
+		//System.out.println("For size: " + size +", delay equals to: " + totalDelay );
+		
+		return totalDelay;
+	}
+	private int ItterateValue(int size) {
+		
+		int LowerKey = Integer.MIN_VALUE;
+		int UpperKey = Integer.MAX_VALUE;
+		int LowerValue = -1;
+		int UpperValue = -1;
+		for (Map.Entry<Integer, Integer> entry : delayTable.entrySet()) {
+			if(entry.getKey() <= size) {
+				if(entry.getKey() >= LowerKey) {
+					LowerKey = entry.getKey();
+					LowerValue = entry.getValue();
+				}
+				if(entry.getKey() >= size) {
+					if(entry.getKey() <= UpperKey) {
+						UpperKey = entry.getKey();
+						UpperValue = entry.getValue();
+					}
+				}
+			}
+					
+		}
+		
+		if((LowerValue != -1 ) && (UpperValue != -1)) {
+			double step = UpperKey - LowerKey;
+			double Slope = (UpperValue - LowerValue)/step;
+			int finalvalue = LowerValue + (int) Slope * (size - LowerKey);
+			return finalvalue;
+		}
+		return 0 ;
+	}
 	public Switches Clone() {
-		return new Switches(Name, Hyperperiod, clockAsync, streams, ports);
+		return new Switches(Name, Hyperperiod, clockAsync, streams, ports, delayTable);
 	}
 
 }

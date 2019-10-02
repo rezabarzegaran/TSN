@@ -1,6 +1,7 @@
 package TSN;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 class Solution {
@@ -10,7 +11,7 @@ class Solution {
         SW = new ArrayList<Switches>();
         costValues = new ArrayList<Long>();
         Apps = new ArrayList<App>();
-        Create(dataLoader.getMessages(), dataLoader.getRoutes(), dataLoader.getApps());
+        Create(dataLoader.getMessages(), dataLoader.getRoutes(), dataLoader.getApps(), dataLoader.getSwitches());
         Initialize();
 	}
 	public Solution(List<Stream> _streams, List<EndSystems> _es, List<Switches> _sw, List<App> _apps, List<Long> _costs, int _hyperperiod) {
@@ -46,7 +47,7 @@ class Solution {
     public List<Long> costValues;  
     public int Hyperperiod = 1;
     
-    private void Create(List<Messages> _messages, List<Routes> routes, List<ControlApp> CAs){
+    private void Create(List<Messages> _messages, List<Routes> routes, List<ControlApp> CAs, List<NetSwitch> SWs){
 
         for (Messages item : _messages) {
             streams.add(new Stream(item.id, item.period, item.deadline, item.size, item.priority, item.offset));
@@ -100,6 +101,15 @@ class Solution {
 			}
         	Apps.add(tc);
 		}
+        for (NetSwitch netSwitch : SWs) {
+    		Optional<Switches> tempSwitch = SW.stream().filter(x -> x.Name.equals(netSwitch.Name)).findFirst();
+    		if (tempSwitch.isPresent()) {
+    			Switches crrSwitches = tempSwitch.get();
+    			crrSwitches.addHashTable(netSwitch.delayTable);
+			}
+    		
+		}
+        
     }
     private void setSourceES(Routes item) {
     	Optional<EndSystems> tempSourcEndSystems = ES.stream().filter(x -> x.Name.equals(item.nodes.get(0))).findFirst();
