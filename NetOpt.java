@@ -18,11 +18,12 @@ public class NetOpt {
         String testcase9a = "src/TSN/orion.streams";
         String testcase9b = "src/TSN/orion.vls";
         String testcase10 = "src/TSN/GMM2.xml";
+        String testcase11 = "src/TSN/GMM3.xml";
 		
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// Loading Data
         DataLoader dataLoader = new DataLoader();
-        dataLoader.Load(testcase10);
+        dataLoader.Load(testcase11);
         //Method call for old input version
         //dataLoader.Load(testcase9a, testcase9b);  
 
@@ -36,7 +37,7 @@ public class NetOpt {
         //Creating Solver
 
         //Select Between Methods
-        methods chosenMethods = methods.Jorge;
+        methods chosenMethods = methods.Reza;
         
         boolean debugmode = true;
         

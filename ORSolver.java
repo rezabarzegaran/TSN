@@ -48,6 +48,9 @@ class ORSolver {
 		case Jorge:
 			method = new Jorge(solver);
 			break;
+		case Reza:
+			method = new Reza(solver);
+			break;
 		default:
 			method = new Silviu(solver);
 

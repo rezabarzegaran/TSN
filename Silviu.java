@@ -56,6 +56,9 @@ public class Silviu extends SolutionMethod{
 	public DecisionBuilder getDecision() {
 		return db;
 	}
+	public int getSolutionNumber() {
+		return TotalRuns;
+	}
 	public Solution cloneSolution() {
 		return AssignSolution(Offset, Costs);
 	}
