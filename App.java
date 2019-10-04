@@ -37,5 +37,18 @@ public class App {
 	public void AddOutMessage(int id) {
 		outputMessages.add(id);
 	}
+	public boolean isIncluded(int _id) {
+		for (Integer id : inputMessages) {
+			if(id == _id) {
+				return true;
+			}
+		}
+		for (Integer id : outputMessages) {
+			if(id == _id) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 }
