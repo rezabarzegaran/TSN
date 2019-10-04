@@ -26,6 +26,7 @@ public class Niklas extends SolutionMethod {
 	
 	public Niklas(Solver _solver) {
 		solver = _solver;
+        TotalRuns = 0;
 	}
 	public void Initialize(Solution current) {
 		setInit(current);
