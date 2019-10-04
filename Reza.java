@@ -378,12 +378,12 @@ public class Reza extends SolutionMethod{
 
 	private OptimizeVar CostMinimizer(IntVar[] Costs) {
 		IntVar tempIntVar = null;
-		tempIntVar = solver.makeProd(Costs[0], 1).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 1).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 7).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 4).var()).var();
+		tempIntVar = solver.makeProd(Costs[0], 2).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 2).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 16).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 8).var()).var();
 		Costs[4] = tempIntVar;
-		return solver.makeMinimize(Costs[4],1);
+		return solver.makeMinimize(Costs[4],5);
 		
 
 	}
@@ -518,17 +518,21 @@ public class Reza extends SolutionMethod{
 			    			Port senPort = getPortObject(senSwitchString, sen_id);
 			    			int senPortIndex = FindPortIndex(senSwitchString, sen_id);
 			    			int senPortStreamIndex = getStreamIndex(senSwitchString, sen_id);
-			    			
+			    			IntVar baseTime = null;
 			    			
 			    			for (int i = 0; i < actStream.N_instances; i++) {
 			    				IntVar aVar = solver.makeProd(Offset[senPortIndex][senPortStreamIndex][i], senPort._microtick).var();
 			    				IntVar bVar = solver.makeProd(Offset[actPortIndex][actPortStremIndex][i], actPort._microtick).var();
 			    				IntVar cVar = solver.makeSum(bVar, (actStream.Transmit_Time + actSwitches.getDelay(actStream))).var();
-			    				IntVar dVar = solver.makeAbs(solver.makeDifference(cVar, bVar)).var();
+			    				IntVar dVar = solver.makeAbs(solver.makeDifference(cVar, aVar)).var();
+			    				if(baseTime == null) {
+			    					baseTime = dVar;
+			    				}
+			    				IntVar fVar = solver.makeAbs(solver.makeDifference(baseTime, dVar)).var();
 			    				if(eVar == null) {
-			    					eVar = dVar;
+			    					eVar = fVar;
 			    				}else {
-			    					eVar = solver.makeSum(eVar, dVar).var();
+			    					eVar = solver.makeSum(eVar, fVar).var();
 			    				}
 			    				
 			    				
