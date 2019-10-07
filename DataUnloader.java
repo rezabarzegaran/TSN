@@ -39,8 +39,11 @@ class DataUnloader {
     	GeneralInterface = true;
     	costValues = new ArrayList<List<Integer>>();
     }
-    public void WriteData(Solution solution, String name, int counter) {
+    public void CaptureSolution(Solution solution) {
     	getCostValues(solution);
+    }
+    public void WriteData(Solution solution, String name, int counter) {
+    	//getCostValues(solution);
     	hyperperiod = solution.Hyperperiod;
 		if (!defaultPath.contains(name)) {
     		defaultPath = defaultPath + "/" + name; 
@@ -76,7 +79,7 @@ class DataUnloader {
 			costs.add(val);
 		}
     	costValues.add(costs);
-    	System.out.println("Current Cost is: " + costs.get(costs.size() - 1));
+    	//System.out.println("Current Cost is: " + costs.get(costs.size() - 1));
     }
     private void UnloadLuxi(Solution solution, String DirPath){
     	try {
@@ -160,7 +163,7 @@ class DataUnloader {
             e.printStackTrace();
         }
     }
-    public void CreateReport(int dur) {
+    public void CreateReport(long dur) {
     	try {
     		Files.createDirectories(Paths.get(defaltDirPath));
     		String Reportpath = defaltDirPath + "/report.txt";

@@ -51,7 +51,7 @@ public class Reza extends SolutionMethod{
 
 	}
 	public void addSolverLimits() {
-		int hours = 10;
+		int hours = 14;
 		int minutes = 0;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
@@ -383,7 +383,7 @@ public class Reza extends SolutionMethod{
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 16).var()).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 8).var()).var();
 		Costs[4] = tempIntVar;
-		return solver.makeMinimize(Costs[4],5);
+		return solver.makeMinimize(Costs[4],10);
 		
 
 	}

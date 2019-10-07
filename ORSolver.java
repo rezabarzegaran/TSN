@@ -65,9 +65,10 @@ class ORSolver {
     	    
 	    
 	    Solution OptSolution = null;
-	    long start=System.currentTimeMillis();
+	    long start=(System.currentTimeMillis() / 1000 );
 	    while (solver.nextSolution()) { 
 	    	OptSolution = method.cloneSolution();
+	    	dataUnloader.CaptureSolution(OptSolution);
 	    	if(DebogMode) {
 	    		dataUnloader.WriteData(OptSolution, chosenmethod.toString(), method.getSolutionNumber());
 	    	}
@@ -78,8 +79,8 @@ class ORSolver {
 
 	    }
 	    solver.endSearch();
-	    long end=System.currentTimeMillis();
-	    int duration = (int) (end - start);
+	    long end= ( System.currentTimeMillis() / 1000 );
+	    long duration = end - start;
 	    
 	    if(OptSolution != null) {
 	    	if(!DebogMode) {

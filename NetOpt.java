@@ -39,7 +39,7 @@ public class NetOpt {
         //Select Between Methods
         methods chosenMethods = methods.Reza;
         
-        boolean debugmode = true;
+        boolean debugmode = false;
         
         ORSolver optimizer = new ORSolver(chosenMethods, initial_Solution, debugmode);
         
