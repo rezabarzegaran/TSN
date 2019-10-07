@@ -88,11 +88,11 @@ class DataLoader {
                 	int _id = Integer.parseInt(eElement.getAttribute("id"));
                     NodeList listednotes = eElement.getElementsByTagName("in");
                     for (int j = 0; j < listednotes.getLength(); j++) {
-                    	inIDList.add(Integer.valueOf(listednotes.item(i).getTextContent()));
+                    	inIDList.add(Integer.valueOf(listednotes.item(j).getTextContent()));
 					}
                     NodeList listednotes2 = eElement.getElementsByTagName("out");
                     for (int j = 0; j < listednotes2.getLength(); j++) {
-                    	outIDList.add(Integer.valueOf(listednotes2.item(i).getTextContent()));
+                    	outIDList.add(Integer.valueOf(listednotes2.item(j).getTextContent()));
 					}
                 	ControlApp tc = new ControlApp(_id, inIDList, outIDList);
                 	CAs.add(tc);

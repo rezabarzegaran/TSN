@@ -6,7 +6,7 @@
         <Message id="4" deadline="10000" period="10000" size="100" priority="1" offset="0"></Message>
         <Message id="5" deadline="2000" period="2500" size="100" priority="0" offset="0"></Message>
         <Message id="6" deadline="2000" period="2500" size="100" priority="4" offset="0"></Message>
-        <Message id="7" deadline="2000" period="10000" size="100" priority="5" offset="0"></Message>
+        <Message id="7" deadline="5000" period="10000" size="100" priority="5" offset="0"></Message>
         <Message id="8" deadline="2000" period="10000" size="100" priority="3" offset="0"></Message>
         <Message id="9" deadline="500" period="5000" size="100" priority="7" offset="0"></Message>
         <Message id="10" deadline="2000" period="2500" size="100" priority="3" offset="0"></Message>
@@ -16,7 +16,7 @@
         <Message id="14" deadline="1000" period="40000" size="800" priority="5" offset="0"></Message>
         <Message id="15" deadline="4000" period="5000" size="400" priority="3" offset="0"></Message>
         <Message id="16" deadline="4000" period="30000" size="1500" priority="7" offset="0"></Message>
-        <Message id="17" deadline="4000" period="10000" size="400" priority="6" offset="0"></Message>
+        <Message id="17" deadline="5000" period="10000" size="400" priority="6" offset="0"></Message>
         <Message id="18" deadline="10000" period="10000" size="400" priority="4" offset="0"></Message>
         <Message id="19" deadline="10000" period="30000" size="1500" priority="7" offset="0"></Message>
         <Message id="20" deadline="10000" period="30000" size="1500" priority="7" offset="0"></Message>
@@ -193,7 +193,10 @@
     <CA>
     	<APP id="1">
     		<in>18</in>
-    		<out>4</out></APP></CA>
+    		<out>4</out></APP>
+    	<APP id="2">
+    		<in>17</in>
+    		<out>7</out></APP></CA>
     <Switches Name="SW_B1">
     	<Delay Size="60" Value="4"></Delay>
     	<Delay Size="100" Value="5"></Delay>
