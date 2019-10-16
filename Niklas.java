@@ -12,11 +12,10 @@ public class Niklas extends SolutionMethod {
 	Solution Current;
 	Solver solver;
 	DecisionBuilder db;
-	
-	IntVar[][] O;
-	IntVar[][] L;
-	IntVar[][] P;
+
+	HashMap<Port, IntVar> P;
 	IntVar[] Costs;
+
 	OptimizeVar OptVar;
 	int TotalRuns = 0;
 	int NOutports;
@@ -54,6 +53,7 @@ public class Niklas extends SolutionMethod {
 				rezaPort.Topen[i] = nq.wO;
 				rezaPort.Tclose[i] = nq.wO + nq.wL;
 				//TODO: Set period
+
 				i++;
 			}
 			return this.rezaPort;
@@ -139,6 +139,7 @@ public class Niklas extends SolutionMethod {
 			public int wO; // window offset
 		}
 	}
+
 	public void setInit(Solution init)
 	{
 		// Generate initial GCL
@@ -159,15 +160,14 @@ public class Niklas extends SolutionMethod {
 
 	public void initVariables() {
 		NOutports = Current.getNOutPorts();
-		O = new IntVar[NOutports][];
-		L = new IntVar[NOutports][];
-		P = new IntVar[NOutports][];
+		P = new HashMap<Port, IntVar>();
 		Costs = new IntVar[3];
-		TotalVars = AssignVars(O, L, P);
+		AssignVars(P);
 	}
-	public void addConstraints() {
 
+	public void addConstraints() {
 	}
+
 	public void addCosts() {
 
 	}
@@ -183,27 +183,17 @@ public class Niklas extends SolutionMethod {
 	public Solution cloneSolution() {
 		return Current;
 	}
-	private int AssignVars(IntVar[][] O, IntVar[][] L, IntVar[][] P) {
-		int counter = 0;
-		int Totalvars = 0;
+	private int AssignVars(HashMap<Port, IntVar> P) {
 		for (Switches sw : Current.SW) {
 			for (Port port : sw.ports) {
-				if(port.outPort) {
-					int usedQ = port.getUsedQ();
-					O[counter] = new IntVar[usedQ];
-					L[counter] = new IntVar[usedQ];
-					P[counter] = new IntVar[usedQ];
-					
-					for (int i = 0; i < usedQ; i++) {
-						
-						Totalvars++;
-					}				
-					
-					counter++;
+				if (port.outPort) {
+					//TODO: use port period
+					P.put(port, solver.makeIntVar(port.Tclose[port.Tclose.length-1], 120, "P_" + port.toString()));
 				}
 			}
 		}
-		return Totalvars;
 	}
+
+
 
 }
