@@ -19,11 +19,12 @@ public class NetOpt {
         String testcase9b = "src/TSN/orion.vls";
         String testcase10 = "src/TSN/GMM2.xml";
         String testcase11 = "src/TSN/GMM3.xml";
+        String testcase12 = "src/TSN/JorgeCase1.xml";
 		
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// Loading Data
         DataLoader dataLoader = new DataLoader();
-        dataLoader.Load(testcase11);
+        dataLoader.Load(testcase12);
         //Method call for old input version
         //dataLoader.Load(testcase9a, testcase9b);  
 

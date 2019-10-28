@@ -24,7 +24,7 @@ public class Reza extends SolutionMethod{
 	public void initVariables() {
 		NOutports = Current.getNOutPorts();
 		Offset = new IntVar[NOutports][][];
-		Costs = new IntVar[5];
+		Costs = new IntVar[3];
 		TotalVars = AssignVars(Offset);
 	}
 	public void addConstraints() {
@@ -38,8 +38,8 @@ public class Reza extends SolutionMethod{
 	public void addCosts() {
 		Cost0(Offset, Costs);
 		Cost1(Offset, Costs);
-		Cost2(Offset, Costs);
-		Cost3(Offset, Costs);
+		//Cost2(Offset, Costs);
+		//Cost3(Offset, Costs);
 		costVar = CostMinimizer(Costs);
 	}
 	public void addDecision() {
@@ -85,7 +85,7 @@ public class Reza extends SolutionMethod{
 		//return false;
     	
 		if((TotalRuns >= 10)){
-			return false;
+			return true;
 		}else {
 			return false;
 
@@ -380,11 +380,11 @@ public class Reza extends SolutionMethod{
 		IntVar tempIntVar = null;
 		tempIntVar = solver.makeProd(Costs[0], 1).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 1).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 1).var()).var();
-		Costs[4] = tempIntVar;
-		CostLimiter(Costs);
-		return solver.makeMinimize(Costs[4],1);
+		//tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
+		//tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 1).var()).var();
+		Costs[2] = tempIntVar;
+		//CostLimiter(Costs);
+		return solver.makeMinimize(Costs[2],1);
 	}
 	private void CostLimiter(IntVar[] Costs) {
 		solver.addConstraint(solver.makeLessOrEqual(Costs[4], 2809));
