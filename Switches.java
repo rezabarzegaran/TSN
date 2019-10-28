@@ -166,6 +166,7 @@ class Port {
 	int[][] indexMap;
 	int GCLSize = 0;
 	boolean outPort;
+	int Period;
 	String connectedTo;
 	boolean connectedToES;
 	int _microtick;
@@ -186,9 +187,10 @@ class Port {
 			ques[i] = new Que(i);
 		}
 	_microtick = microtick;
+	Period = 0;
 		
 	}
-	Port(String sideName, boolean isOut, List<Stream> _assignedstreams, boolean _c_to_es, int gcl, int[] _affq, int[] _topen, int[] _tclose, int[][] _index, int microtick){
+	Port(String sideName, boolean isOut, List<Stream> _assignedstreams, boolean _c_to_es, int gcl, int[] _affq, int[] _topen, int[] _tclose, int[][] _index, int microtick, int _Period){
 		connectedTo = sideName;
 		outPort = isOut;
 		for (int i = 0; i < ques.length; i++) {
@@ -219,8 +221,15 @@ class Port {
 			}
 		}
 		_microtick = microtick;
+		Period = _Period;
 		
 		
+	}
+	int getPeriod() {
+		return Period;
+	}
+	void setPeriod(int P) {
+		Period = P;
 	}
 	int GetNQue(){
 		return ques.length;
@@ -282,7 +291,7 @@ class Port {
 		
 	}
 	public Port Clone() {
-		return new Port(connectedTo, outPort, AssignedStreams, connectedToES, GCLSize, affiliatedQue, Topen, Tclose, indexMap, _microtick);
+		return new Port(connectedTo, outPort, AssignedStreams, connectedToES, GCLSize, affiliatedQue, Topen, Tclose, indexMap, _microtick, Period);
 	}
 
 }
