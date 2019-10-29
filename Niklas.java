@@ -192,6 +192,7 @@ public class Niklas extends SolutionMethod {
 				}
 			}
 		}
+		return 0;
 	}
 
 

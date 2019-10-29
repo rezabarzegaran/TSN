@@ -20,7 +20,8 @@ public class NetOpt {
         String testcase10 = "src/TSN/GMM2.xml";
         String testcase11 = "src/TSN/GMM3.xml";
         String testcaseNiklas = "src/TSN/inputNiklas.xml";
-		
+        String testcase12 = "src/TSN/JorgeCase1.xml";
+
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// Loading Data
         DataLoader dataLoader = new DataLoader();

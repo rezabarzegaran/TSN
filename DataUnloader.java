@@ -85,7 +85,6 @@ class DataUnloader {
     	try {
     		Files.createDirectories(Paths.get(DirPath));
     		PrintWriter writer = new PrintWriter(DirPath + "/historySCHED1.txt", "UTF-8");
-    		String hyperperiod = String.valueOf(solution.Hyperperiod);
     		for (Switches sw : solution.SW) {
 				for (Port port : sw.ports) {
 					if(port.outPort) {
@@ -93,7 +92,7 @@ class DataUnloader {
 						writer.println();
 						writer.println(routeLink);
 						for (int i = 0; i < port.Tclose.length; i++) {
-							String frame = String.valueOf(port.Topen[i]) + "\t" + String.valueOf(port.Tclose[i]) + "\t" + hyperperiod + "\t" + String.valueOf(port.affiliatedQue[i]);
+							String frame = String.valueOf(port.Topen[i]) + "\t" + String.valueOf(port.Tclose[i]) + "\t" + String.valueOf(port.Period) + "\t" + String.valueOf(port.affiliatedQue[i]);
 							writer.println(frame);
 						}
 					}
