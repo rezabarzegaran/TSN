@@ -7,6 +7,8 @@ import com.google.ortools.constraintsolver.IntVar;
 import com.google.ortools.constraintsolver.OptimizeVar;
 import com.google.ortools.constraintsolver.Solver;
 
+
+//TODO: Scale to switch microtick?
 public class Niklas extends SolutionMethod {
 	
 	Solution Current;
@@ -48,11 +50,12 @@ public class Niklas extends SolutionMethod {
 		public Port getRezaPort()
 		{
 			int i = 0;
+
 			for (Map.Entry<Integer, NiklasQueue> entry : niklasPortQueues.entrySet()) {
 				NiklasQueue nq = entry.getValue();
 				rezaPort.Topen[i] = nq.wO;
 				rezaPort.Tclose[i] = nq.wO + nq.wL;
-				//TODO: Set period
+				rezaPort.Period = nq.wT; //always the same period in one port
 
 				i++;
 			}
@@ -166,10 +169,14 @@ public class Niklas extends SolutionMethod {
 	}
 
 	public void addConstraints() {
+		// For each port: For each stream in that port: WCD(stream) <= Deadline(stream)
 	}
 
 	public void addCosts() {
-
+		// MINIMIZE: Sum of all port costs
+		//
+		// port cost= proportion of the length of the window intervals to the
+		// length of the hyperperiod. (See p.17 Niklas thesis)
 	}
 	public void addDecision() {
 
@@ -183,12 +190,12 @@ public class Niklas extends SolutionMethod {
 	public Solution cloneSolution() {
 		return Current;
 	}
+
 	private int AssignVars(HashMap<Port, IntVar> P) {
 		for (Switches sw : Current.SW) {
 			for (Port port : sw.ports) {
 				if (port.outPort) {
-					//TODO: use port period
-					P.put(port, solver.makeIntVar(port.Tclose[port.Tclose.length-1], 120, "P_" + port.toString()));
+					P.put(port, solver.makeIntVar(port.Tclose[port.Tclose.length-1], port.Period, "P_" + port.toString()));
 				}
 			}
 		}
