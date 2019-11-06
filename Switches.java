@@ -14,7 +14,7 @@ public class Switches {
 	List<Stream> streams =  new ArrayList<Stream>();
 	List<Port> ports = new ArrayList<Port>();
 	int clockAsync = 0;
-	int microtick = 2;
+	int microtick = 1;
 	Map<Integer, Integer> delayTable = new HashMap<Integer, Integer>();
 
 	public Switches(String _name) {
