@@ -148,7 +148,7 @@ public class Switches {
 		
 		if((LowerValue != -1 ) && (UpperValue != -1)) {
 			double step = UpperKey - LowerKey;
-			double Slope = (UpperValue - LowerValue)/step;
+			double Slope = Math.ceil((UpperValue - LowerValue)/step);
 			int finalvalue = LowerValue + (int) Slope * (size - LowerKey);
 			return finalvalue;
 		}
