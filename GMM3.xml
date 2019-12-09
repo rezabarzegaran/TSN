@@ -1,0 +1,469 @@
+<Network>
+    <Messages>
+        <Message id="1" deadline="4000" period="5000" size="100" priority="1" offset="0"></Message>
+        <Message id="2" deadline="4000" period="5000" size="100" priority="4" offset="0"></Message>
+        <Message id="3" deadline="4000" period="2500" size="100" priority="3" offset="0"></Message>
+        <Message id="4" deadline="10000" period="10000" size="100" priority="1" offset="0"></Message>
+        <Message id="5" deadline="2000" period="2500" size="100" priority="0" offset="0"></Message>
+        <Message id="6" deadline="2000" period="2500" size="100" priority="4" offset="0"></Message>
+        <Message id="7" deadline="5000" period="10000" size="100" priority="5" offset="0"></Message>
+        <Message id="8" deadline="2000" period="10000" size="100" priority="3" offset="0"></Message>
+        <Message id="9" deadline="500" period="5000" size="100" priority="7" offset="0"></Message>
+        <Message id="10" deadline="2000" period="2500" size="100" priority="3" offset="0"></Message>
+        <Message id="11" deadline="4000" period="2500" size="100" priority="3" offset="0"></Message>
+        <Message id="12" deadline="4000" period="4000" size="200" priority="3" offset="0"></Message>
+        <Message id="13" deadline="4000" period="4000" size="200" priority="7" offset="0"></Message>
+        <Message id="14" deadline="1000" period="40000" size="800" priority="5" offset="0"></Message>
+        <Message id="15" deadline="4000" period="5000" size="400" priority="3" offset="0"></Message>
+        <Message id="16" deadline="4000" period="30000" size="1500" priority="7" offset="0"></Message>
+        <Message id="17" deadline="5000" period="10000" size="400" priority="6" offset="0"></Message>
+        <Message id="18" deadline="10000" period="10000" size="400" priority="4" offset="0"></Message>
+        <Message id="19" deadline="10000" period="30000" size="1500" priority="7" offset="0"></Message>
+        <Message id="20" deadline="10000" period="30000" size="1500" priority="7" offset="0"></Message>
+    </Messages>
+    <Routing>
+    	<Route id="1">
+    		<Nodes>
+    			<node>ES_FRONT_CAM</node>
+    			<node>SW_B1</node>
+    			<node>SW_B19</node>
+    			<node>ES_CTRL2</node></Nodes>
+    		<messages>
+    			<messageID>14</messageID></messages></Route>
+    	<Route id="2">
+    		<Nodes>
+    			<node>ES_FRONT_RAD</node>
+    			<node>SW_B10</node>
+    			<node>SW_B19</node>
+    			<node>ES_CTRL2</node></Nodes>
+    		<messages>
+    			<messageID>15</messageID></messages></Route>
+    	<Route id="3">
+    		<Nodes>
+    			<node>ES_FRONT_SVCAM</node>
+    			<node>SW_B2</node>
+    			<node>SW_B18</node>
+    			<node>ES_CTRL1</node></Nodes>
+    		<messages>
+    			<messageID>16</messageID></messages></Route>
+    	<Route id="4">
+    		<Nodes>
+    			<node>ES_LEFT_FRONT_RAD</node>
+    			<node>SW_B11</node>
+    			<node>SW_B18</node>
+    			<node>ES_CTRL1</node></Nodes>
+    		<messages>
+    			<messageID>17</messageID></messages></Route>
+    	<Route id="5">
+    		<Nodes>
+    			<node>ES_RIGHT_FRONT_RAD</node>
+    			<node>SW_B12</node>
+    			<node>SW_B19</node>
+    			<node>ES_CTRL2</node></Nodes>
+    		<messages>
+    			<messageID>18</messageID></messages></Route>
+    	<Route id="6">
+    		<Nodes>
+    			<node>ES_LEFT_SVCAM</node>
+    			<node>SW_B3</node>
+    			<node>SW_B18</node>
+    			<node>ES_CTRL1</node></Nodes>
+    		<messages>
+    			<messageID>19</messageID></messages></Route>
+    	<Route id="7">
+    		<Nodes>
+    			<node>ES_RIGHT_SVCAM</node>
+    			<node>SW_B4</node>
+    			<node>SW_B3</node>
+    			<node>SW_B18</node>
+    			<node>ES_CTRL1</node></Nodes>
+    		<messages>
+    			<messageID>20</messageID></messages></Route>
+    	<Route id="13">
+    		<Nodes>
+    			<node>ES_CTRL1</node>
+    			<node>SW_B18</node>
+    			<node>SW_B1</node>
+    			<node>ES_FRONT_CAM</node></Nodes>
+    		<messages>
+    			<messageID>1</messageID></messages></Route>
+    	<Route id="14">
+    		<Nodes>
+    			<node>ES_CTRL2</node>
+    			<node>SW_B19</node>
+    			<node>SW_B1</node>
+    			<node>ES_FRONT_CAM</node></Nodes>
+    		<messages>
+    			<messageID>2</messageID></messages></Route>
+    	<Route id="15">
+    		<Nodes>
+    			<node>ES_CTRL1</node>
+    			<node>SW_B18</node>
+    			<node>SW_B20</node>
+    			<node>ES_ECM</node></Nodes>
+    		<messages>
+    			<messageID>3</messageID></messages></Route>
+    	<Route id="16">
+    		<Nodes>
+    			<node>ES_CTRL2</node>
+    			<node>SW_B19</node>
+    			<node>SW_B20</node>
+    			<node>ES_ECM</node></Nodes>
+    		<messages>
+    			<messageID>4</messageID></messages></Route>
+    	<Route id="17">
+    		<Nodes>
+    			<node>ES_CTRL1</node>
+    			<node>SW_B18</node>
+    			<node>SW_B20</node>
+    			<node>SW_B17</node>
+    			<node>ES_EBCM</node></Nodes>
+    		<messages>
+    			<messageID>5</messageID></messages></Route>
+    	<Route id="18">
+    		<Nodes>
+    			<node>ES_CTRL2</node>
+    			<node>SW_B19</node>
+    			<node>SW_B20</node>
+    			<node>SW_B17</node>
+    			<node>ES_EBCM</node></Nodes>
+    		<messages>
+    			<messageID>6</messageID></messages></Route>
+    	<Route id="19">
+    		<Nodes>
+    			<node>ES_CTRL1</node>
+    			<node>SW_B18</node>
+    			<node>SW_B20</node>
+    			<node>SW_B7</node>
+    			<node>ES_EPS</node></Nodes>
+    		<messages>
+    			<messageID>7</messageID></messages></Route>
+    	<Route id="20">
+    		<Nodes>
+    			<node>ES_CTRL2</node>
+    			<node>SW_B19</node>
+    			<node>SW_B20</node>
+    			<node>SW_B7</node>
+    			<node>ES_EPS</node></Nodes>
+    		<messages>
+    			<messageID>8</messageID></messages></Route>
+    	<Route id="21">
+    		<Nodes>
+    			<node>ES_EPS</node>
+    			<node>SW_B7</node>
+    			<node>SW_B20</node>
+    			<node>SW_B19</node>
+    			<node>ES_CTRL2</node></Nodes>
+    		<messages>
+    			<messageID>9</messageID></messages></Route>
+    	<Route id="22">
+    		<Nodes>
+    			<node>ES_EBCM</node>
+    			<node>SW_B17</node>
+    			<node>SW_B20</node>
+    			<node>SW_B19</node>
+    			<node>ES_CTRL2</node></Nodes>
+    		<messages>
+    			<messageID>10</messageID></messages></Route>
+    	<Route id="23">
+    		<Nodes>
+    			<node>ES_ECM</node>
+    			<node>SW_B20</node>
+    			<node>SW_B18</node>
+    			<node>ES_CTRL1</node></Nodes>
+    		<messages>
+    			<messageID>11</messageID></messages></Route>
+    	<Route id="24">
+    		<Nodes>
+    			<node>ES_IMU1</node>
+    			<node>SW_B8</node>
+    			<node>SW_B16</node>
+    			<node>ES_MAPLOC</node></Nodes>
+    		<messages>
+    			<messageID>12</messageID></messages></Route>
+    	<Route id="25">
+    		<Nodes>
+    			<node>ES_IMU2</node>
+    			<node>SW_B9</node>
+    			<node>SW_B16</node>
+    			<node>ES_MAPLOC</node></Nodes>
+    		<messages>
+    			<messageID>13</messageID></messages></Route>
+    			</Routing>
+    <CA>
+    	<APP id="1">
+    		<in>18</in>
+    		<out>4</out></APP>
+    	<APP id="2">
+    		<in>17</in>
+    		<out>7</out></APP></CA>
+    <Switches Name="SW_B1">
+    	<Delay Size="60" Value="4"></Delay>
+    	<Delay Size="100" Value="5"></Delay>
+    	<Delay Size="200" Value="7"></Delay>
+    	<Delay Size="300" Value="10"></Delay>
+    	<Delay Size="400" Value="12"></Delay>
+    	<Delay Size="500" Value="14"></Delay>
+    	<Delay Size="600" Value="16"></Delay>
+    	<Delay Size="700" Value="18"></Delay>
+    	<Delay Size="800" Value="20"></Delay>
+    	<Delay Size="900" Value="22"></Delay>
+    	<Delay Size="1000" Value="24"></Delay>
+    	<Delay Size="1100" Value="26"></Delay>
+    	<Delay Size="1200" Value="28"></Delay>
+    	<Delay Size="1300" Value="31"></Delay>
+    	<Delay Size="1400" Value="33"></Delay>
+    	<Delay Size="1500" Value="35"></Delay>
+    	</Switches>
+    <Switches Name="SW_B2">
+    	<Delay Size="60" Value="4"></Delay>
+    	<Delay Size="100" Value="5"></Delay>
+    	<Delay Size="200" Value="7"></Delay>
+    	<Delay Size="300" Value="10"></Delay>
+    	<Delay Size="400" Value="12"></Delay>
+    	<Delay Size="500" Value="14"></Delay>
+    	<Delay Size="600" Value="16"></Delay>
+    	<Delay Size="700" Value="18"></Delay>
+    	<Delay Size="800" Value="20"></Delay>
+    	<Delay Size="900" Value="22"></Delay>
+    	<Delay Size="1000" Value="24"></Delay>
+    	<Delay Size="1100" Value="26"></Delay>
+    	<Delay Size="1200" Value="28"></Delay>
+    	<Delay Size="1300" Value="31"></Delay>
+    	<Delay Size="1400" Value="33"></Delay>
+    	<Delay Size="1500" Value="35"></Delay>
+    	</Switches>
+	<Switches Name="SW_B3">
+    	<Delay Size="60" Value="4"></Delay>
+    	<Delay Size="100" Value="5"></Delay>
+    	<Delay Size="200" Value="7"></Delay>
+    	<Delay Size="300" Value="10"></Delay>
+    	<Delay Size="400" Value="12"></Delay>
+    	<Delay Size="500" Value="14"></Delay>
+    	<Delay Size="600" Value="16"></Delay>
+    	<Delay Size="700" Value="18"></Delay>
+    	<Delay Size="800" Value="20"></Delay>
+    	<Delay Size="900" Value="22"></Delay>
+    	<Delay Size="1000" Value="24"></Delay>
+    	<Delay Size="1100" Value="26"></Delay>
+    	<Delay Size="1200" Value="28"></Delay>
+    	<Delay Size="1300" Value="31"></Delay>
+    	<Delay Size="1400" Value="33"></Delay>
+    	<Delay Size="1500" Value="35"></Delay>
+    	</Switches>
+ 	<Switches Name="SW_B4">
+    	<Delay Size="60" Value="4"></Delay>
+    	<Delay Size="100" Value="5"></Delay>
+    	<Delay Size="200" Value="7"></Delay>
+    	<Delay Size="300" Value="10"></Delay>
+    	<Delay Size="400" Value="12"></Delay>
+    	<Delay Size="500" Value="14"></Delay>
+    	<Delay Size="600" Value="16"></Delay>
+    	<Delay Size="700" Value="18"></Delay>
+    	<Delay Size="800" Value="20"></Delay>
+    	<Delay Size="900" Value="22"></Delay>
+    	<Delay Size="1000" Value="24"></Delay>
+    	<Delay Size="1100" Value="26"></Delay>
+    	<Delay Size="1200" Value="28"></Delay>
+    	<Delay Size="1300" Value="31"></Delay>
+    	<Delay Size="1400" Value="33"></Delay>
+    	<Delay Size="1500" Value="35"></Delay>
+    	</Switches>
+  	<Switches Name="SW_B7">
+    	<Delay Size="60" Value="4"></Delay>
+    	<Delay Size="100" Value="5"></Delay>
+    	<Delay Size="200" Value="7"></Delay>
+    	<Delay Size="300" Value="10"></Delay>
+    	<Delay Size="400" Value="12"></Delay>
+    	<Delay Size="500" Value="14"></Delay>
+    	<Delay Size="600" Value="16"></Delay>
+    	<Delay Size="700" Value="18"></Delay>
+    	<Delay Size="800" Value="20"></Delay>
+    	<Delay Size="900" Value="22"></Delay>
+    	<Delay Size="1000" Value="24"></Delay>
+    	<Delay Size="1100" Value="26"></Delay>
+    	<Delay Size="1200" Value="28"></Delay>
+    	<Delay Size="1300" Value="31"></Delay>
+    	<Delay Size="1400" Value="33"></Delay>
+    	<Delay Size="1500" Value="35"></Delay>
+    	</Switches>
+	<Switches Name="SW_B8">
+    	<Delay Size="60" Value="4"></Delay>
+    	<Delay Size="100" Value="5"></Delay>
+    	<Delay Size="200" Value="7"></Delay>
+    	<Delay Size="300" Value="10"></Delay>
+    	<Delay Size="400" Value="12"></Delay>
+    	<Delay Size="500" Value="14"></Delay>
+    	<Delay Size="600" Value="16"></Delay>
+    	<Delay Size="700" Value="18"></Delay>
+    	<Delay Size="800" Value="20"></Delay>
+    	<Delay Size="900" Value="22"></Delay>
+    	<Delay Size="1000" Value="24"></Delay>
+    	<Delay Size="1100" Value="26"></Delay>
+    	<Delay Size="1200" Value="28"></Delay>
+    	<Delay Size="1300" Value="31"></Delay>
+    	<Delay Size="1400" Value="33"></Delay>
+    	<Delay Size="1500" Value="35"></Delay>
+    	</Switches>
+  	<Switches Name="SW_B9">
+    	<Delay Size="60" Value="4"></Delay>
+    	<Delay Size="100" Value="5"></Delay>
+    	<Delay Size="200" Value="7"></Delay>
+    	<Delay Size="300" Value="10"></Delay>
+    	<Delay Size="400" Value="12"></Delay>
+    	<Delay Size="500" Value="14"></Delay>
+    	<Delay Size="600" Value="16"></Delay>
+    	<Delay Size="700" Value="18"></Delay>
+    	<Delay Size="800" Value="20"></Delay>
+    	<Delay Size="900" Value="22"></Delay>
+    	<Delay Size="1000" Value="24"></Delay>
+    	<Delay Size="1100" Value="26"></Delay>
+    	<Delay Size="1200" Value="28"></Delay>
+    	<Delay Size="1300" Value="31"></Delay>
+    	<Delay Size="1400" Value="33"></Delay>
+    	<Delay Size="1500" Value="35"></Delay>
+    	</Switches>
+ 	<Switches Name="SW_B10">
+    	<Delay Size="60" Value="4"></Delay>
+    	<Delay Size="100" Value="5"></Delay>
+    	<Delay Size="200" Value="7"></Delay>
+    	<Delay Size="300" Value="10"></Delay>
+    	<Delay Size="400" Value="12"></Delay>
+    	<Delay Size="500" Value="14"></Delay>
+    	<Delay Size="600" Value="16"></Delay>
+    	<Delay Size="700" Value="18"></Delay>
+    	<Delay Size="800" Value="20"></Delay>
+    	<Delay Size="900" Value="22"></Delay>
+    	<Delay Size="1000" Value="24"></Delay>
+    	<Delay Size="1100" Value="26"></Delay>
+    	<Delay Size="1200" Value="28"></Delay>
+    	<Delay Size="1300" Value="31"></Delay>
+    	<Delay Size="1400" Value="33"></Delay>
+    	<Delay Size="1500" Value="35"></Delay>
+    	</Switches>
+ 	<Switches Name="SW_B11">
+    	<Delay Size="60" Value="4"></Delay>
+    	<Delay Size="100" Value="5"></Delay>
+    	<Delay Size="200" Value="7"></Delay>
+    	<Delay Size="300" Value="10"></Delay>
+    	<Delay Size="400" Value="12"></Delay>
+    	<Delay Size="500" Value="14"></Delay>
+    	<Delay Size="600" Value="16"></Delay>
+    	<Delay Size="700" Value="18"></Delay>
+    	<Delay Size="800" Value="20"></Delay>
+    	<Delay Size="900" Value="22"></Delay>
+    	<Delay Size="1000" Value="24"></Delay>
+    	<Delay Size="1100" Value="26"></Delay>
+    	<Delay Size="1200" Value="28"></Delay>
+    	<Delay Size="1300" Value="31"></Delay>
+    	<Delay Size="1400" Value="33"></Delay>
+    	<Delay Size="1500" Value="35"></Delay>
+    	</Switches>
+ 	<Switches Name="SW_B12">
+    	<Delay Size="60" Value="4"></Delay>
+    	<Delay Size="100" Value="5"></Delay>
+    	<Delay Size="200" Value="7"></Delay>
+    	<Delay Size="300" Value="10"></Delay>
+    	<Delay Size="400" Value="12"></Delay>
+    	<Delay Size="500" Value="14"></Delay>
+    	<Delay Size="600" Value="16"></Delay>
+    	<Delay Size="700" Value="18"></Delay>
+    	<Delay Size="800" Value="20"></Delay>
+    	<Delay Size="900" Value="22"></Delay>
+    	<Delay Size="1000" Value="24"></Delay>
+    	<Delay Size="1100" Value="26"></Delay>
+    	<Delay Size="1200" Value="28"></Delay>
+    	<Delay Size="1300" Value="31"></Delay>
+    	<Delay Size="1400" Value="33"></Delay>
+    	<Delay Size="1500" Value="35"></Delay>
+    	</Switches>
+ 	<Switches Name="SW_B16">
+    	<Delay Size="60" Value="4"></Delay>
+    	<Delay Size="100" Value="5"></Delay>
+    	<Delay Size="200" Value="7"></Delay>
+    	<Delay Size="300" Value="10"></Delay>
+    	<Delay Size="400" Value="12"></Delay>
+    	<Delay Size="500" Value="14"></Delay>
+    	<Delay Size="600" Value="16"></Delay>
+    	<Delay Size="700" Value="18"></Delay>
+    	<Delay Size="800" Value="20"></Delay>
+    	<Delay Size="900" Value="22"></Delay>
+    	<Delay Size="1000" Value="24"></Delay>
+    	<Delay Size="1100" Value="26"></Delay>
+    	<Delay Size="1200" Value="28"></Delay>
+    	<Delay Size="1300" Value="31"></Delay>
+    	<Delay Size="1400" Value="33"></Delay>
+    	<Delay Size="1500" Value="35"></Delay>
+    	</Switches>
+ 	<Switches Name="SW_B17">
+    	<Delay Size="60" Value="4"></Delay>
+    	<Delay Size="100" Value="5"></Delay>
+    	<Delay Size="200" Value="7"></Delay>
+    	<Delay Size="300" Value="10"></Delay>
+    	<Delay Size="400" Value="12"></Delay>
+    	<Delay Size="500" Value="14"></Delay>
+    	<Delay Size="600" Value="16"></Delay>
+    	<Delay Size="700" Value="18"></Delay>
+    	<Delay Size="800" Value="20"></Delay>
+    	<Delay Size="900" Value="22"></Delay>
+    	<Delay Size="1000" Value="24"></Delay>
+    	<Delay Size="1100" Value="26"></Delay>
+    	<Delay Size="1200" Value="28"></Delay>
+    	<Delay Size="1300" Value="31"></Delay>
+    	<Delay Size="1400" Value="33"></Delay>
+    	<Delay Size="1500" Value="35"></Delay>
+    	</Switches>
+  	<Switches Name="SW_B18">
+    	<Delay Size="60" Value="4"></Delay>
+    	<Delay Size="100" Value="5"></Delay>
+    	<Delay Size="200" Value="7"></Delay>
+    	<Delay Size="300" Value="10"></Delay>
+    	<Delay Size="400" Value="12"></Delay>
+    	<Delay Size="500" Value="14"></Delay>
+    	<Delay Size="600" Value="16"></Delay>
+    	<Delay Size="700" Value="18"></Delay>
+    	<Delay Size="800" Value="20"></Delay>
+    	<Delay Size="900" Value="22"></Delay>
+    	<Delay Size="1000" Value="24"></Delay>
+    	<Delay Size="1100" Value="26"></Delay>
+    	<Delay Size="1200" Value="28"></Delay>
+    	<Delay Size="1300" Value="31"></Delay>
+    	<Delay Size="1400" Value="33"></Delay>
+    	<Delay Size="1500" Value="35"></Delay>
+    	</Switches>
+  	<Switches Name="SW_B19">
+    	<Delay Size="60" Value="4"></Delay>
+    	<Delay Size="100" Value="5"></Delay>
+    	<Delay Size="200" Value="7"></Delay>
+    	<Delay Size="300" Value="10"></Delay>
+    	<Delay Size="400" Value="12"></Delay>
+    	<Delay Size="500" Value="14"></Delay>
+    	<Delay Size="600" Value="16"></Delay>
+    	<Delay Size="700" Value="18"></Delay>
+    	<Delay Size="800" Value="20"></Delay>
+    	<Delay Size="900" Value="22"></Delay>
+    	<Delay Size="1000" Value="24"></Delay>
+    	<Delay Size="1100" Value="26"></Delay>
+    	<Delay Size="1200" Value="28"></Delay>
+    	<Delay Size="1300" Value="31"></Delay>
+    	<Delay Size="1400" Value="33"></Delay>
+    	<Delay Size="1500" Value="35"></Delay>
+    	</Switches>
+  	<Switches Name="SW_B20">
+    	<Delay Size="60" Value="4"></Delay>
+    	<Delay Size="100" Value="5"></Delay>
+    	<Delay Size="200" Value="7"></Delay>
+    	<Delay Size="300" Value="10"></Delay>
+    	<Delay Size="400" Value="12"></Delay>
+    	<Delay Size="500" Value="14"></Delay>
+    	<Delay Size="600" Value="16"></Delay>
+    	<Delay Size="700" Value="18"></Delay>
+    	<Delay Size="800" Value="20"></Delay>
+    	<Delay Size="900" Value="22"></Delay>
+    	<Delay Size="1000" Value="24"></Delay>
+    	<Delay Size="1100" Value="26"></Delay>
+    	<Delay Size="1200" Value="28"></Delay>
+    	<Delay Size="1300" Value="31"></Delay>
+    	<Delay Size="1400" Value="33"></Delay>
+    	<Delay Size="1500" Value="35"></Delay>
+    	</Switches></Network>
