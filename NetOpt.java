@@ -7,25 +7,12 @@ public class NetOpt {
 	public static void main(String[] args) {
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		//Test Cases
-        String testcase1 = "src/TSN/input.xml";
-        String testcase2 = "src/TSN/input1.xml";
-        String testcase3 = "src/TSN/input2.xml";
-        String testcase4 = "src/TSN/orion.xml";
-        String testcase5 = "src/TSN/GM.xml";
-        String testcase6 = "src/TSN/GMM.xml";
-        String testcase7 = "src/TSN/testcase1.xml";
-        String testcase8 = "src/TSN/testcase2.xml";
-        String testcase9a = "src/TSN/orion.streams";
-        String testcase9b = "src/TSN/orion.vls";
-        String testcase10 = "src/TSN/GMM2.xml";
-        String testcase11 = "src/TSN/GMM3.xml";
-        String testcaseNiklas = "src/TSN/inputNiklas.xml";
-        String testcase12 = "src/TSN/JorgeCase1.xml";
+        String testcase = "src/TestCases/Jorge/JorgeCase1.xml";
 
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// Loading Data
         DataLoader dataLoader = new DataLoader();
-        dataLoader.Load(testcase12);
+        dataLoader.Load(testcase);
         //Method call for old input version
         //dataLoader.Load(testcase9a, testcase9b);  
 
