@@ -7,6 +7,7 @@ import com.google.ortools.constraintsolver.OptimizeVar;
 import com.google.ortools.constraintsolver.SearchMonitor;
 import com.google.ortools.constraintsolver.Solver;
 
+
 public class Reza extends SolutionMethod{
 	Solution Current;
 	Solver solver;
@@ -51,13 +52,25 @@ public class Reza extends SolutionMethod{
 
 	}
 	public void addSolverLimits() {
-		int hours = 20;
+		int hours = 4;
 		int minutes = 0;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
 		SearchMonitor[] optVar = new SearchMonitor[2];
-		optVar[0] = costVar;
+		//optVar[0] = costVar;
+		// Simulated Annealing
+		optVar[0] = solver.makeSimulatedAnnealing(false, Costs[2], 1, 60000);
+		
+		
+		// TABU SEARCH
+		long keep_tenure = (long) (GetImportatnVarsSize() * 0.3);
+		long forbid_tenure = (long) (GetImportatnVarsSize() * 0.6);
+		//optVar[0] = solver.makeTabuSearch(false, Costs[2], 2, GetImportatnVars(), keep_tenure, forbid_tenure, 0.5);
+		
+		
+		//Other Limits
 		optVar[1] = limit;
+		//optVar[2] = solver.makeConstantRestart(500);
 		solver.newSearch(getDecision(),optVar);
 	    System.out.println(solver.model_name() + " Initiated");
 	}
@@ -614,6 +627,41 @@ public class Reza extends SolutionMethod{
 			}
 		}
 		return false;
+	}
+	private int GetImportatnVarsSize() {
+		int numberofImportantVars = 0;
+		for (Stream stream : Current.streams) {
+			numberofImportantVars += stream.N_instances;		
+		}
+		return numberofImportantVars;
+	}
+	private IntVar[] GetImportatnVars() {
+		int counter = 0;
+		int VarCounter = 0;
+		int numberofImportantVars = GetImportatnVarsSize();
+		
+		IntVar[] tabuVars = new IntVar[numberofImportantVars];
+		
+
+		for (Switches sw : Current.SW) {
+			for (Port port : sw.ports) {
+				if(port.outPort) {
+					for (int i = 0; i < port.AssignedStreams.size(); i++) {
+						if(port.AssignedStreams.get(i).isThisFirstSwtich(sw.Name)) {
+							for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
+								tabuVars[VarCounter] = Offset[counter][i][j].var();
+								VarCounter++;
+							}
+						}
+					}
+
+					counter++;
+				}
+			}
+		}
+		
+		return tabuVars;	
+		
 	}
 	private int LCM(int a, int b) {
 		int lcm = (a > b) ? a : b;
