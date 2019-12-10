@@ -1,8 +1,11 @@
 package TSN;
 
 import java.util.Optional;
+
+import com.google.ortools.constraintsolver.Assignment;
 import com.google.ortools.constraintsolver.DecisionBuilder;
 import com.google.ortools.constraintsolver.IntVar;
+import com.google.ortools.constraintsolver.LocalSearchPhaseParameters;
 import com.google.ortools.constraintsolver.OptimizeVar;
 import com.google.ortools.constraintsolver.SearchMonitor;
 import com.google.ortools.constraintsolver.Solver;
@@ -69,17 +72,20 @@ class Romon extends SolutionMethod{
 		//FlatAll(w, x, y, z, T1);
 		//FlatAll(x, y, z, T2);
 		FlatAll(x, y, T);
-	    DecisionBuilder db0 = solver.makePhase(w, solver.ASSIGN_RANDOM_VALUE, solver.CHOOSE_FIRST_UNBOUND);
+	    DecisionBuilder db0 = solver.makePhase(w, solver.CHOOSE_FIRST_UNBOUND , solver.ASSIGN_RANDOM_VALUE);
 	    DecisionBuilder db1 = solver.makeSolveOnce(db0);
-	    DecisionBuilder db2 = solver.makePhase(T, solver.ASSIGN_RANDOM_VALUE, solver.CHOOSE_FIRST_UNBOUND);
-	    DecisionBuilder db3 = solver.makePhase(z, solver.ASSIGN_RANDOM_VALUE, solver.CHOOSE_FIRST_UNBOUND);
+	    DecisionBuilder db2 = solver.makePhase(T, solver.CHOOSE_FIRST_UNBOUND , solver.ASSIGN_RANDOM_VALUE);
+	    DecisionBuilder db3 = solver.makePhase(z, solver.CHOOSE_FIRST_UNBOUND , solver.ASSIGN_RANDOM_VALUE);
 	    DecisionBuilder db4 = solver.makeSolveOnce(db3);
 	    DecisionBuilder db5 = solver.compose(db1, db2);
-	    db = solver.compose(db5, db4);
+	    
+	    DecisionBuilder db6 = solver.makePhase(Jitters[3], solver.CHOOSE_FIRST_UNBOUND,solver.ASSIGN_MIN_VALUE);
+	    DecisionBuilder db7 = solver.compose(db5, db4);
+	    db = solver.compose(db7, db6);
 	}
 	public void addSolverLimits() {
-		int hours = 0;
-		int minutes = 20;
+		int hours = 1;
+		int minutes = 0;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
 		SearchMonitor[] searchVar = new SearchMonitor[2];
@@ -93,9 +99,11 @@ class Romon extends SolutionMethod{
 		// Tabu Search
 		IntVar[] x = new IntVar[TotalVars];
 		FlatArray(Topen, x, NOutports);
-		long keep_tenure = (long) (TotalVars * 0.6);
-		long forbid_tenure = (long) (TotalVars * 0.3);
-		searchVar[0] = solver.makeTabuSearch(false, Jitters[3], 1, x, keep_tenure, forbid_tenure, 0.25);
+		//long keep_tenure = (long) (TotalVars * 0.6);
+		//long forbid_tenure = (long) (TotalVars * 0.3);
+		long keep_tenure = 20;
+		long forbid_tenure = 5;
+		searchVar[0] = solver.makeTabuSearch(false, Jitters[3], 1, x, keep_tenure, forbid_tenure, 1.0);
 				
 				
 		searchVar[1] = limit;
