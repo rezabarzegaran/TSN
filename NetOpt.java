@@ -8,7 +8,8 @@ public class NetOpt {
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		//Test Cases
         //String testcase = "src/TestCases/Jorge/JorgeCase1.xml";
-        String testcase = "src/TestCases/GM/GM.xml";
+        String testcase = "src/TestCases/GMModified/GMM.xml";
+        //String testcase = "src/TestCases/GM/GM.xml";
 
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// Loading Data
@@ -27,7 +28,7 @@ public class NetOpt {
         //Creating Solver
 
         //Select Between Methods
-        methods chosenMethods = methods.Reza;
+        methods chosenMethods = methods.Romon;
         
         boolean debugmode = false;
         

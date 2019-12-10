@@ -13,9 +13,9 @@ public class Stream {
         offset = _offset;
         // 1 Byte takes 0.008us at 1000Mbits, 42bit header for ethernet packet. Round down.
         //Transmit_Time = (int) Math.ceil((Size + 42)*0.08);
-        //Transmit_Time = (int) Math.ceil((Size)*0.0077);
+        Transmit_Time = (int) Math.ceil((Size)*0.09);
         // Use this for Jorge
-        Transmit_Time = (int) Math.ceil((Size)*0.005);
+        //Transmit_Time = (int) Math.ceil((Size)*0.005);
         routingList = new ArrayList<String>();
         CroutingList = new ArrayList<String>();
 
@@ -29,9 +29,9 @@ public class Stream {
         offset = _offset;
         // 1 Byte takes 0.008us at 1000Mbits, 42bit header for ethernet packet. Round down.
         //Transmit_Time = (int) Math.ceil((Size + 42)*0.08);
-        //Transmit_Time = (int) Math.ceil((Size)*0.0077);
+        Transmit_Time = (int) Math.ceil((Size)*0.09);
         // Use this for Jorge
-        Transmit_Time = (int) Math.ceil((Size)*0.005);
+        //Transmit_Time = (int) Math.ceil((Size)*0.005);
         routingList = new ArrayList<String>();
         CroutingList = new ArrayList<String>();
         Hyperperiod = _hyper;

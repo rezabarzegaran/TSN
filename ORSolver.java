@@ -68,8 +68,12 @@ class ORSolver {
 	    long start=(System.currentTimeMillis() / 1000 );
 	    while (solver.nextSolution()) { 
 	    	OptSolution = method.cloneSolution();
-	    	System.out.println("Found");
-	    	dataUnloader.CaptureSolution(OptSolution);
+	    	long now= ( System.currentTimeMillis() / 1000 );
+		    long Tnow = now - start;
+	    	System.out.println("Found, " +  Tnow);
+		    
+
+	    	dataUnloader.CaptureSolution(OptSolution, Tnow);
 	    	if(DebogMode) {
 	    		dataUnloader.WriteData(OptSolution, chosenmethod.toString(), method.getSolutionNumber());
 	    	}

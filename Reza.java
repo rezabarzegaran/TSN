@@ -25,7 +25,7 @@ public class Reza extends SolutionMethod{
 	public void initVariables() {
 		NOutports = Current.getNOutPorts();
 		Offset = new IntVar[NOutports][][];
-		Costs = new IntVar[3];
+		Costs = new IntVar[4];
 		TotalVars = AssignVars(Offset);
 	}
 	public void addConstraints() {
@@ -33,12 +33,13 @@ public class Reza extends SolutionMethod{
 		Constraint1(Offset);
 		Constraint2(Offset);
 		Constraint3(Offset);
-		Constraint4(Offset);
+		//Constraint4(Offset);
 		//MyConstraint4(Offset, Costs);
 	}
 	public void addCosts() {
 		Cost0(Offset, Costs);
 		Cost1(Offset, Costs);
+		E2ECost(Offset, Costs);
 		//Cost2(Offset, Costs);
 		//Cost3(Offset, Costs);
 		costVar = CostMinimizer(Costs);
@@ -48,30 +49,30 @@ public class Reza extends SolutionMethod{
 		FlatArray(Offset, x, NOutports);
 		long allvariables = TotalVars;
 		System.out.println("There are " + allvariables + "Variables");
-		db = solver.makePhase(x,  solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
+		db = solver.makePhase(x,  solver.ASSIGN_RANDOM_VALUE, solver.ASSIGN_RANDOM_VALUE);
 
 	}
 	public void addSolverLimits() {
-		int hours = 4;
-		int minutes = 0;
+		int hours = 0;
+		int minutes = 30;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
-		SearchMonitor[] optVar = new SearchMonitor[2];
-		//optVar[0] = costVar;
+		SearchMonitor[] searchVar = new SearchMonitor[2];
+		searchVar[0] = costVar;
 		// Simulated Annealing
-		optVar[0] = solver.makeSimulatedAnnealing(false, Costs[2], 1, 60000);
+		//searchVar[0] = solver.makeSimulatedAnnealing(false, Costs[2], 1, 60000);
 		
 		
 		// TABU SEARCH
 		long keep_tenure = (long) (GetImportatnVarsSize() * 0.3);
 		long forbid_tenure = (long) (GetImportatnVarsSize() * 0.6);
-		//optVar[0] = solver.makeTabuSearch(false, Costs[2], 2, GetImportatnVars(), keep_tenure, forbid_tenure, 0.5);
+		//searchVar[0] = solver.makeTabuSearch(false, Costs[2], 2, GetImportatnVars(), keep_tenure, forbid_tenure, 0.5);
 		
 		
 		//Other Limits
-		optVar[1] = limit;
-		//optVar[2] = solver.makeConstantRestart(500);
-		solver.newSearch(getDecision(),optVar);
+		searchVar[1] = limit;
+		//searchVar[2] = solver.makeConstantRestart(500);
+		solver.newSearch(getDecision(),searchVar);
 	    System.out.println(solver.model_name() + " Initiated");
 	}
 	public DecisionBuilder getDecision() {
@@ -97,7 +98,7 @@ public class Reza extends SolutionMethod{
 		
 		//return false;
     	
-		if((TotalRuns >= 10)){
+		if((TotalRuns >= 100000)){
 			return true;
 		}else {
 			return false;
@@ -393,11 +394,11 @@ public class Reza extends SolutionMethod{
 		IntVar tempIntVar = null;
 		tempIntVar = solver.makeProd(Costs[0], 1).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 1).var()).var();
-		//tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 4).var()).var();
 		//tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 1).var()).var();
-		Costs[2] = tempIntVar;
+		Costs[3] = tempIntVar;
 		//CostLimiter(Costs);
-		return solver.makeMinimize(Costs[2],1);
+		return solver.makeMinimize(Costs[3],1);
 	}
 	private void CostLimiter(IntVar[] Costs) {
 		solver.addConstraint(solver.makeLessOrEqual(Costs[4], 2809));
@@ -563,7 +564,43 @@ public class Reza extends SolutionMethod{
 		Costs[3] = eVar;
 		return solver.makeMaximize(Costs[3], 1);
 	}
+	
+	private OptimizeVar E2ECost(IntVar[][][] Offset, IntVar[] Costs) {
+		IntVar eExpr = null;
+		
+		
+		for (Stream stream : Current.streams) {
+			String firstSWName = stream.getFirstSwitch();		
+			String lastSWName = stream.getFirstSwitch();
+			if ((firstSWName != null) && (lastSWName != null)) {
+				Port firstPort = getPortObject(firstSWName, stream.Id);
+				int firstportindex = FindPortIndex(firstSWName, stream.Id);
+				int firststreamindex = getStreamIndex(firstSWName, stream.Id);
+				Port lastPort = getPortObject(lastSWName, stream.Id);
+				int lastportindex = FindPortIndex(lastSWName, stream.Id);
+				int laststreamindex = getStreamIndex(lastSWName, stream.Id);
+				for (int i = 0; i < stream.N_instances; i++) {
+					IntVar aVar = solver.makeProd(Offset[firstportindex][firststreamindex][i], firstPort._microtick).var();
+					IntVar bVar = solver.makeProd(Offset[lastportindex][laststreamindex][i], lastPort._microtick).var();
+					IntVar cVar = solver.makeSum(bVar, stream.Transmit_Time).var();
+					
+					IntVar cExpr = solver.makeAbs(solver.makeDifference(cVar, aVar)).var();
+					if(eExpr == null) {
+						eExpr = cExpr;
+					}else {
+						eExpr = solver.makeSum(eExpr, cExpr).var();
+					}
 
+				}
+
+
+			}
+		}
+		
+		Costs[2] = eExpr;
+		return solver.makeMinimize(Costs[2], 1);
+	}
+	
 	private int FindPortIndex(String swName, int mID) {
 		int counter = 0;
 		for (Switches sw : Current.SW) {

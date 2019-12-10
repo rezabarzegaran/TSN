@@ -29,6 +29,7 @@ class DataUnloader {
 	boolean GeneralInterface;
 	String defaltDirPath = "Results";
 	List<List<Integer>> costValues;
+	List<Long> SolutionTimes;
 	int hyperperiod = 0;
     DataVisualizer visualizer = new DataVisualizer();
     String defaultPath = "Results";
@@ -38,9 +39,11 @@ class DataUnloader {
     	StreamWiseInterface = false;
     	GeneralInterface = true;
     	costValues = new ArrayList<List<Integer>>();
+    	SolutionTimes = new ArrayList<Long>();
     }
-    public void CaptureSolution(Solution solution) {
+    public void CaptureSolution(Solution solution, long Tnow) {
     	getCostValues(solution);
+    	SolutionTimes.add(Tnow);
     }
     public void WriteData(Solution solution, String name, int counter) {
     	//getCostValues(solution);
@@ -183,6 +186,7 @@ class DataUnloader {
             		lineString += val + ",\t";
             		
 				}
+    			lineString += "Generated in : "  + SolutionTimes.get(i);
     			writer.println(lineString);
 
 			}
