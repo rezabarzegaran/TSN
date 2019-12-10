@@ -72,16 +72,17 @@ class Romon extends SolutionMethod{
 		//FlatAll(w, x, y, z, T1);
 		//FlatAll(x, y, z, T2);
 		FlatAll(x, y, T);
-	    DecisionBuilder db0 = solver.makePhase(w, solver.CHOOSE_FIRST_UNBOUND , solver.ASSIGN_RANDOM_VALUE);
+	    DecisionBuilder db0 = solver.makePhase(w, solver.CHOOSE_FIRST_UNBOUND , solver.ASSIGN_MIN_VALUE);
 	    DecisionBuilder db1 = solver.makeSolveOnce(db0);
-	    DecisionBuilder db2 = solver.makePhase(T, solver.CHOOSE_FIRST_UNBOUND , solver.ASSIGN_RANDOM_VALUE);
+	    DecisionBuilder db2 = solver.makePhase(T, solver.CHOOSE_RANDOM , solver.ASSIGN_RANDOM_VALUE);
 	    DecisionBuilder db3 = solver.makePhase(z, solver.CHOOSE_FIRST_UNBOUND , solver.ASSIGN_RANDOM_VALUE);
 	    DecisionBuilder db4 = solver.makeSolveOnce(db3);
 	    DecisionBuilder db5 = solver.compose(db1, db2);
 	    
-	    DecisionBuilder db6 = solver.makePhase(Jitters[3], solver.CHOOSE_FIRST_UNBOUND,solver.ASSIGN_MIN_VALUE);
+	    //DecisionBuilder db6 = solver.makePhase(Jitters[3], solver.CHOOSE_FIRST_UNBOUND,solver.ASSIGN_MIN_VALUE);
 	    DecisionBuilder db7 = solver.compose(db5, db4);
-	    db = solver.compose(db7, db6);
+	    //db = solver.compose(db7, db6);
+	    db = db7;
 	}
 	public void addSolverLimits() {
 		int hours = 1;
@@ -91,7 +92,7 @@ class Romon extends SolutionMethod{
 		SearchMonitor[] searchVar = new SearchMonitor[2];
 		// Search Type
 		// Normal Search
-		//searchVar[0] = OptVar;
+		searchVar[0] = OptVar;
 		
 		// Simulated Annealing
 		//searchVar[0] = solver.makeSimulatedAnnealing(false, Jitters[3], 1, 100000);
@@ -103,7 +104,7 @@ class Romon extends SolutionMethod{
 		//long forbid_tenure = (long) (TotalVars * 0.3);
 		long keep_tenure = 20;
 		long forbid_tenure = 5;
-		searchVar[0] = solver.makeTabuSearch(false, Jitters[3], 1, x, keep_tenure, forbid_tenure, 1.0);
+		//searchVar[0] = solver.makeTabuSearch(false, Jitters[3], 1, x, keep_tenure, forbid_tenure, 1.0);
 				
 				
 		searchVar[1] = limit;

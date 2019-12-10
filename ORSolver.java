@@ -30,6 +30,9 @@ class ORSolver {
 		Jorge,
 		Reza
 	}
+	public void setResultPath(String _path) {
+		dataUnloader.setDirPath(_path);
+	}
 	public void Run() {
 
 	    solver = new Solver(chosenmethod.toString());

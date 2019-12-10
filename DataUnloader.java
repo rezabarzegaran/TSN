@@ -41,6 +41,9 @@ class DataUnloader {
     	costValues = new ArrayList<List<Integer>>();
     	SolutionTimes = new ArrayList<Long>();
     }
+    public void setDirPath(String _path) {
+    	defaltDirPath = _path;
+    }
     public void CaptureSolution(Solution solution, long Tnow) {
     	getCostValues(solution);
     	SolutionTimes.add(Tnow);

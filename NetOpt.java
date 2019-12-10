@@ -36,6 +36,11 @@ public class NetOpt {
         
         
         //Run optimizer
+        if(args.length != 0)
+        {
+            optimizer.setResultPath(args[0]);
+        }
+
         optimizer.Run();
         
         //optimization Finished
