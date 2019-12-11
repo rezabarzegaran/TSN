@@ -49,24 +49,24 @@ public class Reza extends SolutionMethod{
 		FlatArray(Offset, x, NOutports);
 		long allvariables = TotalVars;
 		System.out.println("There are " + allvariables + "Variables");
-		db = solver.makePhase(x,  solver.ASSIGN_RANDOM_VALUE, solver.ASSIGN_RANDOM_VALUE);
+		db = solver.makePhase(x,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE);
 
 	}
 	public void addSolverLimits() {
-		int hours = 0;
-		int minutes = 30;
+		int hours = 2;
+		int minutes = 0;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
 		SearchMonitor[] searchVar = new SearchMonitor[2];
 		searchVar[0] = costVar;
 		// Simulated Annealing
-		//searchVar[0] = solver.makeSimulatedAnnealing(false, Costs[2], 1, 60000);
+		//searchVar[0] = solver.makeSimulatedAnnealing(false, Costs[3], 4, 200000);
 		
 		
 		// TABU SEARCH
-		long keep_tenure = (long) (GetImportatnVarsSize() * 0.3);
-		long forbid_tenure = (long) (GetImportatnVarsSize() * 0.6);
-		//searchVar[0] = solver.makeTabuSearch(false, Costs[2], 2, GetImportatnVars(), keep_tenure, forbid_tenure, 0.5);
+		long keep_tenure = (long) (GetImportatnVarsSize() * 0.6);
+		long forbid_tenure = (long) (GetImportatnVarsSize() * 0.15);
+		//searchVar[0] = solver.makeTabuSearch(false, Costs[3], 4, GetImportatnVars(), keep_tenure, forbid_tenure, 0.15);
 		
 		
 		//Other Limits
@@ -98,8 +98,8 @@ public class Reza extends SolutionMethod{
 		
 		//return false;
     	
-		if((TotalRuns >= 100000)){
-			return true;
+		if((TotalRuns >= 35)){
+			return false;
 		}else {
 			return false;
 
@@ -398,7 +398,7 @@ public class Reza extends SolutionMethod{
 		//tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 1).var()).var();
 		Costs[3] = tempIntVar;
 		//CostLimiter(Costs);
-		return solver.makeMinimize(Costs[3],1);
+		return solver.makeMinimize(Costs[3],4);
 	}
 	private void CostLimiter(IntVar[] Costs) {
 		solver.addConstraint(solver.makeLessOrEqual(Costs[4], 2809));

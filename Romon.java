@@ -74,28 +74,29 @@ class Romon extends SolutionMethod{
 		FlatAll(x, y, T);
 	    DecisionBuilder db0 = solver.makePhase(w, solver.CHOOSE_FIRST_UNBOUND , solver.ASSIGN_MIN_VALUE);
 	    DecisionBuilder db1 = solver.makeSolveOnce(db0);
-	    DecisionBuilder db2 = solver.makePhase(T, solver.CHOOSE_RANDOM , solver.ASSIGN_RANDOM_VALUE);
-	    DecisionBuilder db3 = solver.makePhase(z, solver.CHOOSE_FIRST_UNBOUND , solver.ASSIGN_RANDOM_VALUE);
-	    DecisionBuilder db4 = solver.makeSolveOnce(db3);
-	    DecisionBuilder db5 = solver.compose(db1, db2);
+	    DecisionBuilder db2 = solver.makePhase(x, solver.CHOOSE_FIRST_UNBOUND , solver.ASSIGN_RANDOM_VALUE);
+	    DecisionBuilder db3 = solver.makePhase(y, solver.CHOOSE_FIRST_UNBOUND , solver.ASSIGN_RANDOM_VALUE);
+
+	    DecisionBuilder db4 = solver.makePhase(z, solver.CHOOSE_FIRST_UNBOUND , solver.ASSIGN_MIN_VALUE);
+	    DecisionBuilder db5 = solver.makeSolveOnce(db4);
+	    db = solver.compose(db1, db2, db3,db5);
 	    
 	    //DecisionBuilder db6 = solver.makePhase(Jitters[3], solver.CHOOSE_FIRST_UNBOUND,solver.ASSIGN_MIN_VALUE);
-	    DecisionBuilder db7 = solver.compose(db5, db4);
+	    //DecisionBuilder db7 = solver.compose(db5, db4);
 	    //db = solver.compose(db7, db6);
-	    db = db7;
 	}
 	public void addSolverLimits() {
-		int hours = 1;
+		int hours = 2;
 		int minutes = 0;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
 		SearchMonitor[] searchVar = new SearchMonitor[2];
 		// Search Type
 		// Normal Search
-		searchVar[0] = OptVar;
+		//searchVar[0] = OptVar;
 		
 		// Simulated Annealing
-		//searchVar[0] = solver.makeSimulatedAnnealing(false, Jitters[3], 1, 100000);
+		searchVar[0] = solver.makeSimulatedAnnealing(false, Jitters[3], 1, 100000);
 		
 		// Tabu Search
 		IntVar[] x = new IntVar[TotalVars];
