@@ -305,22 +305,22 @@ public class DataVisualizer {
 			colorString = "maroon";
 			break;
 		case 1:
-			colorString = "purple";
+			colorString = "olive";
 			break;
 		case 2:
 			colorString = "red";
 			break;
 		case 3:
-			colorString = "orange";
+			colorString = "yellowgreen";
 			break;
 		case 4:
-			colorString = "fuchsia";
+			colorString = "cyan";
 			break;
 		case 5:
-			colorString = "pink";
+			colorString = "royalblue";
 			break;
 		case 6:
-			colorString = "lime";
+			colorString = "goldenrod";
 			break;
 		case 7:
 			colorString = "yellow";
@@ -397,15 +397,15 @@ public class DataVisualizer {
     	switch (where) {
 		case "timeTag":
 			fillAttr.setValue("black");
-			styleAttr.setValue("font-style:bold ; font-family: times; font-size: 20px");
+			styleAttr.setValue("font-style:bold ; font-family: times; font-size: 24px");
 			break;
 		case "portTag":
 			fillAttr.setValue("black");
-			styleAttr.setValue("font-style:italic; font-family: times; font-size: 16px");
+			styleAttr.setValue("font-style:italic; font-family: times; font-size: 20px");
 			break;
 		case "frameTag":
 			fillAttr.setValue("black");
-			styleAttr.setValue("font-family: times; font-size: 14px");
+			styleAttr.setValue("font-style:bold font-family: times; font-size: 20px");
 			break;
 
 		default:
@@ -445,11 +445,11 @@ public class DataVisualizer {
 			styleAttr.setValue("stroke:red ;stroke-width:3");
 			break;
 		case "mainvertical":
-			styleAttr.setValue("stroke:black ;stroke-width:1");
+			styleAttr.setValue("stroke:gray ;stroke-width:0.5");
 			break;
 			
 		case "subvertical":
-			styleAttr.setValue("stroke:gray ;stroke-width:1");
+			styleAttr.setValue("stroke:silver ;stroke-width:0.3");
 			break;
 		case "divider":
 			styleAttr.setValue("stroke:silver ;stroke-width:1");
