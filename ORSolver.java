@@ -68,10 +68,10 @@ class ORSolver {
     	    
 	    
 	    Solution OptSolution = null;
-	    long start=(System.currentTimeMillis() / 1000 );
+	    long start=(System.currentTimeMillis());
 	    while (solver.nextSolution()) { 
 	    	OptSolution = method.cloneSolution();
-	    	long now= ( System.currentTimeMillis() / 1000 );
+	    	long now= ( System.currentTimeMillis() );
 		    long Tnow = now - start;
 	    	System.out.println("Found, " +  Tnow);
 		    
@@ -87,15 +87,14 @@ class ORSolver {
 
 	    }
 	    solver.endSearch();
-	    long end= ( System.currentTimeMillis() / 1000 );
+	    long end= ( System.currentTimeMillis());
 	    long duration = end - start;
 	    
 	    if(OptSolution != null) {
 	    	if(!DebogMode) {
 	    		dataUnloader.WriteData(OptSolution, chosenmethod.toString(), method.getSolutionNumber());
 	    	}
-			
-		    dataUnloader.CreateReport(duration);
+		    dataUnloader.CreateReport(solver.wallTime());
 	    }
 
 

@@ -177,7 +177,7 @@ class DataUnloader {
     		writer.println(lineString);
     		lineString = "The hyperPeriod is: " + hyperperiod;
     		writer.println(lineString);
-    		lineString = "There are " + costValues.size() + " solutions, whithin " + dur + " seconds.";
+    		lineString = "There are " + costValues.size() + " solutions, whithin " + dur + " milli seconds.";
     		writer.println(lineString);
     		
     		lineString = "The cost values are: ";

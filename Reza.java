@@ -25,7 +25,7 @@ public class Reza extends SolutionMethod{
 	public void initVariables() {
 		NOutports = Current.getNOutPorts();
 		Offset = new IntVar[NOutports][][];
-		Costs = new IntVar[4];
+		Costs = new IntVar[3];
 		TotalVars = AssignVars(Offset);
 	}
 	public void addConstraints() {
@@ -33,13 +33,13 @@ public class Reza extends SolutionMethod{
 		Constraint1(Offset);
 		Constraint2(Offset);
 		Constraint3(Offset);
-		//Constraint4(Offset);
+		Constraint4(Offset);
 		//MyConstraint4(Offset, Costs);
 	}
 	public void addCosts() {
 		Cost0(Offset, Costs);
 		Cost1(Offset, Costs);
-		E2ECost(Offset, Costs);
+		//E2ECost(Offset, Costs);
 		//Cost2(Offset, Costs);
 		//Cost3(Offset, Costs);
 		costVar = CostMinimizer(Costs);
@@ -49,11 +49,12 @@ public class Reza extends SolutionMethod{
 		FlatArray(Offset, x, NOutports);
 		long allvariables = TotalVars;
 		System.out.println("There are " + allvariables + "Variables");
-		db = solver.makePhase(x,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE);
+		//db = solver.makePhase(x,  solver.INT_VALUE_DEFAULT, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
+		db = solver.makePhase(x,  solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT); // The systematic search method
 
 	}
 	public void addSolverLimits() {
-		int hours = 2;
+		int hours = 1;
 		int minutes = 0;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
@@ -64,8 +65,8 @@ public class Reza extends SolutionMethod{
 		
 		
 		// TABU SEARCH
-		long keep_tenure = (long) (GetImportatnVarsSize() * 0.6);
-		long forbid_tenure = (long) (GetImportatnVarsSize() * 0.15);
+		//long keep_tenure = (long) (GetImportatnVarsSize() * 0.6);
+		//long forbid_tenure = (long) (GetImportatnVarsSize() * 0.15);
 		//searchVar[0] = solver.makeTabuSearch(false, Costs[3], 4, GetImportatnVars(), keep_tenure, forbid_tenure, 0.15);
 		
 		
@@ -98,8 +99,12 @@ public class Reza extends SolutionMethod{
 		
 		//return false;
     	
-		if((TotalRuns >= 35)){
-			return false;
+    	if(Costs[2].value() == 0) {
+    		return true;
+    	}
+    	
+		if((TotalRuns >= 500)){
+			return true;
 		}else {
 			return false;
 
@@ -394,11 +399,11 @@ public class Reza extends SolutionMethod{
 		IntVar tempIntVar = null;
 		tempIntVar = solver.makeProd(Costs[0], 1).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 1).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 4).var()).var();
+		//tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 4).var()).var();
 		//tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 1).var()).var();
-		Costs[3] = tempIntVar;
+		Costs[2] = tempIntVar;
 		//CostLimiter(Costs);
-		return solver.makeMinimize(Costs[3],4);
+		return solver.makeMinimize(Costs[2],4);
 	}
 	private void CostLimiter(IntVar[] Costs) {
 		solver.addConstraint(solver.makeLessOrEqual(Costs[4], 2809));
