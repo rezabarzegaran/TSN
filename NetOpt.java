@@ -10,9 +10,11 @@ public class NetOpt {
         //String testcase = "src/TestCases/Jorge/JorgeCase1.xml";
         //String testcase = "src/TestCases/GMModified/GMM2.xml";
         //String testcase = "src/TestCases/GM/GM.xml";
-		String testcase = "src/TestCases/Initial/input3.xml";
+		//String testcase = "src/TestCases/Initial/input3.xml";
 		//String testcase = "src/TestCases/Initial/testcase1.xml";
 		//String testcase = "src/TestCases/Initial/testcase2.xml";
+		//String testcase = "src/TestCases/GM/GM.xml";
+		String testcase = "src/TestCases/JorgeFinal/TestCase 10/Test.xml";
 
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// Loading Data
@@ -31,7 +33,7 @@ public class NetOpt {
         //Creating Solver
 
         //Select Between Methods
-        methods chosenMethods = methods.Reza;
+        methods chosenMethods = methods.Jorge;
         
         boolean debugmode = false;
         
