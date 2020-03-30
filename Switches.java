@@ -167,6 +167,7 @@ class Port {
 	int GCLSize = 0;
 	boolean outPort;
 	int Period;
+	int Hyperperiod;
 	String connectedTo;
 	boolean connectedToES;
 	int _microtick;
@@ -187,7 +188,8 @@ class Port {
 			ques[i] = new Que(i);
 		}
 	_microtick = microtick;
-	Period = 0;
+	 Period = 0;
+	 Hyperperiod = 1;
 		
 	}
 	Port(String sideName, boolean isOut, List<Stream> _assignedstreams, boolean _c_to_es, int gcl, int[] _affq, int[] _topen, int[] _tclose, int[][] _index, int microtick, int _Period){
