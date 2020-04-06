@@ -1,11 +1,13 @@
 package TSN;
 
+import java.nio.channels.NonReadableChannelException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+
 
 
 public class Switches {
@@ -166,13 +168,14 @@ class Port {
 	int[][] indexMap;
 	int GCLSize = 0;
 	boolean outPort;
-	int Period;
 	int Hyperperiod;
+	int Period;
 	String connectedTo;
 	boolean connectedToES;
 	int _microtick;
 	int propagationDelay = 0;
-	Que[] ques = new Que[8];
+	List<Que> ques = new ArrayList<Que>();
+	int QLength = 8;
 	List<Stream> AssignedStreams =  new ArrayList<Stream>();
 	
 	
@@ -184,48 +187,68 @@ class Port {
 			connectedToES = false;
 		}
 		outPort = isOut;
-		for (int i = 0; i < ques.length; i++) {
-			ques[i] = new Que(i);
+		
+		
+		
+		for (int i = 0; i < QLength; i++) {
+			ques.add(new Que(i));
 		}
-	_microtick = microtick;
-	 Period = 0;
-	 Hyperperiod = 1;
+		_microtick = microtick;
+		Period = 0;
+		Hyperperiod = 1;
 		
 	}
-	Port(String sideName, boolean isOut, List<Stream> _assignedstreams, boolean _c_to_es, int gcl, int[] _affq, int[] _topen, int[] _tclose, int[][] _index, int microtick, int _Period){
+	Port(String sideName, boolean isOut, List<Stream> _assignedstreams, boolean _c_to_es, int gcl, int[] _affq, int[] _topen, int[] _tclose, int[][] _index, int microtick, int _Period, int _Hyperperiod, List<Que>_ques){
 		connectedTo = sideName;
 		outPort = isOut;
-		for (int i = 0; i < ques.length; i++) {
-			ques[i] = new Que(i);
+		Hyperperiod = 1;
+		ques.clear();
+		for (Que q : _ques) {
+			ques.add(q.Clone());
 		}
+
+		
+		
 		for (Stream stream : _assignedstreams) {
-			AssignedStreams.add(stream.Clone());
+			AssignStream(stream.Clone());
 		}
 		connectedToES = _c_to_es;
 		GCLSize = gcl;
-		affiliatedQue = new int[_affq.length];
-		for (int i = 0; i < _affq.length; i++) {
-			affiliatedQue[i] = _affq[i];
+		if(_affq != null) {
+			affiliatedQue = new int[_affq.length];
+			for (int i = 0; i < _affq.length; i++) {
+				affiliatedQue[i] = _affq[i];
+			}
 		}
-		Topen = new int[_topen.length];
-		for (int i = 0; i < _topen.length; i++) {
-			Topen[i] = _topen[i];
+		if(_topen != null ) {
+			Topen = new int[_topen.length];
+			for (int i = 0; i < _topen.length; i++) {
+				Topen[i] = _topen[i];
+			}
 		}
-		Tclose = new int[_tclose.length];
-		for (int i = 0; i < _tclose.length; i++) {
-			Tclose[i] = _tclose[i];
+		if(_tclose != null) {
+			Tclose = new int[_tclose.length];
+			for (int i = 0; i < _tclose.length; i++) {
+				Tclose[i] = _tclose[i];
+			}
 		}
-		indexMap = new int[_index.length][];
-		for (int i = 0; i < _index.length; i++) {
-			indexMap[i] = new int[_index[i].length];
-			for (int j = 0; j < _index[i].length; j++) {
-				indexMap[i][j] = _index[i][j];
+		if(_index != null) {
+			indexMap = new int[_index.length][];
+			for (int i = 0; i < _index.length; i++) {
+				indexMap[i] = new int[_index[i].length];
+				for (int j = 0; j < _index[i].length; j++) {
+					indexMap[i][j] = _index[i][j];
+				}
 			}
 		}
 		_microtick = microtick;
 		Period = _Period;
+		Hyperperiod = _Hyperperiod;
 		
 		
+	}
+	int getHPeriod() {
+		return Hyperperiod;
 	}
 	int getPeriod() {
 		return Period;
@@ -234,7 +257,7 @@ class Port {
 		Period = P;
 	}
 	int GetNQue(){
-		return ques.length;
+		return QLength;
 	}
 	int getUsedQ() {
 		int used = 0;
@@ -247,17 +270,23 @@ class Port {
 	}
 	void AssignStream(Stream s) {
 		AssignedStreams.add(s);
+		Hyperperiod = LCM(Hyperperiod, s.Period);
+
+	}
+	public void SetGCLs(int _size) {
+		Topen = new int[_size];
+		Tclose = new int[_size];
+		affiliatedQue = new int[_size];
+		GCLSize = _size;
 	}
 	void initiate() {
 		int GCLsize = 0;
 		for (Stream stream : AssignedStreams) {
-			ques[stream.Priority].AssignStream(stream);
+			ques.get(stream.Priority).AssignStream(stream);
 			GCLsize += stream.N_instances;
 			
 		}
-		Topen = new int[GCLsize];
-		Tclose = new int[GCLsize];
-		affiliatedQue = new int[GCLsize];
+
 		GCLSize = GCLsize;
 		indexMap = new int [AssignedStreams.size()][];
 		for (int i = 0; i < AssignedStreams.size(); i++) {
@@ -292,8 +321,20 @@ class Port {
 		
 		
 	}
+	public int LCM(int a, int b) {
+		int lcm = (a > b) ? a : b;
+        while(true)
+        {
+            if( lcm % a == 0 && lcm % b == 0 )
+            {
+                break;
+            }
+            ++lcm;
+        }
+		return lcm;
+	}
 	public Port Clone() {
-		return new Port(connectedTo, outPort, AssignedStreams, connectedToES, GCLSize, affiliatedQue, Topen, Tclose, indexMap, _microtick, Period);
+		return new Port(connectedTo, outPort, AssignedStreams, connectedToES, GCLSize, affiliatedQue, Topen, Tclose, indexMap, _microtick, Period, Hyperperiod , ques);
 	}
 
 }
@@ -301,9 +342,17 @@ class Que{
 	int id;
 	int Priority;
 	List<Stream> assignedStreams = new ArrayList<Stream>();
+	int Hyperperiod = -1;
 	public Que(int per){
 		setID(per);
 		setPriority(per);
+	}
+	public Que(int _id, int _Pri , List<Stream> streams) {
+		id = _id;
+		Priority = _Pri;
+		for (Stream s : streams) {
+			AssignStream(s);
+		}
 	}
 	private void setID(int _id) {
 		id = _id;
@@ -313,5 +362,30 @@ class Que{
 	}
 	public void AssignStream(Stream s) {
 		assignedStreams.add(s);
+		if(Hyperperiod == -1) {
+			Hyperperiod = 1;
+		}
+		Hyperperiod = LCM(Hyperperiod, s.Period);
+	}
+	public boolean isUsed() {
+		if(assignedStreams.size() > 0) {
+			return true;
+		}
+		return false;
+	}
+	public int LCM(int a, int b) {
+		int lcm = (a > b) ? a : b;
+        while(true)
+        {
+            if( lcm % a == 0 && lcm % b == 0 )
+            {
+                break;
+            }
+            ++lcm;
+        }
+		return lcm;
+	}
+	public Que Clone() {
+		return new Que(id, Priority, assignedStreams);
 	}
 }

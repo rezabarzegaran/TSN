@@ -116,6 +116,52 @@ public class DataVisualizer {
             e.printStackTrace();
         }
 	}
+	public void CreateTotalWindowSVG(Solution solution, String DirPath, int duration) {
+		try {
+			Duration = duration * mlt;
+			maxH = solution.getNOutPorts();
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.newDocument();
+            
+            Element svg = init(doc, solution);
+            doc.appendChild(svg);
+            
+            
+            int port_index = 0;
+            for (Switches sw : solution.SW) {
+				for (Port port : sw.ports) {
+					if(port.outPort) {
+						for (int i = 0; i < port.Topen.length; i++) {
+							int x_1 = port.Topen[i] * mlt;
+							int x_2 = port.Tclose[i] * mlt;
+							int width = x_2 - x_1;
+							if( (x_1 <= Duration) && (x_2 <= Duration)) {
+								addFrame(doc, svg, x_1 + offset , rowH * port_index + Toffset, width, rowH, String.valueOf(port.affiliatedQue[i]), port.affiliatedQue[i]);
+							}
+
+						}
+						
+						port_index++;
+					}
+
+				}
+			}
+           
+               
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource domSource = new DOMSource(doc);
+            Files.createDirectories(Paths.get(DirPath));
+            String path = DirPath + "/" + "scheduletable.svg";
+            StreamResult streamResult = new StreamResult(new File(path));
+            transformer.transform(domSource, streamResult);
+            
+			
+		} catch (Exception e){
+            e.printStackTrace();
+        }
+	}
 	private int getPortIndex(Solution Current, String swName, int mID) {
 		int counter = 0;
 		for (Switches sw : Current.SW) {

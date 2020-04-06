@@ -218,11 +218,11 @@ class DataLoader {
     //Creates text File for Luxi's Tool
     private void CreateLuxiInterface() {
     	try {
-    		String DirPath = "Results/LuxiInterface";
+    		String DirPath = "NetCal/in";
     		Files.createDirectories(Paths.get(DirPath));
-    		PrintWriter writer = new PrintWriter(DirPath + "/vis.txt", "UTF-8");
+    		PrintWriter writer = new PrintWriter(DirPath + "/vls.txt", "UTF-8");
     		for (Routes r : routings) {
-        		String routeLink = String.valueOf(r.id) + " : ";
+        		String routeLink = "v" + String.valueOf(r.id) + " : ";
         		for (int i = 0; i < (r.nodes.size() - 1); i++) {
         			routeLink += r.nodes.get(i) + "," + r.nodes.get(i+1) + " ; ";
 				}
@@ -240,8 +240,8 @@ class DataLoader {
 						}
 					}
 				}
-    			String mLink = String.valueOf(m.id) + ", " + String.valueOf(m.size) + ", " + String.valueOf(m.deadline) + ", ";
-    			mLink += routingID + ", TT, " + String.valueOf(m.priority) + ", " + String.valueOf(m.period);
+    			String mLink = "Flow" + String.valueOf(m.id) + ", " + String.valueOf(m.size) + ", " + String.valueOf(m.deadline) + ", ";
+    			mLink += "v" + routingID + ", TT, " + String.valueOf(m.priority) + ", " + String.valueOf(m.period);
     			mwriter.println(mLink);
 			}
 

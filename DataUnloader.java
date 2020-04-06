@@ -60,24 +60,38 @@ class DataUnloader {
 		String solutionFile = "S_" + counter + ".xml";
 		String jitterPath = defaultPath + "/Jitters";
 		
-		if (GeneralInterface) {
-    		visualizer.CreateTotalSVG(solution, schedulePath, solution.Hyperperiod);
-    		UnloadStreams(solution, streamPath, solutionFile);
+		if(name.contains("Niklas")) {
+    		visualizer.CreateTotalWindowSVG(solution, schedulePath, solution.Hyperperiod);
     		UnloadPorts(solution, switchPath, solutionFile);
-		}
-		if (JitterTimeInterface) {
-    		CreateJitterTimeInterface(solution, jitterPath, "S_"+counter);
-    		UnloadJitterStreams(solution, jitterPath, solutionFile);
-		}
-		if (LuxiInterface) {
-    		String luxiToolPath = "Results/LuxiInterface/"+ name;
-    		UnloadLuxi(solution, luxiToolPath);
-		}
-		if (StreamWiseInterface) {
-    		visualizer.CreateStreamWiseSVG(solution, schedulePath, solution.Hyperperiod);
+    		//String luxiToolPath = "NetCal/in/";
+    		//UnloadLuxi(solution, luxiToolPath);
+
+		}else {
+			if (GeneralInterface) {
+	    		visualizer.CreateTotalSVG(solution, schedulePath, solution.Hyperperiod);
+	    		UnloadStreams(solution, streamPath, solutionFile);
+	    		UnloadPorts(solution, switchPath, solutionFile);
+			}
+			if (JitterTimeInterface) {
+	    		CreateJitterTimeInterface(solution, jitterPath, "S_"+counter);
+	    		UnloadJitterStreams(solution, jitterPath, solutionFile);
+			}
+			if (LuxiInterface) {
+	    		String luxiToolPath = "Results/LuxiInterface/"+ name;
+	    		UnloadLuxi(solution, luxiToolPath);
+			}
+			if (StreamWiseInterface) {
+	    		visualizer.CreateStreamWiseSVG(solution, schedulePath, solution.Hyperperiod);
+			}
 		}
 		
+
+		
     		
+    }
+    public void NETCALCall(Solution s) {
+		String luxiToolPath = "NetCal/in/";
+		UnloadLuxi(s, luxiToolPath);
     }
     private void getCostValues(Solution solution) {
     	List<Integer> costs = new ArrayList<Integer>();
