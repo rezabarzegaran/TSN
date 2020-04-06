@@ -218,19 +218,26 @@ class DataLoader {
     //Creates text File for Luxi's Tool
     private void CreateLuxiInterface() {
     	try {
+    		int linecounter = 0;
     		String DirPath = "NetCal/in";
     		Files.createDirectories(Paths.get(DirPath));
     		PrintWriter writer = new PrintWriter(DirPath + "/vls.txt", "UTF-8");
     		for (Routes r : routings) {
-        		String routeLink = "v" + String.valueOf(r.id) + " : ";
+    			String routeLink = "" ;
+    			if(linecounter !=0) {
+    				routeLink = "\n";
+    			}
+        		routeLink += "v" + String.valueOf(r.id) + " :";
         		for (int i = 0; i < (r.nodes.size() - 1); i++) {
-        			routeLink += r.nodes.get(i) + "," + r.nodes.get(i+1) + " ; ";
+        			routeLink += " " + r.nodes.get(i) + "," + r.nodes.get(i+1) + " ;";
 				}
-        		writer.println(routeLink);
+        		writer.print(routeLink);
+        		linecounter++;
 			}
     		writer.close();
     		
     		PrintWriter mwriter = new PrintWriter(DirPath + "/msg.txt", "UTF-8");
+    		linecounter = 0;
     		for (Messages m : messages) {
     			String routingID = null;
     			for (Routes r : routings) {
@@ -240,9 +247,14 @@ class DataLoader {
 						}
 					}
 				}
-    			String mLink = "Flow" + String.valueOf(m.id) + ", " + String.valueOf(m.size) + ", " + String.valueOf(m.deadline) + ", ";
-    			mLink += "v" + routingID + ", TT, " + String.valueOf(m.priority) + ", " + String.valueOf(m.period);
-    			mwriter.println(mLink);
+    			String mLink ="";
+    			if(linecounter != 0) {
+    				mLink = "\n";
+    			}
+    			mLink += "Flow" + String.valueOf(m.id) + ", " + String.valueOf(m.size) + ", " + String.valueOf(m.deadline) + ", ";
+    			mLink += "v" + routingID + ", TT, " + String.valueOf(m.priority) + ", " + String.valueOf(m.period) + ", 0.0";
+    			mwriter.print(mLink);
+    			linecounter++;
 			}
 
     		mwriter.close();

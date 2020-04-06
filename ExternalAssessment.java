@@ -26,6 +26,7 @@ public class ExternalAssessment extends SearchMonitor{
 	Runtime runtime = Runtime.getRuntime();
 	String toolname = "TSNNetCal.exe";
 	String inputPath = "NetCal";
+	//String inputPath = "usecases\\IEEE Access\\_TC1 - random open windows (change overlapped situations)\\1-1";
 	String runcommand = toolname + " " + inputPath;
 
 	public ExternalAssessment(Solver s,  IntVar[] _Costs, IntVar[][] _wperiod, IntVar[][] _wlength, IntVar[][] _woffset , Solution _current) {
@@ -165,7 +166,7 @@ public class ExternalAssessment extends SearchMonitor{
             }
             bri.close();
             //process.waitFor();
-            System.out.println("Done.");
+            //System.out.println("Done.");
             process.destroy();       	
         }
         catch (IOException e)

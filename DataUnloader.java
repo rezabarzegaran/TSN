@@ -103,14 +103,18 @@ class DataUnloader {
     }
     private void UnloadLuxi(Solution solution, String DirPath){
     	try {
+    		int linecounter = 0;
     		Files.createDirectories(Paths.get(DirPath));
     		PrintWriter writer = new PrintWriter(DirPath + "/historySCHED1.txt", "UTF-8");
     		for (Switches sw : solution.SW) {
 				for (Port port : sw.ports) {
 					if(port.outPort) {
 						String routeLink = sw.Name + "," + port.connectedTo;
-						writer.println();
+						if(linecounter != 0) {
+							writer.println();
+						}
 						writer.println(routeLink);
+						linecounter++;
 						for (int i = 0; i < port.Tclose.length; i++) {
 							String frame = String.valueOf(port.Topen[i]) + "\t" + String.valueOf(port.Tclose[i]) + "\t" + String.valueOf(port.Period) + "\t" + String.valueOf(port.affiliatedQue[i]);
 							writer.println(frame);
@@ -118,7 +122,7 @@ class DataUnloader {
 					}
 				}
 			}
-    		
+    		writer.print("#");
     		writer.close();
     	} catch (Exception e){
             e.printStackTrace();
