@@ -21,7 +21,7 @@ public class ExternalAssessment extends SearchMonitor{
 	public static int Pre_Cost1;
 	public static int Pre_Cost2;
 	public static int Total_Cost;
-	boolean enable_NoOverlap = false;
+	boolean enable_NoOverlap = true;
 	DataUnloader dataUnloader = new DataUnloader();
 	Runtime runtime = Runtime.getRuntime();
 	String toolname = "TSNNetCal.exe";
@@ -162,14 +162,16 @@ public class ExternalAssessment extends SearchMonitor{
             String line;
             BufferedReader bri = new BufferedReader(new InputStreamReader(process.getInputStream()));
             while ((line = bri.readLine()) != null) {
-              System.out.println(line);
+            	long ToolVal = 0;
+
+            	System.out.println(line);
             }
             bri.close();
-            //process.waitFor();
+            process.waitFor();
             //System.out.println("Done.");
             process.destroy();       	
         }
-        catch (IOException e)
+        catch (IOException | InterruptedException e)
         {
             e.printStackTrace();
         }	
@@ -227,6 +229,7 @@ public class ExternalAssessment extends SearchMonitor{
 		}
 		return GCLSize;
 	}
+
 	private int LCM(int a, int b) {
 		int lcm = (a > b) ? a : b;
         while(true)

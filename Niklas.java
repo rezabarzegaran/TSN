@@ -54,9 +54,53 @@ public class Niklas extends SolutionMethod {
 	}
 	public void addConstraints() {
 		WindowDurationConstraint(Wperiod, Wlength, Woffset);
+		PortSamePeriodConstraint(Wperiod, Wlength, Woffset);
 		WindowMaxPeriodConstriant(Wperiod, Wlength, Woffset);
-		WindowPropertyConstraint(Wperiod, Wlength, Woffset);
+		WindowPropertyConstraint(Wperiod, Wlength, Woffset);	
+	}
+	public void NoOverlappingWidnows(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset) {
+		int portcounter = 0;
+		for (Switches sw : Current.SW) {
+			for (Port port : sw.ports) {
+				if(port.outPort) {
+					int NUsedQ = port.getUsedQ();
+					for (int i = 0; i < NUsedQ; i++) {
+						for (int j = 0; j < NUsedQ; j++) {	
+							if (i != j) {
+								IntVar iOpen = woffset[portcounter][i];
+								IntVar iClose = solver.makeSum(iOpen, wlength[portcounter][i]).var();
+								IntVar jOpen = woffset[portcounter][j];
+								IntVar jClose = solver.makeSum(jOpen, wlength[portcounter][j]).var();
+								IntVar FC = solver.makeIsGreaterOrEqualVar(iClose, jOpen).var();
+								IntVar SC = solver.makeIsGreaterOrEqualVar(jClose, iOpen).var();
+								
+								IntVar DC = solver.makeSum(FC, SC).var();
+								solver.addConstraint(solver.makeEquality(DC, 1));
+							}
+						}
+					}
+					portcounter++;
+				}
+			}
+		}
+	}
+	public void PortSamePeriodConstraint(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset) {
+		int portcounter = 0;
+		for (Switches sw : Current.SW) {
+			for (Port port : sw.ports) {
+				if(port.outPort) {
+					int NusedQ = port.getUsedQ();
+					for (int i = 0; i < NusedQ; i++) {
+						for (int j = 0; j < NusedQ; j++) {
+							solver.addConstraint(solver.makeEquality(wperiod[portcounter][i], wperiod[portcounter][j]));
+						}
+						
+					}
 		
+					portcounter++;
+				}
+			}
+		}
 	}
 	public void WindowPropertyConstraint(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset) {
 		int portcounter = 0;
@@ -100,10 +144,21 @@ public class Niklas extends SolutionMethod {
 					int UsedQCounter = 0;
 					for (Que q : port.ques) {
 						if(q.isUsed()) {
-							int percentage = GetQue1OverPercentage(q);
-							IntVar scaledPeriod = solver.makeDiv(wlength[portcounter][UsedQCounter], percentage).var();
-							IntVar scaledPeriodandGB = solver.makeSum(scaledPeriod, GetQuemaxTransmitionDuration(q)).var();				
-							solver.addConstraint(solver.makeLessOrEqual(scaledPeriodandGB , wlength[portcounter][UsedQCounter]));
+							int percentage = GetQuePercentage(q);
+
+							//IntVar scaledLength = solver.makeProd(wlength[portcounter][UsedQCounter], percentage).var();
+							//int scaledGB = GetQuemaxTransmitionDuration(q) * percentage;
+							//IntVar _period = solver.makeSum(wperiod[portcounter][UsedQCounter], scaledGB).var();			
+							//solver.addConstraint(solver.makeGreaterOrEqual(scaledLength, _period));
+							
+							IntVar _length = solver.makeProd(wlength[portcounter][UsedQCounter], 100).var();
+							int _Gb = GetQuemaxTransmitionDuration(q) * 100;
+							IntVar _period = solver.makeProd(wperiod[portcounter][UsedQCounter], percentage).var();
+							IntVar _periodGB = solver.makeSum(_period , _Gb).var();
+							solver.addConstraint(solver.makeGreaterOrEqual(_length, _periodGB));
+							
+							
+							
 							UsedQCounter++;
 						}
 					}
@@ -132,8 +187,8 @@ public class Niklas extends SolutionMethod {
 		long allvariables = 3 * TotalVars;
 		System.out.println("There are " + allvariables + "Variables");
 		DecisionBuilder[] dbs = new DecisionBuilder[3];
-		dbs[1] = solver.makePhase(x,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MAX_VALUE); // The systematic search method
-		dbs[0] = solver.makePhase(y,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MIN_VALUE); // The systematic search method
+		dbs[0] = solver.makePhase(x,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MAX_VALUE); // The systematic search method
+		dbs[1] = solver.makePhase(y,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MIN_VALUE); // The systematic search method
 		dbs[2] = solver.makePhase(z,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
 		db = solver.compose(dbs);
 	}
@@ -295,16 +350,16 @@ public class Niklas extends SolutionMethod {
 		}
 		return hyperperiod;
 	}
-	private int GetQue1OverPercentage(Que q) {
+	private int GetQuePercentage(Que q) {
 		double per = 0;
 		for (Stream s : q.assignedStreams) {
-			per += s.Transmit_Time / s.Period ;	
+			per += ( s.Transmit_Time / s.Period ) ;	
 		}
 		
-		int invertedpercentage = (int) (1 / per);
+		int percentage =(int) Math.ceil(per * 100) ;
 		
 		
-		return invertedpercentage;
+		return percentage;
 	}
 	private int GetPortGCLSize(IntVar[] portPeriod, int hyper) {
 		int GCLSize = 0;
