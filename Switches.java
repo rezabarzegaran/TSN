@@ -10,6 +10,7 @@ import java.util.Random;
 
 
 
+
 public class Switches {
 	String Name;
 	int Hyperperiod = 1;
@@ -273,6 +274,14 @@ class Port {
 		Hyperperiod = LCM(Hyperperiod, s.Period);
 
 	}
+	public boolean HasStream(Stream s) {
+		for (Stream stream : AssignedStreams) {
+			if(stream.Id == s.Id) {
+				return true;
+			}
+		}
+		return false;
+	}
 	public void SetGCLs(int _size) {
 		Topen = new int[_size];
 		Tclose = new int[_size];
@@ -370,6 +379,14 @@ class Que{
 	public boolean isUsed() {
 		if(assignedStreams.size() > 0) {
 			return true;
+		}
+		return false;
+	}
+	public boolean HasStream(Stream s) {
+		for (Stream stream : assignedStreams) {
+			if(stream.Id == s.Id) {
+				return true;
+			}
 		}
 		return false;
 	}

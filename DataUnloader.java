@@ -57,14 +57,14 @@ class DataUnloader {
 		String streamPath = defaultPath + "/Streams";
 		String switchPath = defaultPath + "/Switches";
 		String schedulePath = defaultPath + "/Schedule/" + "S_" + counter;
+		String LuxiToolPath = defaultPath + "/LuxiInterface/S_" + counter;
 		String solutionFile = "S_" + counter + ".xml";
 		String jitterPath = defaultPath + "/Jitters";
 		
 		if(name.contains("Niklas")) {
     		visualizer.CreateTotalWindowSVG(solution, schedulePath, solution.Hyperperiod);
     		UnloadPorts(solution, switchPath, solutionFile);
-    		//String luxiToolPath = "NetCal/in/";
-    		//UnloadLuxi(solution, luxiToolPath);
+    		UnloadLuxi(solution, LuxiToolPath);
 
 		}else {
 			if (GeneralInterface) {
@@ -77,8 +77,8 @@ class DataUnloader {
 	    		UnloadJitterStreams(solution, jitterPath, solutionFile);
 			}
 			if (LuxiInterface) {
-	    		String luxiToolPath = "Results/LuxiInterface/"+ name;
-	    		UnloadLuxi(solution, luxiToolPath);
+	    		//String luxiToolPath = "Results/LuxiInterface/"+ name;
+	    		UnloadLuxi(solution, LuxiToolPath);
 			}
 			if (StreamWiseInterface) {
 	    		visualizer.CreateStreamWiseSVG(solution, schedulePath, solution.Hyperperiod);

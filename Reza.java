@@ -157,6 +157,7 @@ public class Reza extends SolutionMethod{
 		for (Switches sw : Current.SW) {
 			for (Port port : sw.ports) {
 				if(port.outPort) {
+					port.SetGCLs(GetPortGCLSize(port));
 					int gclcounter = 0;
 					for (int i = 0; i < port.AssignedStreams.size(); i++) {
 						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
@@ -173,6 +174,13 @@ public class Reza extends SolutionMethod{
 		}
 		return Current.Clone();
 
+	}
+	private int GetPortGCLSize(Port port) {
+		int counter = 0;
+		for (int i = 0; i < port.AssignedStreams.size(); i++) {
+			counter += port.AssignedStreams.get(i).N_instances ;
+		}
+		return counter;
 	}
 	private void Constraint0(IntVar[][][] Offset) {
 	//Link Constraint

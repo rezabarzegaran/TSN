@@ -9,6 +9,7 @@ import com.google.ortools.constraintsolver.IntVar;
 import com.google.ortools.constraintsolver.SearchMonitor;
 import com.google.ortools.constraintsolver.Solver;
 
+
 public class ExternalAssessment extends SearchMonitor{
 	
 	
@@ -22,7 +23,11 @@ public class ExternalAssessment extends SearchMonitor{
 	public static int Pre_Cost1;
 	public static int Pre_Cost2;
 	public static int Total_Cost;
-	boolean enable_NoOverlap = true;
+	private static double crr_temp;
+	private double init_temp = 6000;
+	private double cooling_rate = 0.002;
+	private long MaxDelay = 0;
+	boolean enable_NoOverlap = false;
 	DataUnloader dataUnloader = new DataUnloader();
 	DataLoader dataLoader = new DataLoader();
 	Runtime runtime = Runtime.getRuntime();
@@ -42,6 +47,7 @@ public class ExternalAssessment extends SearchMonitor{
 		Wlength = new IntVar[_woffset.length][];
 		Woffset = new IntVar[_woffset.length][];
 		Costs = new IntVar[_Costs.length];
+		MaxDelay = GetMaxDelayCost();
 		
 		
 		for (int i = 0; i < _Costs.length; i++) {
@@ -64,26 +70,42 @@ public class ExternalAssessment extends SearchMonitor{
 	}
 	
 	public boolean acceptSolution() {
-	
 		boolean flag = true;
 		if (enable_NoOverlap) {
 			flag = NoOverlappingWindows();
 		}						
-		if(flag) {
+		if(!flag) {
+			
 			int COST1 = (int) Costs[0].value();
-			int COST2 = 100 * GetWCLatency();
-			flag = false;
-			int COST3 = COST1 + COST2;
-			if(COST3 < Total_Cost) {
-				Pre_Cost1 = COST1;
-				Pre_Cost2 = COST2;
-				Total_Cost = COST3;
+			int COST2 = GetWCLatency();
 
-				flag = true;
-				System.out.println(Pre_Cost1 + ", " + Pre_Cost2);
+			flag = false;
+			if(true) {
+				int COST3 = COST1 + ( COST2 * 5) ;
+				int cost_diff = COST3 - Total_Cost;
+				//crr_temp = init_temp  - (cooling_rate * solver.wallTime() / 100) ;
+				// probability = Math.exp(-cost_diff/crr_temp);
+				if(( cost_diff < 0 ) ) {
+					Pre_Cost1 = COST1;
+					Pre_Cost2 = COST2;
+					Total_Cost = COST3;
+					//flag = true;
+					//System.out.println(Pre_Cost1 + ", " + Pre_Cost2);
+				}
 			}
+			//System.out.println(COST1 + ", " + COST2 +  ", " + flag);
+
+			
+
 		}
 		return flag && super.acceptSolution();
+	}
+	
+	public boolean isItfinished() {
+		if(crr_temp <= 1.0) {
+			//return true;
+		}
+		return false;
 	}
 	
 	public int getExternalCost1() {
@@ -157,39 +179,59 @@ public class ExternalAssessment extends SearchMonitor{
 	}
 	private int GetWCLatency(){
 		makeSolution();
-		int LatencyCost = Integer.MAX_VALUE;
+		int LatencyCost = 1000000;
 		dataUnloader.NETCALCall(Current);	
         try
         {
         	Process process = runtime.exec(runcommand);
             process.waitFor();
+            process.destroy(); 
             HashMap<Integer, Integer> delays = dataLoader.LoadLuxiReport(inputPath);
             LatencyCost = (int) AssessDelays(delays);
             //System.out.println("Done.");
-            process.destroy();       	
+                  	
         }
         catch (IOException | InterruptedException e)
         {
-            e.printStackTrace();
+            //e.printStackTrace();
         }	
 		return LatencyCost;
 	}
 	private long AssessDelays(HashMap<Integer, Integer> delays) {
+		long Cost = 1000000;
+		if(delays.size() == Current.streams.size()) {
+			Cost = 0;
+	        for (int flow : delays.keySet()) {
+	        	int delay = delays.get(flow);
+	        	for (Stream s : Current.streams) {
+	        		if(s.Id == flow){
+	        			if(delay == -1) {
+	        				Cost += ( s.Deadline * 10 );
+	        			}else if(delay >= s.Deadline){
+	        				double times = (double) delay / ( s.Deadline) ;
+	        				Cost += (int) Math.ceil( times * delay) ;
+	        			}else {
+	        				Cost += delay ;
+	        			}
+					}
+	      	  		
+	      		}	
+	      	
+	      	}
+	        Cost *= 10000;
+	        Cost /= Current.streams.size();
+	        Cost /= MaxDelay;
+		}
+
+      	return Cost;
+	}
+	private long GetMaxDelayCost() {
 		long Cost = 0;
-        for (int flow : delays.keySet()) {
-        	int delay = delays.get(flow);
-        	for (Stream s : Current.streams) {
-        		if(s.Id == flow){
-        			if(delay == -1) {
-        				Cost += s.Deadline * 10;
-        			}else{
-        				Cost += delay;
-        			}
-				}
-      	  		
-      		}	
-      	
-      	}
+		
+		
+		for (Stream s : Current.streams) {
+			Cost += s.Deadline;
+		}
         Cost /= Current.streams.size();
       	return Cost;
 	}

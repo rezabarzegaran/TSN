@@ -8,20 +8,22 @@ public class NetOpt {
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		//Test Cases
         //String testcase = "src/TestCases/Jorge/JorgeCase1.xml";
-        //String testcase = "src/TestCases/GMModified/GMM5.xml";
+        //String testcase = "src/TestCases/GMModified/GMM6.xml";
         //String testcase = "src/TestCases/GM/GM.xml";
-		String testcase = "src/TestCases/Initial/input2.xml";
+		//String testcase = "src/TestCases/Initial/input2.xml";
 		//String testcase = "src/TestCases/Initial/testcase1.xml";
 		//String testcase = "src/TestCases/Initial/testcase2.xml";
 		//String testcase = "src/TestCases/GM/GM.xml";
 		//String testcase = "src/TestCases/JorgeFinal/TestCase 10/Test.xml";
+		String msg = "src/TestCases/IEEE/msg.txt";
+		String vls = "src/TestCases/IEEE/vls.txt";
 
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// Loading Data
         DataLoader dataLoader = new DataLoader();
-        dataLoader.Load(testcase);
+        //dataLoader.Load(testcase);
         //Method call for old input version
-        //dataLoader.Load(testcase9a, testcase9b);  
+        dataLoader.Load(msg, vls);  
 
         //Loading Completed
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -35,7 +37,7 @@ public class NetOpt {
         //Select Between Methods
         methods chosenMethods = methods.Niklas;
         
-        boolean debugmode = false;
+        boolean debugmode = true;
         
         ORSolver optimizer = new ORSolver(chosenMethods, initial_Solution, debugmode);
         

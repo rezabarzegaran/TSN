@@ -24,7 +24,7 @@ public class Niklas extends SolutionMethod {
 	IntVar[][] Wperiod;
 	IntVar[][] Wlength;
 	IntVar[][] Woffset;
-	long LenScale = (long) 100000;
+	long LenScale = (long) 10000;
 	ExternalAssessment excAssessment;
 
 	
@@ -49,14 +49,116 @@ public class Niklas extends SolutionMethod {
 		Wperiod = new IntVar[NOutports][];
 		Wlength = new IntVar[NOutports][];
 		Woffset = new IntVar[NOutports][];
-		Costs = new IntVar[3];
+		Costs = new IntVar[5];
 		TotalVars = AssignVars(Wperiod, Wlength, Woffset);
 	}
 	public void addConstraints() {
 		WindowDurationConstraint(Wperiod, Wlength, Woffset);
+		FixedPeriodConstraint(Wperiod, Wlength, Woffset);
 		PortSamePeriodConstraint(Wperiod, Wlength, Woffset);
+		
 		WindowMaxPeriodConstriant(Wperiod, Wlength, Woffset);
-		WindowPropertyConstraint(Wperiod, Wlength, Woffset);	
+		WindowPropertyConstraint(Wperiod, Wlength, Woffset);
+		FrameHandleCosntraint(Wperiod, Wlength, Woffset);
+		//LinkHandleConstraint(Wperiod, Wlength, Woffset);
+		NoOverlappingWidnows(Wperiod, Wlength, Woffset);
+		WCDelayConstraint(Wperiod, Wlength, Woffset);
+	}
+	public void LinkHandleConstraint(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset) {
+		for (Stream s : Current.streams) {
+			IntVar totalOffset = null;
+			for (String node : s.routingList) {
+				int portcounter = 0;
+				for (Switches sw : Current.SW) {
+					for (Port port : sw.ports) {
+						if(port.outPort) {
+							if (sw.Name.equals(node)) {
+								int UsedQCounter = 0;
+								for (Que q : port.ques) {
+									if(q.isUsed()) {
+										if(q.HasStream(s)) {
+											if(totalOffset == null) {
+												totalOffset = woffset[portcounter][UsedQCounter];
+											}else {
+												totalOffset = solver.makeSum(totalOffset, woffset[portcounter][UsedQCounter]).var();
+											}
+										}
+										UsedQCounter++;
+									}
+								}
+							}
+							portcounter++;
+						}
+					}
+				}
+			}
+			solver.addConstraint(solver.makeLess(totalOffset, s.Deadline));
+			
+		}
+	}
+	public void WCDelayConstraint(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset) {
+		for (Stream s : Current.streams) {
+			for (int i = 0; i < s.N_instances; i++) {
+				int stream_release = i * s.Period;
+				IntVar s_r = solver.makeIntConst(stream_release);
+				for (String node : s.routingList) {
+					int portcounter = 0;
+					for (Switches sw : Current.SW) {
+						for (Port port : sw.ports) {
+							if(port.outPort) {
+								if (sw.Name.equals(node) && port.HasStream(s)) {
+									int UsedQCounter = 0;
+									for (Que q : port.ques) {
+										if(q.isUsed()) {
+											if(q.HasStream(s)) {
+												IntVar Winstance = solver.makeDiv(s_r, wperiod[portcounter][UsedQCounter]).var();
+												
+												IntVar Wclose = solver.makeSum(woffset[portcounter][UsedQCounter] , wlength[portcounter][UsedQCounter]).var();
+												Wclose = solver.makeSum(Wclose, solver.makeProd(Winstance, wperiod[portcounter][UsedQCounter])).var();			
+
+												IntVar Dec = solver.makeIsGreaterVar(s_r, Wclose).var();
+												Wclose = solver.makeSum(Wclose, solver.makeProd(Dec, wperiod[portcounter][UsedQCounter])).var();			
+												s_r = Wclose;
+												
+											}
+											UsedQCounter++;
+										}
+									}
+								}
+								portcounter++;
+							}
+						}
+					}
+				}
+				solver.addConstraint(solver.makeLessOrEqual(s_r, ((int) (stream_release + (1 * s.Deadline)))));
+				
+			}
+						
+		}
+	}
+	public void FrameHandleCosntraint(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset) {
+		int portcounter = 0;
+		for (Switches sw : Current.SW) {
+			for (Port port : sw.ports) {
+				if(port.outPort) {
+					int UsedQCounter = 0;
+					for (Que q : port.ques) {
+						if(q.isUsed()) {
+							int mindeadline = minStreamDeadLine(q);
+							IntVar scaledOffset= solver.makeProd(woffset[portcounter][UsedQCounter], sw.microtick).var();
+							solver.addConstraint(solver.makeLess(scaledOffset, mindeadline));
+							IntVar scaledLength= solver.makeProd(wlength[portcounter][UsedQCounter], sw.microtick).var();
+							IntVar scaledPeriod= solver.makeProd(wperiod[portcounter][UsedQCounter], sw.microtick).var();
+							//IntVar WClose = solver.makeSum(scaledLength , scaledOffset).var();
+							IntVar WFree = solver.makeDifference(scaledPeriod, scaledLength).var();
+							solver.addConstraint(solver.makeLess(WFree, mindeadline));							
+							UsedQCounter++;
+						}
+					}
+					portcounter++;
+				}
+			}
+		}
 	}
 	public void NoOverlappingWidnows(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset) {
 		int portcounter = 0;
@@ -71,8 +173,8 @@ public class Niklas extends SolutionMethod {
 								IntVar iClose = solver.makeSum(iOpen, wlength[portcounter][i]).var();
 								IntVar jOpen = woffset[portcounter][j];
 								IntVar jClose = solver.makeSum(jOpen, wlength[portcounter][j]).var();
-								IntVar FC = solver.makeIsGreaterOrEqualVar(iClose, jOpen).var();
-								IntVar SC = solver.makeIsGreaterOrEqualVar(jClose, iOpen).var();
+								IntVar FC = solver.makeIsGreaterVar(iClose, jOpen).var();
+								IntVar SC = solver.makeIsGreaterVar(jClose, iOpen).var();
 								
 								IntVar DC = solver.makeSum(FC, SC).var();
 								solver.addConstraint(solver.makeEquality(DC, 1));
@@ -92,8 +194,30 @@ public class Niklas extends SolutionMethod {
 					int NusedQ = port.getUsedQ();
 					for (int i = 0; i < NusedQ; i++) {
 						for (int j = 0; j < NusedQ; j++) {
+
+							
 							solver.addConstraint(solver.makeEquality(wperiod[portcounter][i], wperiod[portcounter][j]));
 						}
+						
+					}
+		
+					portcounter++;
+				}
+			}
+		}
+	}
+	public void FixedPeriodConstraint(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset) {
+		int portcounter = 0;
+		for (Switches sw : Current.SW) {
+			for (Port port : sw.ports) {
+				if(port.outPort) {
+					int NusedQ = port.getUsedQ();
+					for (int i = 0; i < NusedQ; i++) {
+							IntVar hyperIntVar = solver.makeIntConst(Current.Hyperperiod);
+							IntVar PInstances = solver.makeDiv(hyperIntVar, wperiod[portcounter][i]).var();
+							IntVar ScaledPeriod = solver.makeProd(wperiod[portcounter][i], PInstances).var();
+							solver.addConstraint(solver.makeEquality(hyperIntVar, ScaledPeriod));
+							
 						
 					}
 		
@@ -172,8 +296,9 @@ public class Niklas extends SolutionMethod {
 		//Cost[0]
 		MinimizeWindowPercentage(Wperiod, Wlength, Woffset, Costs);
 		//Cost[1]
+		MinimizeWCD(Wperiod, Wlength, Woffset, Costs);
 		//Costs[1].setValue(Integer.MAX_VALUE);
-		//costVar = CostMinimizer(Wperiod, Wlength, Woffset, Costs);
+		costVar = CostMinimizer(Wperiod, Wlength, Woffset, Costs);
 		excAssessment = new ExternalAssessment(solver, Costs, Wperiod, Wlength, Woffset, Current);
 
 	}
@@ -188,7 +313,7 @@ public class Niklas extends SolutionMethod {
 		System.out.println("There are " + allvariables + "Variables");
 		DecisionBuilder[] dbs = new DecisionBuilder[3];
 		dbs[0] = solver.makePhase(x,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MAX_VALUE); // The systematic search method
-		dbs[1] = solver.makePhase(y,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
+		dbs[1] = solver.makePhase(y,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MIN_VALUE); // The systematic search method
 		//dbs[2] = solver.makePhase(z,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
 		DecisionBuilder dbstemp = solver.makePhase(z,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
 
@@ -196,14 +321,14 @@ public class Niklas extends SolutionMethod {
 		db = solver.compose(dbs);
 	}
 	public void addSolverLimits() {
-		int hours = 1;
-		int minutes = 0;
+		int hours = 0;
+		int minutes = 10;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
-		SearchMonitor[] searchVar = new SearchMonitor[2];
+		SearchMonitor[] searchVar = new SearchMonitor[3];
 		searchVar[0] = limit;
 		searchVar[1] = excAssessment;	
-		//searchVar[2] = costVar;
+		searchVar[2] = costVar;
 		solver.newSearch(getDecision(),searchVar);
 	    System.out.println(solver.model_name() + " Initiated");
 	}
@@ -216,8 +341,8 @@ public class Niklas extends SolutionMethod {
 	
 	public Solution cloneSolution() {
 		//Costs[0].setValue(excAssessment.getExternalCost1());
-		Costs[1].setValue(excAssessment.getExternalCost2());
-		Costs[2].setValue(excAssessment.getExternalCost3());
+		Costs[3].setValue(excAssessment.getExternalCost2());
+		Costs[4].setValue(excAssessment.getExternalCost3());
 		return AssignSolution(Wperiod, Wlength, Woffset, Costs);
 	}
 
@@ -225,8 +350,9 @@ public class Niklas extends SolutionMethod {
 		TotalRuns++;
 		long duration = System.currentTimeMillis() - started;
     	System.out.println("Solution Found!!, in Time: " + duration);    	
-		if((TotalRuns >= 5000)){
-			return true;
+		if((TotalRuns >= 20) || excAssessment.isItfinished()){
+			//return true;
+			return false;
 		}else {
 			return false;
 
@@ -251,7 +377,7 @@ public class Niklas extends SolutionMethod {
 					int UsedQCounter = 0;
 					for (Que q : port.ques) {
 						if(q.isUsed()) {
-							wperiod[portcounter][UsedQCounter] = solver.makeIntVar(0, ((port.getHPeriod()) / sw.microtick), ("F_" + portcounter + "_"+ UsedQCounter));
+							wperiod[portcounter][UsedQCounter] = solver.makeIntVar(0 , ((port.getHPeriod()) / sw.microtick), ("F_" + portcounter + "_"+ UsedQCounter));
 							wlength[portcounter][UsedQCounter] = solver.makeIntVar(0, ((port.getHPeriod()) / sw.microtick), ("F_" + portcounter + "_"+ UsedQCounter));
 							woffset[portcounter][UsedQCounter] = solver.makeIntVar(0, ((port.getHPeriod()) / sw.microtick), ("F_" + portcounter + "_"+ UsedQCounter));
 							Totalvars++;
@@ -266,12 +392,20 @@ public class Niklas extends SolutionMethod {
 		}
 		return Totalvars;
 	}
+	private OptimizeVar CostMinimizer(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset, IntVar[] cost) {
+		IntVar Cost1 = solver.makeProd(cost[0], 1).var();
+		IntVar Cost2 = solver.makeProd(cost[1], 2).var();
+		IntVar totalCost = solver.makeSum(Cost1, Cost2).var();
+		cost[2] = totalCost;
+		return solver.makeMinimize(totalCost, 5);
+	}
 	private OptimizeVar MinimizeWindowPercentage(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset, IntVar[] cost) {
 		IntVar percent = null;
 		for (int i = 0; i < woffset.length; i++) {
 			for (int j = 0; j < woffset[i].length; j++) {
 				IntVar scaeldLength = solver.makeProd(wlength[i][j], LenScale).var();
-				IntVar crr_per = solver.makeDiv(scaeldLength ,wperiod[i][j]).var();
+				IntVar scaledPeriod = solver.makeProd(wperiod[i][j], TotalVars).var();
+				IntVar crr_per = solver.makeDiv(scaeldLength ,scaledPeriod).var();
 				if(percent == null) {
 					percent = crr_per;
 				}else {
@@ -284,6 +418,53 @@ public class Niklas extends SolutionMethod {
 		cost[0] = percent;
 		return solver.makeMinimize(percent, 1);
 	}
+	public OptimizeVar MinimizeWCD(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset, IntVar[] cost) {
+		IntVar TotalD = null;
+		for (Stream s : Current.streams) {
+			for (int i = 0; i < s.N_instances; i++) {
+				int stream_release = i * s.Period;
+				IntVar s_r = solver.makeIntConst(stream_release);
+				for (String node : s.routingList) {
+					int portcounter = 0;
+					for (Switches sw : Current.SW) {
+						for (Port port : sw.ports) {
+							if(port.outPort) {
+								if (sw.Name.equals(node) && port.HasStream(s)) {
+									int UsedQCounter = 0;
+									for (Que q : port.ques) {
+										if(q.isUsed()) {
+											if(q.HasStream(s)) {
+												IntVar Winstance = solver.makeDiv(s_r, wperiod[portcounter][UsedQCounter]).var();
+												
+												IntVar Wclose = solver.makeSum(woffset[portcounter][UsedQCounter] , wlength[portcounter][UsedQCounter]).var();
+												Wclose = solver.makeSum(Wclose, solver.makeProd(Winstance, wperiod[portcounter][UsedQCounter])).var();			
+
+												IntVar Dec = solver.makeIsGreaterOrEqualVar(s_r, Wclose).var();
+												Wclose = solver.makeSum(Wclose, solver.makeProd(Dec, wperiod[portcounter][UsedQCounter])).var();			
+												s_r = Wclose;
+												
+											}
+											UsedQCounter++;
+										}
+									}
+								}
+								portcounter++;
+							}
+						}
+					}
+				}
+				if(TotalD == null) {
+					TotalD = s_r;
+				}else {
+					TotalD = solver.makeSum(TotalD, s_r).var();
+				}
+				
+			}
+						
+		}
+		cost[1] = TotalD;
+		return solver.makeMinimize(TotalD, 1);
+	}
 	private int GetQueTransmitionDuration(Que q) {
 		int Totalst = 0;
 		for (Stream s : q.assignedStreams) {
@@ -291,6 +472,15 @@ public class Niklas extends SolutionMethod {
 		}
 
 		return Totalst;
+	}
+	private int minStreamDeadLine(Que q) {
+		int minD = Integer.MAX_VALUE;
+		for (Stream stream : q.assignedStreams) {
+				if (stream.Deadline <= minD) {
+					minD = stream.Deadline;
+				}
+		}
+		return minD;
 	}
 	private int GetQuemaxTransmitionDuration(Que q) {
 		int maxSt = 0;
@@ -356,11 +546,12 @@ public class Niklas extends SolutionMethod {
 	private int GetQuePercentage(Que q) {
 		double per = 0;
 		for (Stream s : q.assignedStreams) {
-			per += ( s.Transmit_Time / s.Period ) ;	
+			per += (( (double) (s.Transmit_Time)) / s.Period ) ;	
+			
 		}
 		
 		int percentage =(int) Math.ceil(per * 100) ;
-		
+
 		
 		return percentage;
 	}

@@ -53,8 +53,14 @@ class DataConverter {
 					
 					String[] parts = line.split(", ");
 					
+					Attr sizeAttr = doc.createAttribute("size");
+					sizeAttr.setValue(parts[1]);
+					m.setAttributeNode(sizeAttr);
+					
 					Attr deadlineAttr = doc.createAttribute("deadline");
-					deadlineAttr.setValue(parts[2]);
+					int deadline = (int) (Double.parseDouble(parts[2]) / 100);
+					
+					deadlineAttr.setValue(String.valueOf(deadline));
 					m.setAttributeNode(deadlineAttr);
 					
 					Attr periodAttr = doc.createAttribute("period");
@@ -62,9 +68,7 @@ class DataConverter {
 					m.setAttributeNode(periodAttr);
 					
 					
-					Attr sizeAttr = doc.createAttribute("size");
-					sizeAttr.setValue(parts[1]);
-					m.setAttributeNode(sizeAttr);
+
 					
 					Attr prioAttr = doc.createAttribute("priority");
 					prioAttr.setValue(parts[5]);
