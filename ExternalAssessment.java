@@ -183,7 +183,7 @@ public class ExternalAssessment extends SearchMonitor{
         			if(delay == -1) {
         				Cost += s.Deadline * 10;
         			}else{
-        				Cost += s.Deadline;
+        				Cost += delay;
         			}
 				}
       	  		

@@ -188,8 +188,11 @@ public class Niklas extends SolutionMethod {
 		System.out.println("There are " + allvariables + "Variables");
 		DecisionBuilder[] dbs = new DecisionBuilder[3];
 		dbs[0] = solver.makePhase(x,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MAX_VALUE); // The systematic search method
-		dbs[1] = solver.makePhase(y,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MIN_VALUE); // The systematic search method
-		dbs[2] = solver.makePhase(z,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
+		dbs[1] = solver.makePhase(y,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
+		//dbs[2] = solver.makePhase(z,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
+		DecisionBuilder dbstemp = solver.makePhase(z,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
+
+		dbs[2] = solver.makeSolveOnce(dbstemp);
 		db = solver.compose(dbs);
 	}
 	public void addSolverLimits() {
