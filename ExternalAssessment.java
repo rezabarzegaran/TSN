@@ -3,6 +3,7 @@ package TSN;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 
 import com.google.ortools.constraintsolver.IntVar;
 import com.google.ortools.constraintsolver.SearchMonitor;
@@ -23,9 +24,10 @@ public class ExternalAssessment extends SearchMonitor{
 	public static int Total_Cost;
 	boolean enable_NoOverlap = true;
 	DataUnloader dataUnloader = new DataUnloader();
+	DataLoader dataLoader = new DataLoader();
 	Runtime runtime = Runtime.getRuntime();
 	String toolname = "TSNNetCal.exe";
-	String inputPath = "NetCal";
+	String inputPath = "usecases/NetCal";
 	//String inputPath = "usecases\\IEEE Access\\_TC1 - random open windows (change overlapped situations)\\1-1";
 	String runcommand = toolname + " " + inputPath;
 
@@ -69,7 +71,7 @@ public class ExternalAssessment extends SearchMonitor{
 		}						
 		if(flag) {
 			int COST1 = (int) Costs[0].value();
-			int COST2 = GetWCLatency();
+			int COST2 = 100 * GetWCLatency();
 			flag = false;
 			int COST3 = COST1 + COST2;
 			if(COST3 < Total_Cost) {
@@ -78,6 +80,7 @@ public class ExternalAssessment extends SearchMonitor{
 				Total_Cost = COST3;
 
 				flag = true;
+				System.out.println(Pre_Cost1 + ", " + Pre_Cost2);
 			}
 		}
 		return flag && super.acceptSolution();
@@ -154,20 +157,14 @@ public class ExternalAssessment extends SearchMonitor{
 	}
 	private int GetWCLatency(){
 		makeSolution();
-		
+		int LatencyCost = Integer.MAX_VALUE;
 		dataUnloader.NETCALCall(Current);	
         try
         {
-        	Process process = runtime.exec(runcommand); 
-            String line;
-            BufferedReader bri = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            while ((line = bri.readLine()) != null) {
-            	long ToolVal = 0;
-
-            	System.out.println(line);
-            }
-            bri.close();
+        	Process process = runtime.exec(runcommand);
             process.waitFor();
+            HashMap<Integer, Integer> delays = dataLoader.LoadLuxiReport(inputPath);
+            LatencyCost = (int) AssessDelays(delays);
             //System.out.println("Done.");
             process.destroy();       	
         }
@@ -175,7 +172,26 @@ public class ExternalAssessment extends SearchMonitor{
         {
             e.printStackTrace();
         }	
-		return 100;
+		return LatencyCost;
+	}
+	private long AssessDelays(HashMap<Integer, Integer> delays) {
+		long Cost = 0;
+        for (int flow : delays.keySet()) {
+        	int delay = delays.get(flow);
+        	for (Stream s : Current.streams) {
+        		if(s.Id == flow){
+        			if(delay == -1) {
+        				Cost += s.Deadline * 10;
+        			}else{
+        				Cost += s.Deadline;
+        			}
+				}
+      	  		
+      		}	
+      	
+      	}
+        Cost /= Current.streams.size();
+      	return Cost;
 	}
 	
 	private void makeSolution() {

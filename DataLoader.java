@@ -1,5 +1,7 @@
 package TSN;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -219,7 +221,7 @@ class DataLoader {
     private void CreateLuxiInterface() {
     	try {
     		int linecounter = 0;
-    		String DirPath = "NetCal/in";
+    		String DirPath = "usecases/NetCal/in";
     		Files.createDirectories(Paths.get(DirPath));
     		PrintWriter writer = new PrintWriter(DirPath + "/vls.txt", "UTF-8");
     		for (Routes r : routings) {
@@ -227,7 +229,7 @@ class DataLoader {
     			if(linecounter !=0) {
     				routeLink = "\n";
     			}
-        		routeLink += "v" + String.valueOf(r.id) + " :";
+        		routeLink += String.valueOf(r.id) + " :";
         		for (int i = 0; i < (r.nodes.size() - 1); i++) {
         			routeLink += " " + r.nodes.get(i) + "," + r.nodes.get(i+1) + " ;";
 				}
@@ -251,8 +253,8 @@ class DataLoader {
     			if(linecounter != 0) {
     				mLink = "\n";
     			}
-    			mLink += "Flow" + String.valueOf(m.id) + ", " + String.valueOf(m.size) + ", " + String.valueOf(m.deadline) + ", ";
-    			mLink += "v" + routingID + ", TT, " + String.valueOf(m.priority) + ", " + String.valueOf(m.period) + ", 0.0";
+    			mLink += String.valueOf(m.id) + ", " + String.valueOf(m.size) + ", " + String.valueOf(m.deadline) + ", ";
+    			mLink += routingID + ", TT, " + String.valueOf(m.priority) + ", " + String.valueOf(m.period) + ", 0.0";
     			mwriter.print(mLink);
     			linecounter++;
 			}
@@ -263,7 +265,43 @@ class DataLoader {
             e.printStackTrace();
         }
     }
-
+    // Read Luxi WCDelay file
+    public HashMap<Integer, Integer> LoadLuxiReport(String folderPath) {
+    	String fileName = folderPath + "/out/WCEndtoEndDelay.txt";
+    	HashMap<Integer, Integer> delays = new HashMap<Integer, Integer>();
+    	try {
+            FileReader fileReader = new FileReader(fileName);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            String line = null;
+            
+            while ((line = bufferedReader.readLine()) != null) {
+            	String[] parts = line.split(",");
+            	int StreamID = (int) ToNumber(parts[0]);
+            	String[] parts2 = parts[1].split(":");
+            	int converted_D = (int) Math.ceil(ToNumber(parts2[1]));
+            	
+            	delays.put(StreamID, converted_D);	
+			}
+            bufferedReader.close();
+			
+		} catch (Exception e) {
+			 e.printStackTrace();
+		}
+    	return delays;
+    	
+    	
+    }
+    // Convert to Number
+    private double ToNumber(String s) {
+    	double number = -1;
+    	try {
+    		number  = Double.parseDouble(s);
+			
+		} catch (Exception e) {
+			//e.printStackTrace();
+		}
+    	return number;
+    }
 	public List<Messages> getMessages(){
         return messages;
     }

@@ -8,9 +8,9 @@ public class NetOpt {
 		//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		//Test Cases
         //String testcase = "src/TestCases/Jorge/JorgeCase1.xml";
-        String testcase = "src/TestCases/GMModified/GMM5.xml";
+        //String testcase = "src/TestCases/GMModified/GMM5.xml";
         //String testcase = "src/TestCases/GM/GM.xml";
-		//String testcase = "src/TestCases/Initial/input3.xml";
+		String testcase = "src/TestCases/Initial/input2.xml";
 		//String testcase = "src/TestCases/Initial/testcase1.xml";
 		//String testcase = "src/TestCases/Initial/testcase2.xml";
 		//String testcase = "src/TestCases/GM/GM.xml";

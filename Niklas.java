@@ -24,7 +24,7 @@ public class Niklas extends SolutionMethod {
 	IntVar[][] Wperiod;
 	IntVar[][] Wlength;
 	IntVar[][] Woffset;
-	long LenScale = (long) 10000000;
+	long LenScale = (long) 100000;
 	ExternalAssessment excAssessment;
 
 	
@@ -189,7 +189,7 @@ public class Niklas extends SolutionMethod {
 		DecisionBuilder[] dbs = new DecisionBuilder[3];
 		dbs[0] = solver.makePhase(x,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MAX_VALUE); // The systematic search method
 		dbs[1] = solver.makePhase(y,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MIN_VALUE); // The systematic search method
-		dbs[2] = solver.makePhase(z,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
+		dbs[2] = solver.makePhase(z,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
 		db = solver.compose(dbs);
 	}
 	public void addSolverLimits() {

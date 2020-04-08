@@ -90,7 +90,7 @@ class DataUnloader {
     		
     }
     public void NETCALCall(Solution s) {
-		String luxiToolPath = "NetCal/in/";
+		String luxiToolPath = "usecases/NetCal/in/";
 		UnloadLuxi(s, luxiToolPath);
     }
     private void getCostValues(Solution solution) {
