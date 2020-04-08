@@ -130,7 +130,7 @@ public class Niklas extends SolutionMethod {
 						}
 					}
 				}
-				solver.addConstraint(solver.makeLessOrEqual(s_r, ((int) (stream_release + (1 * s.Deadline)))));
+				solver.addConstraint(solver.makeLessOrEqual(s_r, ((int) (stream_release + (1 * s.Deadline) + s.Period))));
 				
 			}
 						
@@ -312,17 +312,17 @@ public class Niklas extends SolutionMethod {
 		long allvariables = 3 * TotalVars;
 		System.out.println("There are " + allvariables + "Variables");
 		DecisionBuilder[] dbs = new DecisionBuilder[3];
-		dbs[0] = solver.makePhase(x,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MAX_VALUE); // The systematic search method
-		dbs[1] = solver.makePhase(y,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MIN_VALUE); // The systematic search method
+		dbs[0] = solver.makePhase(x,  solver.CHOOSE_RANDOM, solver.ASSIGN_MAX_VALUE); // The systematic search method
+		dbs[1] = solver.makePhase(y,  solver.CHOOSE_RANDOM, solver.ASSIGN_MIN_VALUE); // The systematic search method
 		//dbs[2] = solver.makePhase(z,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
-		DecisionBuilder dbstemp = solver.makePhase(z,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
+		DecisionBuilder dbstemp = solver.makePhase(z,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
 
 		dbs[2] = solver.makeSolveOnce(dbstemp);
 		db = solver.compose(dbs);
 	}
 	public void addSolverLimits() {
-		int hours = 0;
-		int minutes = 10;
+		int hours = 1;
+		int minutes = 0;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
 		SearchMonitor[] searchVar = new SearchMonitor[3];
@@ -350,9 +350,9 @@ public class Niklas extends SolutionMethod {
 		TotalRuns++;
 		long duration = System.currentTimeMillis() - started;
     	System.out.println("Solution Found!!, in Time: " + duration);    	
-		if((TotalRuns >= 20) || excAssessment.isItfinished()){
-			//return true;
-			return false;
+		if((TotalRuns >= 500) || excAssessment.isItfinished()){
+			return true;
+			//return false;
 		}else {
 			return false;
 
@@ -419,9 +419,10 @@ public class Niklas extends SolutionMethod {
 		return solver.makeMinimize(percent, 1);
 	}
 	public OptimizeVar MinimizeWCD(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset, IntVar[] cost) {
-		IntVar TotalD = null;
+		IntVar TotalDelayCost = null;
 		for (Stream s : Current.streams) {
-			for (int i = 0; i < s.N_instances; i++) {
+			IntVar TotalD = null;
+			for (int i = 0; i < s.N_instances; i++) {	
 				int stream_release = i * s.Period;
 				IntVar s_r = solver.makeIntConst(stream_release);
 				for (String node : s.routingList) {
@@ -460,10 +461,18 @@ public class Niklas extends SolutionMethod {
 				}
 				
 			}
-						
+			int logC = 10000;
+			TotalD = solver.makeProd(TotalD, logC).var();
+			IntVar sDelayPercent = solver.makeDiv(TotalD, (s.Deadline * s.N_instances)).var();
+			if(TotalDelayCost == null) {
+				TotalDelayCost = sDelayPercent;
+			}else {
+				TotalDelayCost = solver.makeSum(TotalDelayCost, sDelayPercent).var();
+			}
 		}
-		cost[1] = TotalD;
-		return solver.makeMinimize(TotalD, 1);
+		TotalDelayCost = solver.makeDiv(TotalDelayCost, Current.streams.size()).var();
+		cost[1] = TotalDelayCost;
+		return solver.makeMinimize(TotalDelayCost, 4);
 	}
 	private int GetQueTransmitionDuration(Que q) {
 		int Totalst = 0;
