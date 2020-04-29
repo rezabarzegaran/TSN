@@ -131,7 +131,7 @@ public class Niklas extends SolutionMethod {
 						}
 					}
 				}
-				solver.addConstraint(solver.makeLessOrEqual(s_r, ((int) (stream_release + (0.21 * s.Deadline) + (0 * s.Period) ))));
+				solver.addConstraint(solver.makeLessOrEqual(s_r, ((int) (stream_release + (0.5 * s.Deadline) + (0 * s.Period) ))));
 				
 			}
 						
@@ -312,13 +312,16 @@ public class Niklas extends SolutionMethod {
 		Flat2DArray(Wlength, y);
 		Flat2DArray(Woffset, z);
 		long allvariables = 3 * TotalVars;
+		//IntVar[] allvars = new IntVar[(int) allvariables];
+		//MergeArray(x, y, z, allvars);
+		
 		System.out.println("There are " + allvariables + "Variables");
 		DecisionBuilder[] dbs = new DecisionBuilder[3];
-		dbs[0] = solver.makePhase(x,  solver.CHOOSE_RANDOM, solver.ASSIGN_MAX_VALUE); // The systematic search method
-		dbs[1] = solver.makePhase(y,  solver.CHOOSE_RANDOM, solver.ASSIGN_MIN_VALUE); // The systematic search method
+		dbs[0] = solver.makePhase(x,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
+		dbs[1] = solver.makePhase(y,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
 		dbs[2] = solver.makePhase(z,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
 		//DecisionBuilder dbstemp = solver.makePhase(z,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
-
+		//dbs[0]  = solver.makePhase(allvars,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE);
 		//dbs[2] = solver.makeSolveOnce(dbstemp);
 		db = solver.compose(dbs);
 	}
@@ -352,7 +355,7 @@ public class Niklas extends SolutionMethod {
 		TotalRuns++;
 		long duration = System.currentTimeMillis() - started;
     	System.out.println("Solution Found!!, in Time: " + duration);    	
-		if((TotalRuns >= 2) || excAssessment.isItfinished()){
+		if((TotalRuns >= 1) || excAssessment.isItfinished()){
 			return true;
 			//return false;
 		}else {
@@ -398,10 +401,12 @@ public class Niklas extends SolutionMethod {
 		IntVar Cost1 = solver.makeProd(cost[0], 1).var();
 		IntVar Cost2 = solver.makeProd(cost[1], 4).var();
 		IntVar totalCost = solver.makeSum(Cost1, Cost2).var();
+		//IntVar totalCost = Cost1;
 		cost[2] = totalCost;
-		//solver.addConstraint(solver.makeLessOrEqual(cost[2], 9850));
+		solver.addConstraint(solver.makeLessOrEqual(cost[1], 4934));
+		solver.addConstraint(solver.makeLessOrEqual(cost[0], 3542));
 
-		return solver.makeMinimize(totalCost, 2);
+		return solver.makeMinimize(totalCost, 5);
 	}
 	private OptimizeVar MinimizeWindowPercentage(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset, IntVar[] cost) {
 		IntVar percent = null;
@@ -424,6 +429,7 @@ public class Niklas extends SolutionMethod {
 	}
 	public OptimizeVar MinimizeWCD(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset, IntVar[] cost) {
 		IntVar TotalDelayCost = null;
+		int logC = 10000;
 		for (Stream s : Current.streams) {
 			IntVar TotalD = null;
 			for (int i = 0; i < s.N_instances; i++) {	
@@ -458,16 +464,22 @@ public class Niklas extends SolutionMethod {
 						}
 					}
 				}
+				s_r = solver.makeProd(s_r, 10).var();
+				int scaled_deadline = (s.Deadline * s.N_instances ) / 100;
+				IntVar s_percent = solver.makeDiv(s_r, scaled_deadline).var();
+				//s_percent = solver.makeProd(s_percent, 10).var();
 				if(TotalD == null) {
-					TotalD = s_r;
+					TotalD = s_percent;
 				}else {
-					TotalD = solver.makeSum(TotalD, s_r).var();
+					TotalD = solver.makeSum(TotalD, s_percent).var();
 				}
 				
 			}
-			int logC = 10000;
-			TotalD = solver.makeProd(TotalD, logC).var();
-			IntVar sDelayPercent = solver.makeDiv(TotalD, (s.Deadline * s.N_instances)).var();
+			
+			//TotalD = solver.makeProd(TotalD, logC).var();
+			//IntVar sDelayPercent = solver.makeDiv(TotalD, (s.N_instances)).var();
+			IntVar sDelayPercent = TotalD;
+			//sDelayPercent = solver.makeDiv(sDelayPercent, (s.Deadline)).var();
 			if(TotalDelayCost == null) {
 				TotalDelayCost = sDelayPercent;
 			}else {
@@ -582,6 +594,21 @@ public class Niklas extends SolutionMethod {
 				destination[counter] = source[i][j];
 				counter++;
 			}
+		}
+	}
+	private void MergeArray(IntVar[] source1, IntVar[] source2, IntVar[] source3, IntVar[] destination) {
+		int counter = 0;
+		for (int i = 0; i < source1.length; i++) {
+			destination[counter] = source1[i];
+			counter++;
+		}
+		for (int i = 0; i < source2.length; i++) {
+			destination[counter] = source2[i];
+			counter++;
+		}
+		for (int i = 0; i < source3.length; i++) {
+			destination[counter] = source3[i];
+			counter++;
 		}
 	}
 	private int LCM(int a, int b) {
