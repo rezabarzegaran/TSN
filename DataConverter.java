@@ -58,7 +58,7 @@ class DataConverter {
 					m.setAttributeNode(sizeAttr);
 					
 					Attr deadlineAttr = doc.createAttribute("deadline");
-					int deadline = (int) (Double.parseDouble(parts[2]) / 100);
+					int deadline = (int) (Double.parseDouble(parts[2]));
 					
 					deadlineAttr.setValue(String.valueOf(deadline));
 					m.setAttributeNode(deadlineAttr);
@@ -79,8 +79,9 @@ class DataConverter {
 					offsetAttr.setValue(String.valueOf(0));
 					m.setAttributeNode(offsetAttr);
 					
-					map.put(parts[3], String.valueOf(counter));
-					System.out.println(map.get(parts[3]));
+					//map.put(parts[3], String.valueOf(counter));
+					map.put(String.valueOf(counter), parts[3] );
+					System.out.println(map.get(String.valueOf(counter)));
 		
             		counter++;
             	}              
@@ -127,9 +128,16 @@ class DataConverter {
 					Element ms = doc.createElement("messages");
 					r.appendChild(ms);
 					
-		            Element mId = doc.createElement("messageID");
-		            mId.appendChild(doc.createTextNode(map.get(firstparts[0])));
-		            ms.appendChild(mId);
+		            
+		            for (String key : map.keySet()) {
+						if(map.get(key).equals(firstparts[0])) {
+							Element mId = doc.createElement("messageID");
+							mId.appendChild(doc.createTextNode(key));
+							ms.appendChild(mId);
+						}
+					}
+		            
+		            
 					
 					c++;
 					

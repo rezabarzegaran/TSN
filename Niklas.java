@@ -63,6 +63,7 @@ public class Niklas extends SolutionMethod {
 		//LinkHandleConstraint(Wperiod, Wlength, Woffset);
 		NoOverlappingWidnows(Wperiod, Wlength, Woffset);
 		WCDelayConstraint(Wperiod, Wlength, Woffset);
+		
 	}
 	public void LinkHandleConstraint(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset) {
 		for (Stream s : Current.streams) {
@@ -130,12 +131,13 @@ public class Niklas extends SolutionMethod {
 						}
 					}
 				}
-				solver.addConstraint(solver.makeLessOrEqual(s_r, ((int) (stream_release + (1 * s.Deadline) + s.Period))));
+				solver.addConstraint(solver.makeLessOrEqual(s_r, ((int) (stream_release + (0.21 * s.Deadline) + (0 * s.Period) ))));
 				
 			}
 						
 		}
 	}
+
 	public void FrameHandleCosntraint(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset) {
 		int portcounter = 0;
 		for (Switches sw : Current.SW) {
@@ -314,15 +316,15 @@ public class Niklas extends SolutionMethod {
 		DecisionBuilder[] dbs = new DecisionBuilder[3];
 		dbs[0] = solver.makePhase(x,  solver.CHOOSE_RANDOM, solver.ASSIGN_MAX_VALUE); // The systematic search method
 		dbs[1] = solver.makePhase(y,  solver.CHOOSE_RANDOM, solver.ASSIGN_MIN_VALUE); // The systematic search method
-		//dbs[2] = solver.makePhase(z,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
-		DecisionBuilder dbstemp = solver.makePhase(z,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
+		dbs[2] = solver.makePhase(z,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
+		//DecisionBuilder dbstemp = solver.makePhase(z,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
 
-		dbs[2] = solver.makeSolveOnce(dbstemp);
+		//dbs[2] = solver.makeSolveOnce(dbstemp);
 		db = solver.compose(dbs);
 	}
 	public void addSolverLimits() {
 		int hours = 1;
-		int minutes = 0;
+		int minutes = 30;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
 		SearchMonitor[] searchVar = new SearchMonitor[3];
@@ -350,7 +352,7 @@ public class Niklas extends SolutionMethod {
 		TotalRuns++;
 		long duration = System.currentTimeMillis() - started;
     	System.out.println("Solution Found!!, in Time: " + duration);    	
-		if((TotalRuns >= 500) || excAssessment.isItfinished()){
+		if((TotalRuns >= 2) || excAssessment.isItfinished()){
 			return true;
 			//return false;
 		}else {
@@ -394,10 +396,12 @@ public class Niklas extends SolutionMethod {
 	}
 	private OptimizeVar CostMinimizer(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset, IntVar[] cost) {
 		IntVar Cost1 = solver.makeProd(cost[0], 1).var();
-		IntVar Cost2 = solver.makeProd(cost[1], 2).var();
+		IntVar Cost2 = solver.makeProd(cost[1], 4).var();
 		IntVar totalCost = solver.makeSum(Cost1, Cost2).var();
 		cost[2] = totalCost;
-		return solver.makeMinimize(totalCost, 5);
+		//solver.addConstraint(solver.makeLessOrEqual(cost[2], 9850));
+
+		return solver.makeMinimize(totalCost, 2);
 	}
 	private OptimizeVar MinimizeWindowPercentage(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset, IntVar[] cost) {
 		IntVar percent = null;
@@ -416,7 +420,7 @@ public class Niklas extends SolutionMethod {
 			
 		}
 		cost[0] = percent;
-		return solver.makeMinimize(percent, 1);
+		return solver.makeMinimize(percent, 6);
 	}
 	public OptimizeVar MinimizeWCD(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset, IntVar[] cost) {
 		IntVar TotalDelayCost = null;
@@ -509,7 +513,6 @@ public class Niklas extends SolutionMethod {
 			}
 			Current.costValues.add(val);
 		}
-		
 		int portcounter = 0;
 		for (Switches sw : Current.SW) {
 			for (Port port : sw.ports) {

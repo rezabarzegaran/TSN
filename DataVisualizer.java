@@ -132,15 +132,20 @@ public class DataVisualizer {
             for (Switches sw : solution.SW) {
 				for (Port port : sw.ports) {
 					if(port.outPort) {
-						for (int i = 0; i < port.Topen.length; i++) {
-							int x_1 = port.Topen[i] * mlt;
-							int x_2 = port.Tclose[i] * mlt;
-							int width = x_2 - x_1;
-							if( (x_1 <= Duration) && (x_2 <= Duration)) {
-								addFrame(doc, svg, x_1 + offset , rowH * port_index + Toffset, width, rowH, String.valueOf(port.affiliatedQue[i]), port.affiliatedQue[i]);
-							}
+						int portinstance = duration / port.getPeriod();
+						for (int ii = 0; ii < portinstance; ii++) {
+							for (int i = 0; i < port.Topen.length; i++) {
+								int x_1 = (port.Topen[i] + ii * port.getPeriod()) * mlt;
+								int x_2 = (port.Tclose[i] + ii * port.getPeriod()) * mlt;
+								int width = x_2 - x_1;
+								if( (x_1 <= Duration) && (x_2 <= Duration)) {
+									addFrame(doc, svg, x_1 + offset , rowH * port_index + Toffset, width, rowH, String.valueOf(port.affiliatedQue[i]), port.affiliatedQue[i]);
+								}
 
+							}
 						}
+						
+
 						
 						port_index++;
 					}
