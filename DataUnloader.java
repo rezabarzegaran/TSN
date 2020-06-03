@@ -152,7 +152,7 @@ class DataUnloader {
 			costs.add(val);
 		}
     	costValues.add(costs);
-    	System.out.println("Current Cost is: " + costs.get(0) + " , " + costs.get(1) + " , " + costs.get(2));
+    	System.out.println("Current Cost is: " + costs.get(0) + " , " + costs.get(1));
     }
     private void UnloadLuxi(Solution solution, String DirPath){
     	try {

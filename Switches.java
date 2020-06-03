@@ -38,6 +38,7 @@ public class Switches {
 		}
 		addHashTable(_delayTable);
 	}
+
 	public void addHashTable(Map<Integer, Integer> inTable) {
 		delayTable.clear();
 		for (Map.Entry<Integer, Integer> entry : inTable.entrySet()) {

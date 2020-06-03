@@ -176,6 +176,22 @@ class Solution {
 		}
 		return Outports;
     }
+    public int getNOutQueues() {
+    	int Outqueues = 0;
+		for (Switches sw : SW) {
+			for (Port port : sw.ports) {
+				if(port.outPort) {
+					for (Que q : port.ques) {
+						if(q.isUsed()) {
+							Outqueues++;
+						}
+					}
+					
+				}
+			}
+		}
+		return Outqueues;
+    }
     public List<String> getOutPorts(){
     	List<String> nameStrings = new ArrayList<String>();
 		for (Switches sw : SW) {
@@ -190,6 +206,14 @@ class Solution {
     public Solution Clone() {
     	return new Solution(streams, ES, SW, Apps, costValues, (Hyperperiod));
     }
+	public Switches getSwithObject(String name) {
+		for (Switches sw : SW) {
+			if(sw.Name.equals(name)) {
+				return sw;
+			}
+		}
+		return null;
+	}
     public List<Integer> getCosts() {
     	List<Integer> CostTerms = new ArrayList<Integer>(); 
     	for (Long temp : costValues) {
