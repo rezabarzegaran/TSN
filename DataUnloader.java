@@ -1,9 +1,11 @@
 package TSN;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +21,7 @@ import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
 
 import org.w3c.dom.Element;
+
 
 
 class DataUnloader {
@@ -58,14 +61,17 @@ class DataUnloader {
 		String switchPath = defaultPath + "/Switches";
 		String schedulePath = defaultPath + "/Schedule/" + "S_" + counter;
 		String LuxiToolPath = defaultPath + "/LuxiInterface/S_" + counter;
+		String LuxiAssesPath = "usecases" + "/NetCal/in/historySCHED1";
 		String solutionFile = "S_" + counter + ".xml";
 		String jitterPath = defaultPath + "/Jitters";
 		
 		if(name.contains("Niklas")) {
-    		visualizer.CreateTotalWindowSVG(solution, schedulePath, solution.Hyperperiod);
-    		UnloadPorts(solution, switchPath, solutionFile);
+    		//visualizer.CreateTotalWindowSVG(solution, schedulePath, solution.Hyperperiod);
+    		//UnloadPorts(solution, switchPath, solutionFile);
     		UnloadLuxi(solution, LuxiToolPath);
-
+    		NETCALCall(solution);
+    		NETCALLRun(solution);
+    		
 		}else {
 			if (GeneralInterface) {
 	    		visualizer.CreateTotalSVG(solution, schedulePath, solution.Hyperperiod);
@@ -93,13 +99,60 @@ class DataUnloader {
 		String luxiToolPath = "usecases/NetCal/in/";
 		UnloadLuxi(s, luxiToolPath);
     }
+    public void NETCALLRun(Solution s) {
+		int averagee2e = 0;
+		int fails = 0;
+        try
+        {
+        	Runtime runtime = Runtime.getRuntime();
+        	String toolname = "TSNNetCal.exe";
+        	String inputPath = "usecases/NetCal";
+        	String runcommand = toolname + " " + inputPath;
+        	Process process = runtime.exec(runcommand);
+            process.waitFor();
+            process.destroy(); 
+            DataLoader dataLoader = new DataLoader();;
+			HashMap<Integer, Integer> delays = dataLoader.LoadLuxiReport(inputPath);
+
+			boolean isGood = true;
+			
+			for(Integer entry : delays.keySet()) {
+				int current_delay = delays.get(entry);
+				if(current_delay == -1) {
+					isGood = false;
+				}else {
+					averagee2e += current_delay;
+					for (Stream stream : s.streams) {
+						if(stream.Id == entry) {
+							if(stream.Deadline < current_delay) {
+								fails++;
+							}
+						}
+						
+					}
+					
+				}
+			}
+			if(delays.size() > 0) averagee2e /= delays.size();
+			if(!isGood) averagee2e = Integer.MAX_VALUE;
+			
+
+                  	
+        }
+        catch (IOException | InterruptedException e)
+        {
+            //e.printStackTrace();
+        }	
+        costValues.get(costValues.size() - 1).add(averagee2e);
+        costValues.get(costValues.size() - 1).add(fails);
+    }
     private void getCostValues(Solution solution) {
     	List<Integer> costs = new ArrayList<Integer>();
     	for (int val : solution.getCosts()) {
 			costs.add(val);
 		}
     	costValues.add(costs);
-    	//System.out.println("Current Cost is: " + costs.get(costs.size() - 1));
+    	System.out.println("Current Cost is: " + costs.get(0) + " , " + costs.get(1) + " , " + costs.get(2));
     }
     private void UnloadLuxi(Solution solution, String DirPath){
     	try {
@@ -204,7 +257,12 @@ class DataUnloader {
     		for (int i = 0; i < costValues.size(); i++) {
     			lineString = "Solution " + i + ":\t";
     			for (int val : costValues.get(i)) {
-            		lineString += val + ",\t";
+    				if(val == Integer.MAX_VALUE) {
+    					lineString += "Invalid" + ",\t";
+    				}else {
+    					lineString += val + ",\t";
+    				}
+            		
             		
 				}
     			lineString += "Generated in : "  + SolutionTimes.get(i);

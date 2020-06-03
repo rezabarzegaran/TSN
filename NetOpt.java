@@ -15,8 +15,8 @@ public class NetOpt {
 		//String testcase = "src/TestCases/Initial/testcase2.xml";
 		//String testcase = "src/TestCases/GM/GM.xml";
 		//String testcase = "src/TestCases/JorgeFinal/TestCase 10/Test.xml";
-		String msg = "src/TestCases/IEEE/TC6/msg.txt";
-		String vls = "src/TestCases/IEEE/TC6/vls.txt";
+		String msg = "src/TestCases/new/1/msg.txt";
+		String vls = "src/TestCases/new/1/vls.txt";
 
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// Loading Data
