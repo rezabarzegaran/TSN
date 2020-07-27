@@ -25,7 +25,7 @@ public class Reza extends SolutionMethod{
 	public void initVariables() {
 		NOutports = Current.getNOutPorts();
 		Offset = new IntVar[NOutports][][];
-		Costs = new IntVar[3];
+		Costs = new IntVar[4];
 		TotalVars = AssignVars(Offset);
 	}
 	public void addConstraints() {
@@ -39,7 +39,7 @@ public class Reza extends SolutionMethod{
 	public void addCosts() {
 		Cost0(Offset, Costs);
 		Cost1(Offset, Costs);
-		//E2ECost(Offset, Costs);
+		E2ECost(Offset, Costs);
 		//Cost2(Offset, Costs);
 		//Cost3(Offset, Costs);
 		costVar = CostMinimizer(Costs);
@@ -49,13 +49,13 @@ public class Reza extends SolutionMethod{
 		FlatArray(Offset, x, NOutports);
 		long allvariables = TotalVars;
 		System.out.println("There are " + allvariables + "Variables");
-		//db = solver.makePhase(x,  solver.INT_VALUE_DEFAULT, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
-		db = solver.makePhase(x,  solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT); // The systematic search method
+		db = solver.makePhase(x,  solver.INT_VALUE_DEFAULT, solver.ASSIGN_MIN_VALUE); // The systematic search method
+		//db = solver.makePhase(x,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
 
 	}
 	public void addSolverLimits() {
-		int hours = 1;
-		int minutes = 0;
+		int hours = 0;
+		int minutes = 4;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
 		SearchMonitor[] searchVar = new SearchMonitor[2];
@@ -103,7 +103,7 @@ public class Reza extends SolutionMethod{
     		return true;
     	}
     	
-		if((TotalRuns >= 500)){
+		if((TotalRuns >= 10)){
 			return true;
 		}else {
 			return false;
@@ -407,14 +407,14 @@ public class Reza extends SolutionMethod{
 		IntVar tempIntVar = null;
 		tempIntVar = solver.makeProd(Costs[0], 1).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 1).var()).var();
-		//tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 4).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
 		//tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 1).var()).var();
-		Costs[2] = tempIntVar;
-		//CostLimiter(Costs);
-		return solver.makeMinimize(Costs[2],4);
+		Costs[3] = tempIntVar;
+		CostLimiter(Costs);
+		return solver.makeMinimize(Costs[3],100);
 	}
 	private void CostLimiter(IntVar[] Costs) {
-		solver.addConstraint(solver.makeLessOrEqual(Costs[4], 2809));
+		solver.addConstraint(solver.makeLessOrEqual(Costs[3], 5000000));
 	}
 	private OptimizeVar Cost0(IntVar[][][] Offset, IntVar[] Costs) {
 		IntVar eExpr = null;

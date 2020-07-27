@@ -165,6 +165,8 @@ public class Niklas extends SolutionMethod {
 		Len = solver.makeDiv(Len, 2).var();
 		//IntVar Len = UseableLength;
 		Len = solver.makeProd(Instances, Len).var();
+		
+		
 		IntVar Len2 = solver.makeProd(UseableLength, Wperiod[PortObj2Num(port)][QueuObj2Num(q)]).var();
 		IntVar repeat = solver.makeProd(Instances, solver.makeDifference(Instances, solver.makeIntConst(1))).var();
 		repeat = solver.makeDiv(repeat, 2).var();
@@ -199,7 +201,7 @@ public class Niklas extends SolutionMethod {
 		int Value = 0;
 		for (Stream s : q.assignedStreams) {
 			int instances = (t / s.Period);
-			Value += ((instances * (instances + 1 ))/2)*(1.0 * s.Transmit_Time * s.Period);
+			Value += ((instances * (instances + 1 ))/2)*(1.0 * s.Transmit_Time * s.Period) * ((2 * s.N_instances + 1)/3);
 			Value += ((instances + 1 )*(1.0 * s.Transmit_Time * (t - (s.Period * instances))));
 			
 			if(s.isThisFirstSwtich(SW.Name)) {
@@ -240,15 +242,27 @@ public class Niklas extends SolutionMethod {
 		int Value = 0;
 		for (Stream s : q.assignedStreams) {
 			int D = (int) ( s.Deadline);
-			Value += ((s.N_instances * (s.N_instances + 1 ))/2)*(1.0 * s.Transmit_Time * s.Period);
+			//Value += ((s.N_instances * (s.N_instances + 1 )* (2 * s.N_instances + 1 ))/6)*(s.Transmit_Time * s.Period);
+
+			Value += ((s.N_instances * (s.N_instances + 1 ))/2)*(s.Transmit_Time * s.Period);
+
 			if(s.isThisFirstSwtich(SW.Name)) {
-				
+				//Value += ((s.N_instances * (s.N_instances + 1 ))/2)*(s.Transmit_Time * s.Period);
+
 				//int duration = (D)/s.routingList.size();
 				//Value += s.N_instances * ((1.0 * s.Transmit_Time * duration) / 2);
 				//Value += ((s.N_instances * (s.N_instances -1 ))/2)*(1.0 * s.Transmit_Time * s.Period);
 				//Value += s.N_instances * (1.0 * s.Transmit_Time * (s.Period - duration));
 			}else {
 				int currentSWNumber = s.routingList.indexOf(SW.Name);
+				//Value += ((s.N_instances * (s.N_instances + 1 ))/2)*(s.Transmit_Time  * s.Period);
+				Value += ((s.N_instances * (s.N_instances - 1 ))/2)*(s.Transmit_Time  * s.Period);
+
+				//Value += ((s.N_instances * (s.N_instances + 1 )* (2 * s.N_instances + 1 ))/6)*(s.Transmit_Time * s.Period);
+
+				//Value += (1 + ((s.N_instances - 1)*(6 + 4 * (s.N_instances - 1)))/2)*(s.Transmit_Time * s.Period) * s.Period/2;
+
+
 				//Value += ((s.N_instances * (s.N_instances + 1 ))/2)*(0.1 * s.Transmit_Time * s.Period);
 
 				//int duration = (D)/s.routingList.size();
@@ -450,8 +464,9 @@ public class Niklas extends SolutionMethod {
 				S = s;
 			}
 		}
-		int D =  (int) (S.Deadline * (1 - (S.routingList.size()-1) * 0.1 ));
-		
+		//int D =  (int) (S.Deadline * (1 - (S.routingList.size()-1) * 0.1 ));
+		int D =  (int) (S.Deadline  * 0.5 );
+
 		return D;
 	}
 	
@@ -468,18 +483,18 @@ public class Niklas extends SolutionMethod {
 							IntVar TotalServiceNeeded = getArrivalCurve(sw, port, q);
 							solver.addConstraint(solver.makeGreater(WindowServiceValue, TotalServiceNeeded));
 							int EarliestD = getEarliestDeadline(q);
-							IntVar WindowServiceValueAtT = getServiceCurveAtT(port, q, EarliestD);
-							IntVar TotalServiceNeededAtT = getArrivalCurveAtT(sw, port, q, EarliestD);
-							//TotalServiceNeededAtT = solver.makeProd(TotalServiceNeededAtT, 2).var();
-							solver.addConstraint(solver.makeGreater(WindowServiceValueAtT, TotalServiceNeededAtT));
+							//IntVar WindowServiceValueAtT = getServiceCurveAtT(port, q, EarliestD);
+							//IntVar TotalServiceNeededAtT = getArrivalCurveAtT(sw, port, q, EarliestD);
+							//TotalServiceNeededAtT = solver.makeProd(TotalServiceNeededAtT, 1.5).var();
+							//solver.addConstraint(solver.makeGreater(WindowServiceValueAtT, TotalServiceNeededAtT));
 							
 							for (int i = EarliestD; i < Current.Hyperperiod; i+=1) {
 								//IntVar WindowServiceValAtT = getServiceCurveAtT(port, q, i);
 								//IntVar TotalServiceNeedAtT = getArrivalCurveAtT(sw, port, q, i);
 								
-								IntVar WindowServiceValAtT = getServiceValue(port, q, i);
-								IntVar TotalServiceNeedAtT = solver.makeIntConst(GetStreamsNeededDuration(sw, q, i));
-								solver.addConstraint(solver.makeGreater(WindowServiceValAtT, TotalServiceNeedAtT));
+								//IntVar WindowServiceValAtT = getServiceValue(port, q, i);
+								//IntVar TotalServiceNeedAtT = solver.makeIntConst(GetStreamsNeededDuration(sw, q, i));
+								//solver.addConstraint(solver.makeGreater(WindowServiceValAtT, TotalServiceNeedAtT));
 							}
 							
 							UsedQCounter++;
@@ -1007,14 +1022,14 @@ public class Niklas extends SolutionMethod {
 		db = solver.compose(dbs);
 	}
 	public void addSolverLimits() {
-		int hours = 2;
+		int hours = 3;
 		int minutes = 30;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
-		SearchMonitor[] searchVar = new SearchMonitor[3];
+		SearchMonitor[] searchVar = new SearchMonitor[2];
 		searchVar[0] = limit;
-		searchVar[1] = excAssessment;	
-		searchVar[2] = costVar;
+		//searchVar[1] = excAssessment;	
+		searchVar[1] = costVar;
 		solver.newSearch(getDecision(),searchVar);
 	    System.out.println(solver.model_name() + " Initiated");
 	}
@@ -1036,7 +1051,7 @@ public class Niklas extends SolutionMethod {
 		TotalRuns++;
 		long duration = System.currentTimeMillis() - started;
     	System.out.println("Solution Found!!, in Time: " + duration);    	
-		if(TotalRuns >= 150){
+		if(TotalRuns >= 5){
 			return true;
 			//return false;
 		}else {
@@ -1089,7 +1104,7 @@ public class Niklas extends SolutionMethod {
 		//solver.addConstraint(solver.makeLessOrEqual(cost[0], 8500));
 		//solver.addConstraint(solver.makeGreaterOrEqual(cost[1], 3000));
 
-		return solver.makeMinimize(totalCost, 2);
+		return solver.makeMinimize(totalCost, 1);
 	}
 	private OptimizeVar MinimizeWindowPercentage(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset, IntVar[] cost) {
 		IntVar percent = null;

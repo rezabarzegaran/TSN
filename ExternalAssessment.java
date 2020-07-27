@@ -3,6 +3,9 @@ package TSN;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 
 import com.google.ortools.constraintsolver.IntVar;
@@ -22,12 +25,8 @@ public class ExternalAssessment extends SearchMonitor{
 	Solver solver;
 	public static int Pre_Cost1;
 	public static int Pre_Cost2;
-	public static int Total_Cost;
-	private static double crr_temp;
-	private double init_temp = 6000;
-	private double cooling_rate = 0.002;
-	private long MaxDelay = 0;
-	boolean enable_NoOverlap = false;
+	public static int Best_so_Far;
+	public static int Best_Cost;
 	DataUnloader dataUnloader = new DataUnloader();
 	DataLoader dataLoader = new DataLoader();
 	Runtime runtime = Runtime.getRuntime();
@@ -42,13 +41,12 @@ public class ExternalAssessment extends SearchMonitor{
 		Current = _current;
 		Pre_Cost1 = Integer.MAX_VALUE;
 		Pre_Cost2 = Integer.MAX_VALUE;
-		Total_Cost = Integer.MAX_VALUE;
+		Best_so_Far = Integer.MAX_VALUE;
+		Best_Cost = Integer.MAX_VALUE;
 		Wperiod = new IntVar[_woffset.length][];
 		Wlength = new IntVar[_woffset.length][];
 		Woffset = new IntVar[_woffset.length][];
-		Costs = new IntVar[_Costs.length];
-		MaxDelay = GetMaxDelayCost();
-		
+		Costs = new IntVar[_Costs.length];		
 		
 		for (int i = 0; i < _Costs.length; i++) {
 			Costs[i] = _Costs[i];
@@ -70,171 +68,24 @@ public class ExternalAssessment extends SearchMonitor{
 	}
 	
 	public boolean acceptSolution() {
-		boolean flag = true;
-		if (enable_NoOverlap) {
-			flag = NoOverlappingWindows();
-		}						
-		if(!flag) {
-			
-			int COST1 = (int) Costs[0].value();
-			int COST2 = GetWCLatency();
-
-			flag = false;
-			if(true) {
-				int COST3 = COST1 + ( COST2 * 5) ;
-				int cost_diff = COST3 - Total_Cost;
-				//crr_temp = init_temp  - (cooling_rate * solver.wallTime() / 100) ;
-				// probability = Math.exp(-cost_diff/crr_temp);
-				if(( cost_diff < 0 ) ) {
-					Pre_Cost1 = COST1;
-					Pre_Cost2 = COST2;
-					Total_Cost = COST3;
-					//flag = true;
-					//System.out.println(Pre_Cost1 + ", " + Pre_Cost2);
-				}
+		boolean flag = false;
+		makeSolution();
+		NETCALCall(Current);
+		NETCALLRun(Current);
+		if((Pre_Cost2 < Best_so_Far)) {
+			flag = true;
+			Best_so_Far = Pre_Cost2;
+		}else if (Pre_Cost2 == 0) {
+			int cost = (int) Costs[0].value();
+			if (Best_Cost > cost) {
+				flag = true;
+				Best_Cost = cost;
 			}
-			//System.out.println(COST1 + ", " + COST2 +  ", " + flag);
-
-			
-
 		}
 		return flag && super.acceptSolution();
 	}
 	
-	public boolean isItfinished() {
-		if(crr_temp <= 1.0) {
-			//return true;
-		}
-		return false;
-	}
 	
-	public int getExternalCost1() {
-		return getWindowPercentage();
-	}
-	public int getExternalCost2() {
-		return getLatencyCost();
-	}
-	public int getExternalCost3() {
-		return getTotalCost();
-	}
-	private int getLatencyCost() {
-		return Pre_Cost2;
-	}
-	private int getWindowPercentage() {
-		return Pre_Cost1;
-	}
-	private int getTotalCost() {
-		return Total_Cost;
-	}
-	private boolean NoOverlappingWindows() {		
-		int portcounter = 0;
-		for (Switches sw : Current.SW) {
-			for (Port port : sw.ports) {
-				if(port.outPort) {
-					int NUsedQ = port.getUsedQ();
-					for (int i = 0; i < NUsedQ; i++) {
-						int iperiod = (int) Wperiod[portcounter][i].value();
-						int ilength = (int) Wlength[portcounter][i].value();
-						int ioffset = (int) Woffset[portcounter][i].value();
-						for (int j = 0; j < NUsedQ; j++) {
-							int jperiod = (int) Wperiod[portcounter][j].value();
-							int jlength = (int) Wlength[portcounter][j].value();
-							int joffset = (int) Woffset[portcounter][j].value();
-							int iInstances = LCM(iperiod, jperiod)/ iperiod;
-							int jInstances = LCM(iperiod, jperiod)/ jperiod;	
-							if (i != j) {		
-								for (int k = 0; k < iInstances; k++) {
-									for (int l = 0; l < jInstances; l++) {
-										int iopen = k * iperiod + ioffset;
-										int iclose = iopen + ilength;
-										
-										int jopen = l * jperiod + joffset;
-										int jclose = jopen + jlength;
-										
-										
-										boolean FC = (iclose >= jopen) ? true : false;
-										boolean SC = (jclose >= iopen) ? true : false;
-										
-										boolean decisionconsition = FC ^ SC;
-								
-										if (!decisionconsition) {
-											return false;
-										}
-										
-									}
-								}
-
-
-							}
-						}
-					}
-
-		
-					portcounter++;
-				}
-			}
-		}
-		
-		return true;
-	}
-	private int GetWCLatency(){
-		makeSolution();
-		int LatencyCost = 1000000;
-		dataUnloader.NETCALCall(Current);	
-        try
-        {
-        	Process process = runtime.exec(runcommand);
-            process.waitFor();
-            process.destroy(); 
-            HashMap<Integer, Integer> delays = dataLoader.LoadLuxiReport(inputPath);
-            LatencyCost = (int) AssessDelays(delays);
-            //System.out.println("Done.");
-                  	
-        }
-        catch (IOException | InterruptedException e)
-        {
-            //e.printStackTrace();
-        }	
-		return LatencyCost;
-	}
-	private long AssessDelays(HashMap<Integer, Integer> delays) {
-		long Cost = 1000000;
-		if(delays.size() == Current.streams.size()) {
-			Cost = 0;
-	        for (int flow : delays.keySet()) {
-	        	int delay = delays.get(flow);
-	        	for (Stream s : Current.streams) {
-	        		if(s.Id == flow){
-	        			if(delay == -1) {
-	        				Cost += ( s.Deadline * 10 );
-	        			}else if(delay >= s.Deadline){
-	        				double times = (double) delay / ( s.Deadline) ;
-	        				Cost += (int) Math.ceil( times * delay) ;
-	        			}else {
-	        				Cost += delay ;
-	        			}
-					}
-	      	  		
-	      		}	
-	      	
-	      	}
-	        Cost *= 10000;
-	        Cost /= Current.streams.size();
-	        Cost /= MaxDelay;
-		}
-
-      	return Cost;
-	}
-	private long GetMaxDelayCost() {
-		long Cost = 0;
-		
-		
-		for (Stream s : Current.streams) {
-			Cost += s.Deadline;
-		}
-        Cost /= Current.streams.size();
-      	return Cost;
-	}
 	
 	private void makeSolution() {
 
@@ -267,6 +118,7 @@ public class ExternalAssessment extends SearchMonitor{
 				
 			}
 		}
+		
 	}
 	private int GetPortHyperperiod(IntVar[] portPeriod) {
 		int hyperperiod = 1;
@@ -288,6 +140,90 @@ public class ExternalAssessment extends SearchMonitor{
 		return GCLSize;
 	}
 
+    public void NETCALCall(Solution s) {
+		String luxiToolPath = "usecases/NetCal/in/";
+		UnloadLuxi(s, luxiToolPath);
+    }
+    
+    public void NETCALLRun(Solution s) {
+		int averagee2e = 0;
+		int fails = 0;
+        try
+        {
+        	Runtime runtime = Runtime.getRuntime();
+        	String toolname = "TSNNetCal.exe";
+        	String inputPath = "usecases/NetCal";
+        	String runcommand = toolname + " " + inputPath;
+        	Process process = runtime.exec(runcommand);
+            process.waitFor();
+            process.destroy(); 
+            DataLoader dataLoader = new DataLoader();;
+			HashMap<Integer, Integer> delays = dataLoader.LoadLuxiReport(inputPath);
+
+			boolean isGood = true;
+			
+			for(Integer entry : delays.keySet()) {
+				int current_delay = delays.get(entry);
+				if(current_delay == -1) {
+					isGood = false;
+				}else {
+					averagee2e += current_delay;
+					for (Stream stream : s.streams) {
+						if(stream.Id == entry) {
+							if(stream.Deadline < current_delay) {
+								fails++;
+							}
+						}
+						
+					}
+					
+				}
+			}
+			if(delays.size() > 0) averagee2e /= delays.size();
+			if(!isGood) averagee2e = Integer.MAX_VALUE;
+			
+
+                  	
+        }
+        catch (IOException | InterruptedException e)
+        {
+            //e.printStackTrace();
+        }
+        
+        Pre_Cost1 = averagee2e;
+        Pre_Cost2 = fails;
+    }
+    
+    private void UnloadLuxi(Solution solution, String DirPath){
+    	try {
+    		int linecounter = 0;
+    		Files.createDirectories(Paths.get(DirPath));
+    		PrintWriter writer = new PrintWriter(DirPath + "/historySCHED1.txt", "UTF-8");
+    		for (Switches sw : solution.SW) {
+				for (Port port : sw.ports) {
+					if(port.outPort) {
+						String routeLink = sw.Name + "," + port.connectedTo;
+						if(linecounter != 0) {
+							writer.println();
+						}
+						writer.println(routeLink);
+						linecounter++;
+						for (int i = 0; i < port.Tclose.length; i++) {
+							String frame = String.valueOf(port.Topen[i]) + "\t" + String.valueOf(port.Tclose[i]) + "\t" + String.valueOf(port.Period) + "\t" + String.valueOf(port.affiliatedQue[i]);
+							writer.println(frame);
+						}
+					}
+				}
+			}
+    		writer.print("#");
+    		writer.close();
+    	} catch (Exception e){
+            e.printStackTrace();
+        }
+    	
+    	
+    }
+	
 	private int LCM(int a, int b) {
 		int lcm = (a > b) ? a : b;
         while(true)
