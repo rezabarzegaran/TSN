@@ -55,19 +55,42 @@ public class Niklas extends SolutionMethod {
 	}
 	public void addConstraints() {
 		
-		WindowDurationConstraint(Wperiod, Wlength, Woffset);
-		FixedPeriodConstraint(Wperiod, Wlength, Woffset);
-		PortSamePeriodConstraint(Wperiod, Wlength, Woffset);
-		
-		//WindowMaxPeriodConstriant(Wperiod, Wlength, Woffset);
 		WindowPropertyConstraint(Wperiod, Wlength, Woffset);
-		//FrameHandleCosntraint(Wperiod, Wlength, Woffset);
-		//LinkHandleConstraint(Wperiod, Wlength, Woffset);
+		PortSamePeriodConstraint(Wperiod, Wlength, Woffset);
+		FixedPeriodConstraint(Wperiod, Wlength, Woffset);
+		//BandwidthConstraint(Wperiod, Wlength, Woffset);
 		NoOverlappingWidnows(Wperiod, Wlength, Woffset);
 		DelayConstraint3(Wperiod, Wlength, Woffset);
 		
 		
+		//WindowDurationConstraint(Wperiod, Wlength, Woffset);		
+		//WindowMaxPeriodConstriant(Wperiod, Wlength, Woffset);
+		//FrameHandleCosntraint(Wperiod, Wlength, Woffset);
+		//LinkHandleConstraint(Wperiod, Wlength, Woffset);		
 	}
+	public void BandwidthConstraint(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset) {
+		int portcounter = 0;
+		for (Switches sw : Current.SW) {
+			for (Port port : sw.ports) {
+				if(port.outPort) {
+					int qCounter=0;
+					for (Que q : port.ques) {
+						if (q.isUsed()) {
+							IntVar GB = solver.makeIntConst(GetQuemaxSingleTransmitionDuration(q));
+							IntVar aVar = solver.makeDifference(wlength[portcounter][qCounter], GB ).var();
+							IntVar bVar = solver.makeMax(GB, aVar).var();
+							IntVar cVar = solver.makeProd(bVar, 100).var();
+							IntVar dVar = solver.makeDiv(cVar, wperiod[portcounter][qCounter]).var();
+							solver.addConstraint(solver.makeGreaterOrEqual(dVar,GetQuePercentage(q)));
+							qCounter++;
+						}
+					}
+					portcounter++;
+				}
+			}
+		}
+	}
+	
 	public void LinkHandleConstraint(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset) {
 		for (Stream s : Current.streams) {
 			IntVar totalOffset = null;
@@ -480,12 +503,14 @@ public class Niklas extends SolutionMethod {
 					for (Que q : port.ques) {
 						if(q.isUsed()) {
 							IntVar WindowServiceValue = getServiceCurve(port, q);
+							WindowServiceValue = solver.makeProd(WindowServiceValue, 10).var();
 							IntVar TotalServiceNeeded = getArrivalCurve(sw, port, q);
+							TotalServiceNeeded = solver.makeProd(TotalServiceNeeded, 12).var();
 							solver.addConstraint(solver.makeGreater(WindowServiceValue, TotalServiceNeeded));
 							int EarliestD = getEarliestDeadline(q);
 							//IntVar WindowServiceValueAtT = getServiceCurveAtT(port, q, EarliestD);
 							//IntVar TotalServiceNeededAtT = getArrivalCurveAtT(sw, port, q, EarliestD);
-							//TotalServiceNeededAtT = solver.makeProd(TotalServiceNeededAtT, 1.5).var();
+							//TotalServiceNeededAtT = solver.makeProd(TotalServiceNeededAtT, 2).var();
 							//solver.addConstraint(solver.makeGreater(WindowServiceValueAtT, TotalServiceNeededAtT));
 							
 							for (int i = EarliestD; i < Current.Hyperperiod; i+=1) {
@@ -1051,7 +1076,7 @@ public class Niklas extends SolutionMethod {
 		TotalRuns++;
 		long duration = System.currentTimeMillis() - started;
     	System.out.println("Solution Found!!, in Time: " + duration);    	
-		if(TotalRuns >= 5){
+		if(TotalRuns >= 10){
 			return true;
 			//return false;
 		}else {
@@ -1099,12 +1124,12 @@ public class Niklas extends SolutionMethod {
 		//IntVar totalCost = solver.makeSum(Cost1, Cost2).var();
 		IntVar totalCost = Cost1;
 		cost[1] = totalCost;
-		//solver.addConstraint(solver.makeLessOrEqual(cost[2], 6500));
+		solver.addConstraint(solver.makeLessOrEqual(cost[0], 9900));
 		//solver.addConstraint(solver.makeLessOrEqual(cost[1], 6000));
 		//solver.addConstraint(solver.makeLessOrEqual(cost[0], 8500));
 		//solver.addConstraint(solver.makeGreaterOrEqual(cost[1], 3000));
 
-		return solver.makeMinimize(totalCost, 1);
+		return solver.makeMinimize(totalCost, 5);
 	}
 	private OptimizeVar MinimizeWindowPercentage(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset, IntVar[] cost) {
 		IntVar percent = null;
