@@ -30,7 +30,7 @@ class Romon extends SolutionMethod{
 		Tclose = new IntVar[NOutports][];
 		Paff = new IntVar[NOutports][];
 		Waff = new IntVar[NOutports][][];
-		Jitters = new IntVar[4];
+		Jitters = new IntVar[3];
 		TotalVars = AssignVars(Topen, Tclose, Paff, Waff);
 	}
 	public void addConstraints() {
@@ -45,14 +45,14 @@ class Romon extends SolutionMethod{
 		Constraint7(Topen, Tclose, Paff, Waff);
 		//Constraint8(Topen, Tclose, Paff, Waff);
 		//Constraint9(Topen, Tclose, Paff, Waff);
-		Constraint10(Topen, Tclose, Paff, Waff);
-		SetDefaultSolution(Topen, Tclose, Paff, Waff);
-		BoundedStartJitterConstraint(Topen, Tclose, Paff, Waff);
+		//Constraint10(Topen, Tclose, Paff, Waff);
+		//SetDefaultSolution(Topen, Tclose, Paff, Waff);
+		//BoundedStartJitterConstraint(Topen, Tclose, Paff, Waff);
 	}
 	public void addCosts() {
 		Cost0(Topen, Tclose, Paff, Waff, Jitters);
 		Cost1(Topen, Tclose, Paff, Waff, Jitters);
-		Cost2(Topen, Tclose, Paff, Waff, Jitters);
+		//Cost2(Topen, Tclose, Paff, Waff, Jitters);
 		//Cost3(Topen, Tclose, Paff, Waff, Jitters);
 		//Cost4(Topen, Tclose, Paff, Waff, Jitters);
 		OptVar = CostMinimizer(Jitters);
@@ -93,10 +93,10 @@ class Romon extends SolutionMethod{
 		SearchMonitor[] searchVar = new SearchMonitor[2];
 		// Search Type
 		// Normal Search
-		//searchVar[0] = OptVar;
+		searchVar[0] = OptVar;
 		
 		// Simulated Annealing
-		searchVar[0] = solver.makeSimulatedAnnealing(false, Jitters[3], 1, 100000);
+		//searchVar[0] = solver.makeSimulatedAnnealing(false, Jitters[3], 1, 100000);
 		
 		// Tabu Search
 		IntVar[] x = new IntVar[TotalVars];
@@ -283,6 +283,7 @@ class Romon extends SolutionMethod{
 		for (Switches sw : Current.SW) {
 			for (Port port : sw.ports) {
 				if(port.outPort) {
+					port.SetGCLs(port.GCLSize);
 					for (int i = 0; i < port.GCLSize; i++) {
 						port.Topen[i] = (int) Topen[counter][i].value();
 						port.Tclose[i] = (int) Tclose[counter][i].value();
@@ -728,10 +729,10 @@ class Romon extends SolutionMethod{
 		IntVar tempIntVar = null;
 		tempIntVar = solver.makeProd(Costs[0], 0).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 0).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
+		//tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
 		//tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 0).var()).var();
-		Costs[3] = tempIntVar;
-		return solver.makeMinimize(Costs[3],1);
+		Costs[2] = tempIntVar;
+		return solver.makeMinimize(Costs[2],1);
 		
 
 	}

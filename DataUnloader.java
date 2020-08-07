@@ -66,7 +66,7 @@ class DataUnloader {
 		String jitterPath = defaultPath + "/Jitters";
 		
 		if(name.contains("Niklas")) {
-    		visualizer.CreateTotalWindowSVG(solution, schedulePath, solution.Hyperperiod);
+    		//visualizer.CreateTotalWindowSVG(solution, schedulePath, solution.Hyperperiod);
     		//UnloadPorts(solution, switchPath, solutionFile);
     		//UnloadLuxi(solution, LuxiToolPath);
     		NETCALCall(solution);

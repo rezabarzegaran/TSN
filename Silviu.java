@@ -23,7 +23,7 @@ public class Silviu extends SolutionMethod{
 	public void initVariables() {
 		NOutports = Current.getNOutPorts();
 		Offset = new IntVar[NOutports][][];
-		Costs = new IntVar[3];
+		Costs = new IntVar[5];
 		TotalVars = AssignVars(Offset);
 	}
 	public void addConstraints() {
@@ -35,6 +35,8 @@ public class Silviu extends SolutionMethod{
 	public void addCosts() {
 		Cost0(Offset, Costs);
 		Cost1(Offset, Costs);
+		Cost2(Offset, Costs);
+		Cost3(Offset, Costs);
 		OptVar = CostMinimizer(Costs);
 	}
 	public void addDecision() {
@@ -43,6 +45,7 @@ public class Silviu extends SolutionMethod{
 		long allvariables = TotalVars;
 		System.out.println("There are " + allvariables + "Variables");
 		db = solver.makePhase(x,  solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
+		//db = solver.makePhase(x,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE);
 
 	}
 	public void addSolverLimits() {
@@ -76,7 +79,7 @@ public class Silviu extends SolutionMethod{
 		
 		//return false;
     	
-		if((TotalRuns >= 10)){
+		if((TotalRuns >= 2)){
 			return true;
 		}else {
 			return false;
@@ -130,6 +133,13 @@ public class Silviu extends SolutionMethod{
 		for (Switches sw : Current.SW) {
 			for (Port port : sw.ports) {
 				if(port.outPort) {
+					
+					int TotalGCL =0;
+					for (int i = 0; i < port.AssignedStreams.size(); i++) {
+						TotalGCL += port.AssignedStreams.get(i).N_instances;
+					}
+					
+					port.SetGCLs(TotalGCL);
 					int gclcounter = 0;
 					for (int i = 0; i < port.AssignedStreams.size(); i++) {
 						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
@@ -228,7 +238,7 @@ public class Silviu extends SolutionMethod{
 		
 		for (Stream stream : Current.streams) {
 			String firstSWName = stream.getFirstSwitch();		
-			String lastSWName = stream.getFirstSwitch();
+			String lastSWName = stream.getLastSwitch();
 			if ((firstSWName != null) && (lastSWName != null)) {
 				Port firstPort = getPortObject(firstSWName, stream.Id);
 				int firstportindex = FindPortIndex(firstSWName, stream.Id);
@@ -331,8 +341,10 @@ public class Silviu extends SolutionMethod{
 		IntVar tempIntVar = null;
 		tempIntVar = solver.makeProd(Costs[0], 1).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 1).var()).var();
-		Costs[2] = tempIntVar;
-		return solver.makeMinimize(Costs[2],1);
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 0).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 0).var()).var();
+		Costs[4] = tempIntVar;
+		return solver.makeMinimize(Costs[4],3);
 		
 
 	}
@@ -390,6 +402,70 @@ public class Silviu extends SolutionMethod{
 		}
 		Costs[1] = eExpr;
 		return solver.makeMinimize(Costs[1], 1);
+	}
+	
+	private OptimizeVar Cost2(IntVar[][][] Offset, IntVar[] Costs) {
+		IntVar eExpr = null;
+		for (Stream stream : Current.streams) {
+
+			String lastswitch = stream.getLastSwitch();
+			int lastIndex = FindPortIndex(lastswitch, stream.Id);
+			if(lastIndex != -1) {
+				for (int i = 0; i < stream.N_instances; i++) {
+					for (int j = 0; j < stream.N_instances; j++) {
+						int streamUsage = (stream.Transmit_Time * 10000) / stream.Period;
+						IntVar aVar = solver.makeIntConst(streamUsage);
+					
+						if(eExpr == null) {
+							eExpr = aVar;
+						}else {
+							eExpr = solver.makeSum(eExpr, aVar).var();
+						}
+
+					}
+				}
+			}
+			
+		}
+		eExpr = solver.makeDiv(eExpr, TotalVars).var();
+		Costs[2] = eExpr;
+		return solver.makeMinimize(Costs[2], 1);
+	}
+	
+	private OptimizeVar Cost3(IntVar[][][] Offset, IntVar[] Costs) {
+		
+		IntVar eExpr = null;
+		int totalinstances = 0;
+		for (Stream stream : Current.streams) {
+			String firstSWName = stream.getFirstSwitch();		
+			String lastSWName = stream.getLastSwitch();
+			if ((firstSWName != null) && (lastSWName != null)) {
+				Port firstPort = getPortObject(firstSWName, stream.Id);
+				int firstportindex = FindPortIndex(firstSWName, stream.Id);
+				int firststreamindex = getStreamIndex(firstSWName, stream.Id);
+				Port lastPort = getPortObject(lastSWName, stream.Id);
+				int lastportindex = FindPortIndex(lastSWName, stream.Id);
+				int laststreamindex = getStreamIndex(lastSWName, stream.Id);
+				for (int i = 0; i < stream.N_instances; i++) {
+					
+					IntVar aVar = solver.makeProd(Offset[lastportindex][laststreamindex][i], lastPort._microtick).var();
+					aVar = solver.makeSum(aVar, stream.Transmit_Time).var();
+					totalinstances++;
+					if(eExpr == null) {
+						eExpr = aVar;
+					}else {
+						eExpr = solver.makeSum(eExpr, aVar).var();
+					}
+				}
+
+
+			}
+		}
+		
+		eExpr = solver.makeDiv(eExpr, totalinstances).var();
+		
+		Costs[3] = eExpr;
+		return solver.makeMinimize(Costs[3], 1);
 	}
 
 	private int FindPortIndex(String swName, int mID) {
