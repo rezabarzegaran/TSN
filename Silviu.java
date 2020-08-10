@@ -79,7 +79,7 @@ public class Silviu extends SolutionMethod{
 		
 		//return false;
     	
-		if((TotalRuns >= 2)){
+		if((TotalRuns >= 1)){
 			return true;
 		}else {
 			return false;

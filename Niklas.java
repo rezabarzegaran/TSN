@@ -505,7 +505,7 @@ public class Niklas extends SolutionMethod {
 							IntVar WindowServiceValue = getServiceCurve(port, q);
 							WindowServiceValue = solver.makeProd(WindowServiceValue, 10).var();
 							IntVar TotalServiceNeeded = getArrivalCurve(sw, port, q);
-							TotalServiceNeeded = solver.makeProd(TotalServiceNeeded, 20).var();
+							TotalServiceNeeded = solver.makeProd(TotalServiceNeeded, 30).var();
 							solver.addConstraint(solver.makeGreater(WindowServiceValue, TotalServiceNeeded));
 							int EarliestD = getEarliestDeadline(q);
 							//IntVar WindowServiceValueAtT = getServiceCurveAtT(port, q, EarliestD);
@@ -1076,7 +1076,7 @@ public class Niklas extends SolutionMethod {
 		TotalRuns++;
 		long duration = System.currentTimeMillis() - started;
     	System.out.println("Solution Found!!, in Time: " + duration);    	
-		if(TotalRuns >= 3){
+		if(TotalRuns >= 1){
 			return true;
 			//return false;
 		}else {
@@ -1124,12 +1124,12 @@ public class Niklas extends SolutionMethod {
 		//IntVar totalCost = solver.makeSum(Cost1, Cost2).var();
 		IntVar totalCost = Cost1;
 		cost[1] = totalCost;
-		//solver.addConstraint(solver.makeLessOrEqual(cost[0], 4500));
+		//solver.addConstraint(solver.makeLessOrEqual(cost[0], 4700));
 		//solver.addConstraint(solver.makeLessOrEqual(cost[1], 6000));
 		//solver.addConstraint(solver.makeLessOrEqual(cost[0], 8500));
 		//solver.addConstraint(solver.makeGreaterOrEqual(cost[1], 3000));
 
-		return solver.makeMinimize(totalCost, 1);
+		return solver.makeMinimize(totalCost, 4);
 	}
 	private OptimizeVar MinimizeWindowPercentage(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset, IntVar[] cost) {
 		IntVar percent = null;

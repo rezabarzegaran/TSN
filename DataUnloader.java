@@ -68,7 +68,7 @@ class DataUnloader {
 		if(name.contains("Niklas")) {
     		//visualizer.CreateTotalWindowSVG(solution, schedulePath, solution.Hyperperiod);
     		//UnloadPorts(solution, switchPath, solutionFile);
-    		//UnloadLuxi(solution, LuxiToolPath);
+    		UnloadLuxi(solution, LuxiToolPath);
     		NETCALCall(solution);
     		NETCALLRun(solution);
     		
