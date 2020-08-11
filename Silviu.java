@@ -79,7 +79,7 @@ public class Silviu extends SolutionMethod{
 		
 		//return false;
     	
-		if((TotalRuns >= 1)){
+		if((TotalRuns >= 3)){
 			return true;
 		}else {
 			return false;
@@ -339,9 +339,9 @@ public class Silviu extends SolutionMethod{
 
 	private OptimizeVar CostMinimizer(IntVar[] Costs) {
 		IntVar tempIntVar = null;
-		tempIntVar = solver.makeProd(Costs[0], 1).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 1).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 0).var()).var();
+		tempIntVar = solver.makeProd(Costs[0], 0).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 0).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 0).var()).var();
 		Costs[4] = tempIntVar;
 		return solver.makeMinimize(Costs[4],3);
@@ -406,26 +406,27 @@ public class Silviu extends SolutionMethod{
 	
 	private OptimizeVar Cost2(IntVar[][][] Offset, IntVar[] Costs) {
 		IntVar eExpr = null;
-		for (Stream stream : Current.streams) {
-
-			String lastswitch = stream.getLastSwitch();
-			int lastIndex = FindPortIndex(lastswitch, stream.Id);
-			if(lastIndex != -1) {
-				for (int i = 0; i < stream.N_instances; i++) {
-					for (int j = 0; j < stream.N_instances; j++) {
-						int streamUsage = (stream.Transmit_Time * 10000) / stream.Period;
-						IntVar aVar = solver.makeIntConst(streamUsage);
-					
-						if(eExpr == null) {
-							eExpr = aVar;
-						}else {
-							eExpr = solver.makeSum(eExpr, aVar).var();
+		
+		int counter = 0;
+		for (Switches sw : Current.SW) {
+			for (Port port : sw.ports) {
+				if(port.outPort) {		
+					for (int i = 0; i < port.AssignedStreams.size(); i++) {
+						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
+							int streamUsage = (port.AssignedStreams.get(i).Transmit_Time * 10000) / port.AssignedStreams.get(i).Period;
+							IntVar aVar = solver.makeIntConst(streamUsage);
+							if(eExpr == null) {
+								eExpr = aVar;
+							}else {
+								eExpr = solver.makeSum(eExpr, aVar).var();
+							}
 						}
-
+						
 					}
+		
+					counter++;
 				}
 			}
-			
 		}
 		eExpr = solver.makeDiv(eExpr, TotalVars).var();
 		Costs[2] = eExpr;

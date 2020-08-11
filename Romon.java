@@ -30,7 +30,7 @@ class Romon extends SolutionMethod{
 		Tclose = new IntVar[NOutports][];
 		Paff = new IntVar[NOutports][];
 		Waff = new IntVar[NOutports][][];
-		Jitters = new IntVar[3];
+		Jitters = new IntVar[5];
 		TotalVars = AssignVars(Topen, Tclose, Paff, Waff);
 	}
 	public void addConstraints() {
@@ -46,13 +46,14 @@ class Romon extends SolutionMethod{
 		//Constraint8(Topen, Tclose, Paff, Waff);
 		//Constraint9(Topen, Tclose, Paff, Waff);
 		//Constraint10(Topen, Tclose, Paff, Waff);
-		//SetDefaultSolution(Topen, Tclose, Paff, Waff);
+		SetDefaultSolution(Topen, Tclose, Paff, Waff);
 		//BoundedStartJitterConstraint(Topen, Tclose, Paff, Waff);
 	}
 	public void addCosts() {
 		Cost0(Topen, Tclose, Paff, Waff, Jitters);
 		Cost1(Topen, Tclose, Paff, Waff, Jitters);
-		//Cost2(Topen, Tclose, Paff, Waff, Jitters);
+		Cost2(Topen, Tclose, Paff, Waff, Jitters);
+		AvgBandwidth(Topen, Tclose, Paff, Waff, Jitters);
 		//Cost3(Topen, Tclose, Paff, Waff, Jitters);
 		//Cost4(Topen, Tclose, Paff, Waff, Jitters);
 		OptVar = CostMinimizer(Jitters);
@@ -86,8 +87,8 @@ class Romon extends SolutionMethod{
 	    //db = solver.compose(db7, db6);
 	}
 	public void addSolverLimits() {
-		int hours = 2;
-		int minutes = 0;
+		int hours = 0;
+		int minutes = 30;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
 		SearchMonitor[] searchVar = new SearchMonitor[2];
@@ -139,7 +140,7 @@ class Romon extends SolutionMethod{
 		
 		//return false;
     	
-		if((TotalRuns >= 3000)){
+		if((TotalRuns >= 1)){
 			return true;
 		}else {
 			return false;
@@ -729,10 +730,10 @@ class Romon extends SolutionMethod{
 		IntVar tempIntVar = null;
 		tempIntVar = solver.makeProd(Costs[0], 0).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 0).var()).var();
-		//tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
-		//tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 0).var()).var();
-		Costs[2] = tempIntVar;
-		return solver.makeMinimize(Costs[2],1);
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 0).var()).var();
+		Costs[4] = tempIntVar;
+		return solver.makeMinimize(Costs[4],5);
 		
 
 	}
@@ -806,6 +807,7 @@ class Romon extends SolutionMethod{
 	}
 	private OptimizeVar Cost2(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[][][] Waff, IntVar[] ReciverJitter) {
 		IntVar bExpr= null;
+		int totalvals = 0;
 		for (Stream stream : Current.streams) {
 			String lastswitch = stream.getLastSwitch();
 			int lastIndex = FindPortIndex(lastswitch, stream.Id);
@@ -816,7 +818,7 @@ class Romon extends SolutionMethod{
 					var indexvar= solver.makeElement(Tclose[lastIndex], Waff[lastIndex][getStreamIndex(lastswitch, stream.Id)][i]).var();
 					var indexvar2= solver.makeElement(Topen[firstIndex], Waff[firstIndex][getStreamIndex(firstSwitch, stream.Id)][i]).var();
 					//IntExpr aExpr = solver.makeDifference(Tclose[lastIndex][getPortObject(lastswitch, stream.Id).indexMap[getStreamIndex(lastswitch, stream.Id)][i]], Topen[firstIndex][getPortObject(firstSwitch, stream.Id).indexMap[getStreamIndex(firstSwitch, stream.Id)][i]]);
-
+					totalvals++;
 					IntVar aExpr = solver.makeDifference(indexvar, indexvar2).var();
 					if(bExpr == null) {
 						bExpr = aExpr.var();
@@ -827,7 +829,55 @@ class Romon extends SolutionMethod{
 				}
 			}	
 		}
-		ReciverJitter[2] = bExpr;
+		bExpr = solver.makeDiv(bExpr,totalvals).var();
+		ReciverJitter[3] = bExpr;
+		return solver.makeMinimize(ReciverJitter[2], 1);
+
+	}
+	private OptimizeVar AvgBandwidth(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[][][] Waff, IntVar[] ReciverJitter) {
+		IntVar cExpr= null;
+		int counter = 0;
+		int totalV = 0;
+		for (Switches sw : Current.SW) {
+			for (Port port : sw.ports) {
+				if(port.outPort) {
+					//port.SetGCLs(port.GCLSize);
+					
+					for (int i = 0; i < port.AssignedStreams.size(); i++) {
+						IntVar bExpr= null;
+						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
+							var indexvar= solver.makeElement(Topen[counter], Waff[counter][i][j]).var();
+							var indexvar2= solver.makeElement(Tclose[counter], Waff[counter][i][j]).var();
+							IntVar aExpr = solver.makeDifference(indexvar2, indexvar).var();
+							totalV++;
+							if(bExpr == null) {
+								bExpr = aExpr.var();
+							}else {
+								bExpr = solver.makeSum(bExpr, aExpr.var()).var();
+							}
+						}
+						bExpr = solver.makeProd(bExpr, 10000).var();
+						bExpr = solver.makeDiv(bExpr,port.AssignedStreams.get(i).Period).var();
+						//bExpr = solver.makeDiv(bExpr,port.AssignedStreams.get(i).N_instances).var();
+						if(cExpr == null) {
+							cExpr = bExpr.var();
+						}else {
+							cExpr = solver.makeSum(cExpr, bExpr.var()).var();
+						}
+					}
+									
+					
+					
+
+					counter++;
+				}
+			}
+		}
+		
+		cExpr = solver.makeDiv(cExpr, totalV).var();
+		//bExpr = solver.makeProd(bExpr, 10000).var();
+		//bExpr = solver.makeDiv(bExpr,Current.Hyperperiod).var();
+		ReciverJitter[2] = cExpr;
 		return solver.makeMinimize(ReciverJitter[2], 1);
 
 	}
@@ -864,7 +914,7 @@ class Romon extends SolutionMethod{
 
 	}
 	private void CostLimiter(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[][][] Waff, IntVar[] ReciverJitter) {
-			solver.addConstraint(solver.makeLessOrEqual(ReciverJitter[3], 44063));
+			solver.addConstraint(solver.makeLessOrEqual(ReciverJitter[4], 3000));
 
 	}
 	
