@@ -25,7 +25,7 @@ public class Reza extends SolutionMethod{
 	public void initVariables() {
 		NOutports = Current.getNOutPorts();
 		Offset = new IntVar[NOutports][][];
-		Costs = new IntVar[6];
+		Costs = new IntVar[9];
 		TotalVars = AssignVars(Offset);
 	}
 	public void addConstraints() {
@@ -36,13 +36,16 @@ public class Reza extends SolutionMethod{
 		ControlPrecedence(Offset);
 	}
 	public void addCosts() {
-		//ZStartJNoControl(Offset, Costs);
-		//ZEndJNoControl(Offset, Costs);
+		ZStartJNoControl(Offset, Costs);
+		ZEndJNoControl(Offset, Costs);
 		SensorDelay(Offset, Costs);
 		ActuatorDelay(Offset, Costs);
 		SensorJitter(Offset, Costs);
 		ActuatorJitter(Offset, Costs);
 		ZIOJControlApp(Offset, Costs);
+		ZStartJNoControl(Offset, Costs);
+		ZEndJNoControl(Offset, Costs);
+		E2E(Offset, Costs);
 		costVar = CostMinimizer(Costs);
 	}
 	public void addDecision() {
@@ -445,8 +448,8 @@ public class Reza extends SolutionMethod{
 
 			
 		}
-		Costs[0] = eExpr;
-		return solver.makeMinimize(Costs[0], 1);
+		Costs[6] = eExpr;
+		return solver.makeMinimize(Costs[6], 1);
 	}
 	private OptimizeVar ZEndJNoControl(IntVar[][][] Offset, IntVar[] Costs) {
 		IntVar eExpr = null;
@@ -474,8 +477,8 @@ public class Reza extends SolutionMethod{
 			}
 	
 		}
-		Costs[1] = eExpr;
-		return solver.makeMinimize(Costs[1], 1);
+		Costs[7] = eExpr;
+		return solver.makeMinimize(Costs[7], 1);
 	}
 	
 	private OptimizeVar SensorDelay(IntVar[][][] Offset, IntVar[] Costs) {
@@ -705,8 +708,8 @@ public class Reza extends SolutionMethod{
 			}
 		}
 		
-		Costs[2] = eExpr;
-		return solver.makeMinimize(Costs[2], 1);
+		Costs[8] = eExpr;
+		return solver.makeMinimize(Costs[8], 1);
 	}
 	
 	private int FindPortIndex(String swName, int mID) {
