@@ -88,6 +88,7 @@ class DataLoader {
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                 	Element eElement = (Element) nNode;
                 	int _id = Integer.parseInt(eElement.getAttribute("id"));
+                	int wcet = Integer.parseInt(eElement.getAttribute("C"));
                     NodeList listednotes = eElement.getElementsByTagName("in");
                     for (int j = 0; j < listednotes.getLength(); j++) {
                     	inIDList.add(Integer.valueOf(listednotes.item(j).getTextContent()));
@@ -96,7 +97,7 @@ class DataLoader {
                     for (int j = 0; j < listednotes2.getLength(); j++) {
                     	outIDList.add(Integer.valueOf(listednotes2.item(j).getTextContent()));
 					}
-                	ControlApp tc = new ControlApp(_id, inIDList, outIDList);
+                	ControlApp tc = new ControlApp(_id, wcet, inIDList, outIDList);
                 	CAs.add(tc);
                 }
 			}
@@ -189,6 +190,7 @@ class DataLoader {
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                 	Element eElement = (Element) nNode;
                 	int _id = Integer.parseInt(eElement.getAttribute("id"));
+                	int wcet = Integer.parseInt(eElement.getAttribute("C"));
                     NodeList listednotes = eElement.getElementsByTagName("in");
                     for (int j = 0; j < listednotes.getLength(); j++) {
                     	inIDList.add(Integer.valueOf(listednotes.item(i).getTextContent()));
@@ -197,7 +199,7 @@ class DataLoader {
                     for (int j = 0; j < listednotes2.getLength(); j++) {
                     	outIDList.add(Integer.valueOf(listednotes2.item(i).getTextContent()));
 					}
-                	ControlApp tc = new ControlApp(_id, inIDList, outIDList);
+                	ControlApp tc = new ControlApp(_id, wcet, inIDList, outIDList);
                 	CAs.add(tc);
                 }
 			}
@@ -359,8 +361,9 @@ class Routes{
 }
 //Input Control Applications Class
 class ControlApp{
-	ControlApp(int _id, List<Integer> _inIDs, List<Integer> _outIDs){
+	ControlApp(int _id, int _wcet, List<Integer> _inIDs, List<Integer> _outIDs){
 		id = _id;
+		wcet = _wcet;
 		for (Integer item : _inIDs) {
 			inIDs.add(item);
 			
@@ -371,6 +374,7 @@ class ControlApp{
 		}
 	}
 	int id;
+	int wcet;
 	List<Integer> inIDs = new ArrayList<Integer>();
 	List<Integer> outIDs = new ArrayList<Integer>();
 }

@@ -15,18 +15,18 @@ public class NetOpt {
 		//String testcase = "src/TestCases/Initial/testcase1.xml";
 		//String testcase = "src/TestCases/Initial/testcase2.xml";
 		//String testcase = "src/TestCases/GM/GM.xml";
-		//String testcase = "src/TestCases/JorgeFinal/TestCase 10/Test.xml";
-		String msg = "src/TestCases/Luxi/TC5/msg.txt";
-		String vls = "src/TestCases/Luxi/TC5/vls.txt";
+		String testcase = "src/TestCases/TII/TestCase1/test.xml";
+		//String msg = "src/TestCases/Luxi/TC5/msg.txt";
+		//String vls = "src/TestCases/Luxi/TC5/vls.txt";
 		//String msg = "src/TestCases/IEEE/TC1/msg.txt";
 		//String vls = "src/TestCases/IEEE/TC1/vls.txt";
 
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// Loading Data
         DataLoader dataLoader = new DataLoader();
-        //dataLoader.Load(testcase);
+        dataLoader.Load(testcase);
         //Method call for old input version
-        dataLoader.Load(msg, vls);  
+        //dataLoader.Load(msg, vls);  
 
         //Loading Completed
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -38,7 +38,7 @@ public class NetOpt {
         //Creating Solver
 
         //Select Between Methods
-        methods chosenMethods = methods.Romon;
+        methods chosenMethods = methods.Reza;
         
         boolean debugmode = true;
         

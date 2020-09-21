@@ -25,23 +25,24 @@ public class Reza extends SolutionMethod{
 	public void initVariables() {
 		NOutports = Current.getNOutPorts();
 		Offset = new IntVar[NOutports][][];
-		Costs = new IntVar[4];
+		Costs = new IntVar[6];
 		TotalVars = AssignVars(Offset);
 	}
 	public void addConstraints() {
-		Constraint0(Offset);
-		Constraint1(Offset);
-		Constraint2(Offset);
-		Constraint3(Offset);
-		Constraint4(Offset);
-		//MyConstraint4(Offset, Costs);
+		LinkOverlap(Offset);
+		RouteConstraint(Offset);
+		DeadlineConstraint(Offset);
+		Isolation(Offset);
+		ControlPrecedence(Offset);
 	}
 	public void addCosts() {
-		Cost0(Offset, Costs);
-		Cost1(Offset, Costs);
-		E2ECost(Offset, Costs);
-		//Cost2(Offset, Costs);
-		//Cost3(Offset, Costs);
+		//ZStartJNoControl(Offset, Costs);
+		//ZEndJNoControl(Offset, Costs);
+		SensorDelay(Offset, Costs);
+		ActuatorDelay(Offset, Costs);
+		SensorJitter(Offset, Costs);
+		ActuatorJitter(Offset, Costs);
+		ZIOJControlApp(Offset, Costs);
 		costVar = CostMinimizer(Costs);
 	}
 	public void addDecision() {
@@ -49,8 +50,8 @@ public class Reza extends SolutionMethod{
 		FlatArray(Offset, x, NOutports);
 		long allvariables = TotalVars;
 		System.out.println("There are " + allvariables + "Variables");
-		db = solver.makePhase(x,  solver.INT_VALUE_DEFAULT, solver.ASSIGN_MIN_VALUE); // The systematic search method
-		//db = solver.makePhase(x,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
+		db = solver.makePhase(x,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MIN_VALUE); // The systematic search method
+		//db = solver.makePhase(x,  solver.CHOOSE_RANDOM, solver.ASSIGN_MIN_VALUE); // The systematic search method
 
 	}
 	public void addSolverLimits() {
@@ -99,7 +100,7 @@ public class Reza extends SolutionMethod{
 		
 		//return false;
     	
-    	if(Costs[2].value() == 0) {
+    	if(Costs[5].value() == 0) {
     		return true;
     	}
     	
@@ -182,7 +183,7 @@ public class Reza extends SolutionMethod{
 		}
 		return counter;
 	}
-	private void Constraint0(IntVar[][][] Offset) {
+	private void LinkOverlap(IntVar[][][] Offset) {
 	//Link Constraint
 	//Equation Number 1 of the paper Scheduling Real-time communication in IEEE 802.1 Qbc Time sensitive networks
 		int counter = 0;
@@ -223,7 +224,7 @@ public class Reza extends SolutionMethod{
 			}
 		}
 	}
-	private void Constraint1(IntVar[][][] Offset) {
+	private void RouteConstraint(IntVar[][][] Offset) {
 		//Flow Transmission Constraint
 		//Equation Number 2 of the paper Scheduling Real-time communication in IEEE 802.1 Qbc Time sensitive networks
 		int counter = 0;
@@ -257,7 +258,7 @@ public class Reza extends SolutionMethod{
 			
 		}
 	}
-	private void Constraint2(IntVar[][][] Offset) {
+	private void DeadlineConstraint(IntVar[][][] Offset) {
 		//End to End Constraint
 		//Equation Number 3 of the paper Scheduling Real-time communication in IEEE 802.1 Qbc Time sensitive networks
 		
@@ -284,7 +285,7 @@ public class Reza extends SolutionMethod{
 		}
 		
 	}
-	private void Constraint3(IntVar[][][] Offset) {
+	private void Isolation(IntVar[][][] Offset) {
 		//Isolation Constraint
 		//Equation Number 6 of the paper Scheduling Real-time communication in IEEE 802.1 Qbc Time sensitive networks
 		int counter = 0;
@@ -360,7 +361,7 @@ public class Reza extends SolutionMethod{
 			
 		}
 	}
-	private void Constraint4(IntVar[][][] Offset) {
+	private void ControlPrecedence(IntVar[][][] Offset) {
 		//Flow Transmission Constraint
 		//Equation Number 2 of the paper Scheduling Real-time communication in IEEE 802.1 Qbc Time sensitive networks
 		for (App CA : Current.Apps) {
@@ -386,7 +387,7 @@ public class Reza extends SolutionMethod{
 			    			
 			    			for (int i = 0; i < actStream.N_instances; i++) {
 			    				IntVar aVar = solver.makeProd(Offset[senPortIndex][senPortStreamIndex][i], senPort._microtick).var();
-			    				IntVar bVar = solver.makeSum(aVar, (senStream.Transmit_Time + senSwitches.getDelay(senStream))).var();
+			    				IntVar bVar = solver.makeSum(aVar, (senStream.Transmit_Time + senSwitches.getDelay(senStream) + CA.getWCET())).var();
 			    				IntVar cVar = solver.makeProd(Offset[actPortIndex][actPortStremIndex][i], actPort._microtick).var();
 			    				solver.addConstraint(solver.makeGreaterOrEqual(cVar, bVar));
 			    				
@@ -408,15 +409,16 @@ public class Reza extends SolutionMethod{
 		tempIntVar = solver.makeProd(Costs[0], 1).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 1).var()).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
-		//tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 1).var()).var();
-		Costs[3] = tempIntVar;
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 1).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[4], 1).var()).var();
+		Costs[5] = tempIntVar;
 		CostLimiter(Costs);
-		return solver.makeMinimize(Costs[3],100);
+		return solver.makeMinimize(Costs[5],1);
 	}
 	private void CostLimiter(IntVar[] Costs) {
-		solver.addConstraint(solver.makeLessOrEqual(Costs[3], 5000000));
+		solver.addConstraint(solver.makeLessOrEqual(Costs[5], 69));
 	}
-	private OptimizeVar Cost0(IntVar[][][] Offset, IntVar[] Costs) {
+	private OptimizeVar ZStartJNoControl(IntVar[][][] Offset, IntVar[] Costs) {
 		IntVar eExpr = null;
 		for (Stream stream : Current.streams) {
 			
@@ -446,7 +448,7 @@ public class Reza extends SolutionMethod{
 		Costs[0] = eExpr;
 		return solver.makeMinimize(Costs[0], 1);
 	}
-	private OptimizeVar Cost1(IntVar[][][] Offset, IntVar[] Costs) {
+	private OptimizeVar ZEndJNoControl(IntVar[][][] Offset, IntVar[] Costs) {
 		IntVar eExpr = null;
 		for (Stream stream : Current.streams) {
 			if(!isCAStream(stream)) {
@@ -476,57 +478,148 @@ public class Reza extends SolutionMethod{
 		return solver.makeMinimize(Costs[1], 1);
 	}
 	
-	private OptimizeVar Cost2(IntVar[][][] Offset, IntVar[] Costs) {
+	private OptimizeVar SensorDelay(IntVar[][][] Offset, IntVar[] Costs) {
 		IntVar fVar = null;
 		for (App CA : Current.Apps) {
-			for (int act_id : CA.outputMessages) {
-	    		Optional<Stream> tempStream = Current.streams.stream().filter(x -> (x.Id == act_id)).findFirst();
-	    		if (tempStream.isPresent()) {
-	    			Stream actStream = tempStream.get();
-					for (int sen_id : CA.inputMessages) {
-			    		Optional<Stream> tempStream2 = Current.streams.stream().filter(x -> (x.Id == sen_id)).findFirst();
-			    		if (tempStream2.isPresent()) {
-			    			Stream senStream = tempStream2.get();
-			    			String actSwitchString = actStream.getFirstSwitch();
-			    			Switches actSwitches = getSwitchObject(actSwitchString);
-			    			Port actPort = getPortObject(actSwitchString, act_id);
-			    			int actPortIndex = FindPortIndex(actSwitchString, act_id);
-			    			int actPortStremIndex = getStreamIndex(actSwitchString, act_id);
-			    			String senSwitchString = senStream.getLastSwitch();
-			    			Switches senSwitches = getSwitchObject(senSwitchString);
-			    			Port senPort = getPortObject(senSwitchString, sen_id);
-			    			int senPortIndex = FindPortIndex(senSwitchString, sen_id);
-			    			int senPortStreamIndex = getStreamIndex(senSwitchString, sen_id);
-			    			
-			    			
-			    			for (int i = 0; i < actStream.N_instances; i++) {
-			    				IntVar aVar = solver.makeProd(Offset[senPortIndex][senPortStreamIndex][i], senPort._microtick).var();
-			    				IntVar bVar = solver.makeSum(aVar, (senStream.Transmit_Time + senSwitches.getDelay(senStream))).var();
-			    				IntVar cVar = solver.makeProd(Offset[actPortIndex][actPortStremIndex][i], actPort._microtick).var();
-			    				IntVar dVar = solver.makeAbs(solver.makeDifference(cVar, bVar)).var();
-			    				IntVar eVar = solver.makeAbs(solver.makeDifference(senStream.Period, dVar)).var();
-			    				
-			    				
+			for (int sen_id : CA.inputMessages) {
+				Optional<Stream> tempStream = Current.streams.stream().filter(x -> (x.Id == sen_id)).findFirst();
+				if (tempStream.isPresent()) {
+	    			Stream senStream = tempStream.get();
+	    			String senSwitchString = senStream.getLastSwitch();
+	    			Switches senSwitches = getSwitchObject(senSwitchString);
+	    			Port senPort = getPortObject(senSwitchString, sen_id);
+	    			int senPortIndex = FindPortIndex(senSwitchString, sen_id);
+	    			int senPortStreamIndex = getStreamIndex(senSwitchString, sen_id);    			
+			    	for (int i = 0; i < senStream.N_instances; i++) {
+			    				IntVar aVar = solver.makeProd(Offset[senPortIndex][senPortStreamIndex][i], (senPort._microtick*1000)).var();
+			    				IntVar bVar = solver.makeDiv(aVar, senStream.Period).var();
 			    				if(fVar == null) {
-			    					fVar = eVar;
+			    					fVar = bVar;
 			    				}else {
-			    					fVar = solver.makeSum(fVar, eVar).var();
+			    					fVar = solver.makeSum(fVar, bVar).var();
 			    				}
-			    				
-			    				
+ 				
 							}
-						}
-
-					}
-
 				}
 
 			}
+
+		}
+		Costs[0] = fVar;
+		return solver.makeMaximize(Costs[0], 1);
+}
+	
+	private OptimizeVar SensorJitter(IntVar[][][] Offset, IntVar[] Costs) {
+		IntVar fVar = null;
+		for (App CA : Current.Apps) {
+			for (int sen_id : CA.inputMessages) {
+				Optional<Stream> tempStream = Current.streams.stream().filter(x -> (x.Id == sen_id)).findFirst();
+				if (tempStream.isPresent()) {
+	    			Stream senStream = tempStream.get();
+	    			String senSwitchString = senStream.getLastSwitch();
+	    			Switches senSwitches = getSwitchObject(senSwitchString);
+	    			Port senPort = getPortObject(senSwitchString, sen_id);
+	    			int senPortIndex = FindPortIndex(senSwitchString, sen_id);
+	    			int senPortStreamIndex = getStreamIndex(senSwitchString, sen_id);    			
+			    	for (int i = 0; i < senStream.N_instances; i++) {
+			    		for (int j = 0; j < senStream.N_instances; j++) {
+		    				IntVar aVar = solver.makeProd(Offset[senPortIndex][senPortStreamIndex][i], (senPort._microtick*1000)).var();
+		    				IntVar bVar = solver.makeProd(Offset[senPortIndex][senPortStreamIndex][j], (senPort._microtick*1000)).var();
+							IntVar cVar = solver.makeAbs(solver.makeDifference(aVar, bVar)).var();
+		    				IntVar dVar = solver.makeDiv(cVar, senStream.Period).var();
+		    				if(fVar == null) {
+		    					fVar = dVar;
+		    				}else {
+		    					fVar = solver.makeSum(fVar, dVar).var();
+		    				}
+		    				
+						}
+
+
+ 				
+					}
+				}
+
+			}
+
 		}
 		Costs[2] = fVar;
 		return solver.makeMaximize(Costs[2], 1);
-	}
-	private OptimizeVar Cost3(IntVar[][][] Offset, IntVar[] Costs) {
+}
+	private OptimizeVar ActuatorDelay(IntVar[][][] Offset, IntVar[] Costs) {
+		IntVar fVar = null;
+		for (App CA : Current.Apps) {
+			for (int act_id : CA.outputMessages) {
+				Optional<Stream> tempStream = Current.streams.stream().filter(x -> (x.Id == act_id)).findFirst();
+				if (tempStream.isPresent()) {
+	    			Stream actStream = tempStream.get();
+	    			String actSwitchString = actStream.getFirstSwitch();
+	    			Switches actSwitches = getSwitchObject(actSwitchString);
+	    			Port actPort = getPortObject(actSwitchString, act_id);
+	    			int actPortIndex = FindPortIndex(actSwitchString, act_id);
+	    			int actPortStremIndex = getStreamIndex(actSwitchString, act_id);    			
+			    	for (int i = 0; i < actStream.N_instances; i++) {
+			    				IntVar aVar = solver.makeProd(Offset[actPortIndex][actPortStremIndex][i], actPort._microtick).var();
+			    				IntVar bVar = solver.makeDifference(actStream.Period, aVar).var();
+			    				IntVar cVar = solver.makeProd(bVar, 1000).var();
+			    				IntVar dVar = solver.makeDiv(cVar, actStream.Period).var();
+			    				if(fVar == null) {
+			    					fVar = dVar;
+			    				}else {
+			    					fVar = solver.makeSum(fVar, dVar).var();
+			    				}
+ 				
+							}
+				}
+
+			}
+
+		}
+		Costs[1] = fVar;
+		return solver.makeMaximize(Costs[1], 1);
+}
+	
+	private OptimizeVar ActuatorJitter(IntVar[][][] Offset, IntVar[] Costs) {
+		IntVar fVar = null;
+		for (App CA : Current.Apps) {
+			for (int act_id : CA.outputMessages) {
+				Optional<Stream> tempStream = Current.streams.stream().filter(x -> (x.Id == act_id)).findFirst();
+				if (tempStream.isPresent()) {
+	    			Stream actStream = tempStream.get();
+	    			String actSwitchString = actStream.getFirstSwitch();
+	    			Switches actSwitches = getSwitchObject(actSwitchString);
+	    			Port actPort = getPortObject(actSwitchString, act_id);
+	    			int actPortIndex = FindPortIndex(actSwitchString, act_id);
+	    			int actPortStremIndex = getStreamIndex(actSwitchString, act_id);    			
+			    	for (int i = 0; i < actStream.N_instances; i++) {
+			    		for (int j = 0; j < actStream.N_instances; j++) {
+			    				IntVar aVar = solver.makeProd(Offset[actPortIndex][actPortStremIndex][i], actPort._microtick).var();
+			    				IntVar bVar = solver.makeDifference(actStream.Period, aVar).var();
+			    				IntVar cVar = solver.makeProd(bVar, 1000).var();
+			    				IntVar aaVar = solver.makeProd(Offset[actPortIndex][actPortStremIndex][j], actPort._microtick).var();
+			    				IntVar baVar = solver.makeDifference(actStream.Period, aaVar).var();
+			    				IntVar caVar = solver.makeProd(baVar, 1000).var();
+								IntVar dVar = solver.makeAbs(solver.makeDifference(caVar, cVar)).var();
+			    				IntVar daVar = solver.makeDiv(dVar, actStream.Period).var();
+	
+			    				if(fVar == null) {
+			    					fVar = daVar;
+			    				}else {
+			    					fVar = solver.makeSum(fVar, daVar).var();
+			    				}
+ 				
+						}
+			    	}
+				}
+
+			}
+
+		}
+		Costs[3] = fVar;
+		return solver.makeMaximize(Costs[3], 1);
+}
+	
+	private OptimizeVar ZIOJControlApp(IntVar[][][] Offset, IntVar[] Costs) {
 		IntVar eVar = null;
 		for (App CA : Current.Apps) {
 			for (int act_id : CA.outputMessages) {
@@ -554,10 +647,12 @@ public class Reza extends SolutionMethod{
 			    				IntVar bVar = solver.makeProd(Offset[actPortIndex][actPortStremIndex][i], actPort._microtick).var();
 			    				IntVar cVar = solver.makeSum(bVar, (actStream.Transmit_Time + actSwitches.getDelay(actStream))).var();
 			    				IntVar dVar = solver.makeAbs(solver.makeDifference(cVar, aVar)).var();
+			    				IntVar daVar = solver.makeProd(dVar, 1000).var();
+			    				IntVar dbVar = solver.makeDiv(daVar, actStream.Period).var();
 			    				if(baseTime == null) {
-			    					baseTime = dVar;
+			    					baseTime = dbVar;
 			    				}
-			    				IntVar fVar = solver.makeAbs(solver.makeDifference(baseTime, dVar)).var();
+			    				IntVar fVar = solver.makeAbs(solver.makeDifference(baseTime, dbVar)).var();
 			    				if(eVar == null) {
 			    					eVar = fVar;
 			    				}else {
@@ -574,11 +669,11 @@ public class Reza extends SolutionMethod{
 
 			}
 		}
-		Costs[3] = eVar;
-		return solver.makeMaximize(Costs[3], 1);
+		Costs[4] = eVar;
+		return solver.makeMaximize(Costs[4], 1);
 	}
 	
-	private OptimizeVar E2ECost(IntVar[][][] Offset, IntVar[] Costs) {
+	private OptimizeVar E2E(IntVar[][][] Offset, IntVar[] Costs) {
 		IntVar eExpr = null;
 		
 		

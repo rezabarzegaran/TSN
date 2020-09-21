@@ -93,6 +93,7 @@ class Solution {
         
         for (ControlApp controlApp : CAs) {
         	App tc = new App(controlApp.id);
+        	tc.AddWCET(controlApp.wcet);
         	for (int id : controlApp.inIDs) {
 				tc.AddInMessage(id);
 			}
