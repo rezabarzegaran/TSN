@@ -79,7 +79,7 @@ public class Silviu extends SolutionMethod{
 		
 		//return false;
     	
-		if((TotalRuns >= 3)){
+		if((TotalRuns >= 5)){
 			return true;
 		}else {
 			return false;
@@ -339,10 +339,10 @@ public class Silviu extends SolutionMethod{
 
 	private OptimizeVar CostMinimizer(IntVar[] Costs) {
 		IntVar tempIntVar = null;
-		tempIntVar = solver.makeProd(Costs[0], 0).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 0).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 0).var()).var();
+		tempIntVar = solver.makeProd(Costs[0], 1).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 1).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 0).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 1).var()).var();
 		Costs[4] = tempIntVar;
 		return solver.makeMinimize(Costs[4],3);
 		
@@ -352,7 +352,7 @@ public class Silviu extends SolutionMethod{
 		IntVar eExpr = null;
 		for (Stream stream : Current.streams) {
 
-			String firstswitch = stream.getLastSwitch();
+			String firstswitch = stream.getFirstSwitch();
 			int firstindex = FindPortIndex(firstswitch, stream.Id);
 			if(firstindex != -1) {
 				for (int i = 0; i < stream.N_instances; i++) {

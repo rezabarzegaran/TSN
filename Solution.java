@@ -104,6 +104,7 @@ class Solution {
 		}
         for (NetSwitch netSwitch : SWs) {
     		Optional<Switches> tempSwitch = SW.stream().filter(x -> x.Name.equals(netSwitch.Name)).findFirst();
+
     		if (tempSwitch.isPresent()) {
     			Switches crrSwitches = tempSwitch.get();
     			crrSwitches.addHashTable(netSwitch.delayTable);

@@ -107,7 +107,7 @@ public class Reza extends SolutionMethod{
     		return true;
     	}
     	
-		if((TotalRuns >= 10)){
+		if((TotalRuns >= 5)){
 			return true;
 		}else {
 			return false;
@@ -419,12 +419,12 @@ public class Reza extends SolutionMethod{
 		return solver.makeMinimize(Costs[5],1);
 	}
 	private void CostLimiter(IntVar[] Costs) {
-		solver.addConstraint(solver.makeLessOrEqual(Costs[5], 69));
+		solver.addConstraint(solver.makeLessOrEqual(Costs[5], 170));
 	}
 	private OptimizeVar ZStartJNoControl(IntVar[][][] Offset, IntVar[] Costs) {
-		IntVar eExpr = null;
+		IntVar fExpr = null;
 		for (Stream stream : Current.streams) {
-			
+			IntVar eExpr = null;
 			if(!isCAStream(stream)) {
 				String firstswitch = stream.getLastSwitch();
 				int firstindex = FindPortIndex(firstswitch, stream.Id);
@@ -443,17 +443,31 @@ public class Reza extends SolutionMethod{
 
 						}
 					}
+					
+					eExpr = solver.makeDiv(eExpr, stream.N_instances).var();
+
+				}
+				if(fExpr == null) {
+					fExpr = eExpr;
+				}else {
+					fExpr = solver.makeSum(fExpr, eExpr).var();
 				}
 			}
 
+
 			
 		}
-		Costs[6] = eExpr;
+		if (fExpr != null) {
+			fExpr = solver.makeDiv(fExpr, Current.streams.size()).var();
+
+		}
+		Costs[6] = fExpr;
 		return solver.makeMinimize(Costs[6], 1);
 	}
-	private OptimizeVar ZEndJNoControl(IntVar[][][] Offset, IntVar[] Costs) {
-		IntVar eExpr = null;
+	private OptimizeVar ZEndJNoControl(IntVar[][][] Offset, IntVar[] Costs) {		
+		IntVar fExpr = null;
 		for (Stream stream : Current.streams) {
+			IntVar eExpr = null;
 			if(!isCAStream(stream)) {
 				String lastswitch = stream.getLastSwitch();
 				int lastIndex = FindPortIndex(lastswitch, stream.Id);
@@ -473,11 +487,22 @@ public class Reza extends SolutionMethod{
 
 						}
 					}
+					eExpr = solver.makeDiv(eExpr, stream.N_instances).var();
+
+				}
+				if(fExpr == null) {
+					fExpr = eExpr;
+				}else {
+					fExpr = solver.makeSum(fExpr, eExpr).var();
 				}
 			}
-	
 		}
-		Costs[7] = eExpr;
+		if (fExpr != null) {
+			fExpr = solver.makeDiv(fExpr, Current.streams.size()).var();
+
+		}
+
+		Costs[7] = fExpr;
 		return solver.makeMinimize(Costs[7], 1);
 	}
 	
@@ -485,6 +510,7 @@ public class Reza extends SolutionMethod{
 		IntVar fVar = null;
 		for (App CA : Current.Apps) {
 			for (int sen_id : CA.inputMessages) {
+				IntVar eExpr = null;
 				Optional<Stream> tempStream = Current.streams.stream().filter(x -> (x.Id == sen_id)).findFirst();
 				if (tempStream.isPresent()) {
 	    			Stream senStream = tempStream.get();
@@ -496,16 +522,27 @@ public class Reza extends SolutionMethod{
 			    	for (int i = 0; i < senStream.N_instances; i++) {
 			    				IntVar aVar = solver.makeProd(Offset[senPortIndex][senPortStreamIndex][i], (senPort._microtick*1000)).var();
 			    				IntVar bVar = solver.makeDiv(aVar, senStream.Period).var();
-			    				if(fVar == null) {
-			    					fVar = bVar;
+			    				if(eExpr == null) {
+			    					eExpr = bVar;
 			    				}else {
-			    					fVar = solver.makeSum(fVar, bVar).var();
+			    					eExpr = solver.makeSum(eExpr, bVar).var();
 			    				}
  				
 							}
+					eExpr = solver.makeDiv(eExpr, senStream.N_instances).var();
+
+				}
+				if(fVar == null) {
+					fVar = eExpr;
+				}else {
+					fVar = solver.makeSum(fVar, eExpr).var();
 				}
 
 			}
+
+		}
+		if (fVar != null) {
+			fVar = solver.makeDiv(fVar, Current.Apps.size()).var();
 
 		}
 		Costs[0] = fVar;
@@ -516,6 +553,7 @@ public class Reza extends SolutionMethod{
 		IntVar fVar = null;
 		for (App CA : Current.Apps) {
 			for (int sen_id : CA.inputMessages) {
+				IntVar eExpr = null;
 				Optional<Stream> tempStream = Current.streams.stream().filter(x -> (x.Id == sen_id)).findFirst();
 				if (tempStream.isPresent()) {
 	    			Stream senStream = tempStream.get();
@@ -530,10 +568,10 @@ public class Reza extends SolutionMethod{
 		    				IntVar bVar = solver.makeProd(Offset[senPortIndex][senPortStreamIndex][j], (senPort._microtick*1000)).var();
 							IntVar cVar = solver.makeAbs(solver.makeDifference(aVar, bVar)).var();
 		    				IntVar dVar = solver.makeDiv(cVar, senStream.Period).var();
-		    				if(fVar == null) {
-		    					fVar = dVar;
+		    				if(eExpr == null) {
+		    					eExpr = dVar;
 		    				}else {
-		    					fVar = solver.makeSum(fVar, dVar).var();
+		    					eExpr = solver.makeSum(eExpr, dVar).var();
 		    				}
 		    				
 						}
@@ -541,9 +579,20 @@ public class Reza extends SolutionMethod{
 
  				
 					}
+					eExpr = solver.makeDiv(eExpr, senStream.N_instances).var();
+
+				}
+				if(fVar == null) {
+					fVar = eExpr;
+				}else {
+					fVar = solver.makeSum(fVar, eExpr).var();
 				}
 
 			}
+
+		}
+		if (fVar != null) {
+			fVar = solver.makeDiv(fVar, Current.Apps.size()).var();
 
 		}
 		Costs[2] = fVar;
@@ -553,6 +602,7 @@ public class Reza extends SolutionMethod{
 		IntVar fVar = null;
 		for (App CA : Current.Apps) {
 			for (int act_id : CA.outputMessages) {
+				IntVar eExpr = null;
 				Optional<Stream> tempStream = Current.streams.stream().filter(x -> (x.Id == act_id)).findFirst();
 				if (tempStream.isPresent()) {
 	    			Stream actStream = tempStream.get();
@@ -566,16 +616,27 @@ public class Reza extends SolutionMethod{
 			    				IntVar bVar = solver.makeDifference(actStream.Period, aVar).var();
 			    				IntVar cVar = solver.makeProd(bVar, 1000).var();
 			    				IntVar dVar = solver.makeDiv(cVar, actStream.Period).var();
-			    				if(fVar == null) {
-			    					fVar = dVar;
+			    				if(eExpr == null) {
+			    					eExpr = dVar;
 			    				}else {
-			    					fVar = solver.makeSum(fVar, dVar).var();
+			    					eExpr = solver.makeSum(eExpr, dVar).var();
 			    				}
  				
 							}
+					eExpr = solver.makeDiv(eExpr, actStream.N_instances).var();
+
+				}
+				if(fVar == null) {
+					fVar = eExpr;
+				}else {
+					fVar = solver.makeSum(fVar, eExpr).var();
 				}
 
 			}
+
+		}
+		if (fVar != null) {
+			fVar = solver.makeDiv(fVar, Current.Apps.size()).var();
 
 		}
 		Costs[1] = fVar;
@@ -586,6 +647,7 @@ public class Reza extends SolutionMethod{
 		IntVar fVar = null;
 		for (App CA : Current.Apps) {
 			for (int act_id : CA.outputMessages) {
+				IntVar eExpr = null;
 				Optional<Stream> tempStream = Current.streams.stream().filter(x -> (x.Id == act_id)).findFirst();
 				if (tempStream.isPresent()) {
 	    			Stream actStream = tempStream.get();
@@ -605,17 +667,28 @@ public class Reza extends SolutionMethod{
 								IntVar dVar = solver.makeAbs(solver.makeDifference(caVar, cVar)).var();
 			    				IntVar daVar = solver.makeDiv(dVar, actStream.Period).var();
 	
-			    				if(fVar == null) {
-			    					fVar = daVar;
+			    				if(eExpr == null) {
+			    					eExpr = daVar;
 			    				}else {
-			    					fVar = solver.makeSum(fVar, daVar).var();
+			    					eExpr = solver.makeSum(eExpr, daVar).var();
 			    				}
  				
 						}
 			    	}
+					eExpr = solver.makeDiv(eExpr, actStream.N_instances).var();
+
+				}
+				if(fVar == null) {
+					fVar = eExpr;
+				}else {
+					fVar = solver.makeSum(fVar, eExpr).var();
 				}
 
 			}
+
+		}
+		if (fVar != null) {
+			fVar = solver.makeDiv(fVar, Current.Apps.size()).var();
 
 		}
 		Costs[3] = fVar;
@@ -623,13 +696,14 @@ public class Reza extends SolutionMethod{
 }
 	
 	private OptimizeVar ZIOJControlApp(IntVar[][][] Offset, IntVar[] Costs) {
-		IntVar eVar = null;
+		IntVar gVar = null;
 		for (App CA : Current.Apps) {
 			for (int act_id : CA.outputMessages) {
 	    		Optional<Stream> tempStream = Current.streams.stream().filter(x -> (x.Id == act_id)).findFirst();
 	    		if (tempStream.isPresent()) {
 	    			Stream actStream = tempStream.get();
 					for (int sen_id : CA.inputMessages) {
+						IntVar eVar = null;
 			    		Optional<Stream> tempStream2 = Current.streams.stream().filter(x -> (x.Id == sen_id)).findFirst();
 			    		if (tempStream2.isPresent()) {
 			    			Stream senStream = tempStream2.get();
@@ -664,6 +738,13 @@ public class Reza extends SolutionMethod{
 			    				
 			    				
 							}
+			    			eVar = solver.makeDiv(eVar, actStream.N_instances).var();
+
+						}
+						if(gVar == null) {
+							gVar = eVar;
+						}else {
+							gVar = solver.makeSum(gVar, eVar).var();
 						}
 
 					}
@@ -672,17 +753,22 @@ public class Reza extends SolutionMethod{
 
 			}
 		}
-		Costs[4] = eVar;
+		if (gVar != null) {
+			gVar = solver.makeDiv(gVar, Current.Apps.size()).var();
+
+		}
+		Costs[4] = gVar;
 		return solver.makeMaximize(Costs[4], 1);
 	}
 	
 	private OptimizeVar E2E(IntVar[][][] Offset, IntVar[] Costs) {
-		IntVar eExpr = null;
 		
+		IntVar fExpr = null;
 		
 		for (Stream stream : Current.streams) {
 			String firstSWName = stream.getFirstSwitch();		
-			String lastSWName = stream.getFirstSwitch();
+			String lastSWName = stream.getLastSwitch();
+			IntVar eExpr = null;
 			if ((firstSWName != null) && (lastSWName != null)) {
 				Port firstPort = getPortObject(firstSWName, stream.Id);
 				int firstportindex = FindPortIndex(firstSWName, stream.Id);
@@ -703,12 +789,20 @@ public class Reza extends SolutionMethod{
 					}
 
 				}
+				eExpr = solver.makeDiv(eExpr, stream.N_instances).var();
 
 
 			}
+			if(fExpr == null) {
+				fExpr = eExpr;
+			}else {
+				fExpr = solver.makeSum(fExpr, eExpr).var();
+			}
+			
 		}
+		fExpr = solver.makeDiv(fExpr, Current.streams.size()).var();
 		
-		Costs[8] = eExpr;
+		Costs[8] = fExpr;
 		return solver.makeMinimize(Costs[8], 1);
 	}
 	
