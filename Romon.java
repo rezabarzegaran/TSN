@@ -88,7 +88,7 @@ class Romon extends SolutionMethod{
 	}
 	public void addSolverLimits() {
 		int hours = 0;
-		int minutes = 30;
+		int minutes = 3;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
 		SearchMonitor[] searchVar = new SearchMonitor[2];

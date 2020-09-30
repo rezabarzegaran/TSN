@@ -49,8 +49,8 @@ public class Silviu extends SolutionMethod{
 
 	}
 	public void addSolverLimits() {
-		int hours = 10;
-		int minutes = 0;
+		int hours = 0;
+		int minutes = 3;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
 		solver.newSearch(getDecision(),OptVar, limit);

@@ -15,6 +15,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
 import org.w3c.dom.Attr;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -30,10 +31,12 @@ class DataUnloader {
 	boolean JitterTimeInterface;
 	boolean StreamWiseInterface;
 	boolean GeneralInterface;
+	boolean GenerateOMNETPP;
 	String defaltDirPath = "Results";
 	List<List<Integer>> costValues;
 	List<Long> SolutionTimes;
 	int hyperperiod = 0;
+	int variables = 0;
     DataVisualizer visualizer = new DataVisualizer();
     String defaultPath = "Results";
     public DataUnloader(){
@@ -41,6 +44,7 @@ class DataUnloader {
     	JitterTimeInterface = true;
     	StreamWiseInterface = false;
     	GeneralInterface = true;
+    	GenerateOMNETPP = true;
     	costValues = new ArrayList<List<Integer>>();
     	SolutionTimes = new ArrayList<Long>();
     }
@@ -50,6 +54,7 @@ class DataUnloader {
     public void CaptureSolution(Solution solution, long Tnow) {
     	getCostValues(solution);
     	SolutionTimes.add(Tnow);
+    	variables = solution.Variables;
     }
     public void WriteData(Solution solution, String name, int counter) {
     	//getCostValues(solution);
@@ -59,15 +64,20 @@ class DataUnloader {
     	}
 		String streamPath = defaultPath + "/Streams";
 		String switchPath = defaultPath + "/Switches";
+		String GCLsPath = defaultPath + "/GCL";
 		String schedulePath = defaultPath + "/Schedule/" + "S_" + counter;
 		String LuxiToolPath = defaultPath + "/LuxiInterface/S_" + counter;
 		String LuxiAssesPath = "usecases" + "/NetCal/in/historySCHED1";
 		String solutionFile = "S_" + counter + ".xml";
 		String jitterPath = defaultPath + "/Jitters";
 		
+		if(GenerateOMNETPP) {
+			UnloadGCLs(solution, GCLsPath, solutionFile);
+		}
+		
 		if(name.contains("Niklas")) {
     		//visualizer.CreateTotalWindowSVG(solution, schedulePath, solution.Hyperperiod);
-    		//UnloadPorts(solution, switchPath, solutionFile);
+    		UnloadPorts(solution, switchPath, solutionFile);
     		UnloadLuxi(solution, LuxiToolPath);
     		NETCALCall(solution);
     		NETCALLRun(solution);
@@ -183,6 +193,436 @@ class DataUnloader {
     	
     	
     }
+    private void UnloadOMNET(Solution solution, String DirPath) {
+    	Unloadned(solution, DirPath);
+    	Unloadini(solution, DirPath);
+    	UnloadFlows(solution, DirPath);
+    	UnloadRouting(solution, DirPath);
+    }
+    private void Unloadini(Solution solution, String DirPath) {
+    	try {
+    		int linecounter = 0;
+    		Files.createDirectories(Paths.get(DirPath));
+    		PrintWriter writer = new PrintWriter(DirPath + "/Solution.ini", "UTF-8");
+			writer.println("[General]");
+			writer.println("network = TC");
+			writer.println("record-eventlog = true");
+			writer.println("debug-on-errors = true");
+			writer.println("result-dir = results-tc");
+			writer.println("sim_time_limit = " + solution.Hyperperiod + "us");
+			writer.println("**.displayAddresses = true");
+			writer.println("**.verbose = true");
+			int escounter = 1;
+			for (EndSystems es : solution.ES) {
+				writer.println("**." + es.Name + ".eth.address = \"00-00-00-00-00-" + escounter + "\"");
+				escounter++;
+
+			}
+			writer.println("**.SW*.processingDelay.delay = 0us");
+			writer.println("**.filteringDatabase.database = xmldoc(\"xml/Routing.xml\", \"/filteringDatabases/\")");
+			
+			for (Switches sw : solution.SW) {
+				int portcounter = 0;
+				for (Port port : sw.ports) {
+					if(port.outPort) {
+						writer.println("**." + sw.Name+ ".eth[" + portcounter + "].queue.gateController.initialSchedule = xmldoc(\"xml/GCLs.xml\", \"/schedules/switch[@name='" + sw.Name + "']/port[@id='" + portcounter + "']/schedule\") ");
+						portcounter++;
+					}
+
+				}
+			}
+			
+			writer.println("**.SW*.eth[*].queue.numberOfQueues = 8");
+			writer.println("**.SW*.eth[*].queue.tsAlgorithms[*].typename = \"StrictPriority\"");
+			writer.println("**.SW*.eth[*].mac.enablePreemptingFrames = false");
+			writer.println("**.ES*.trafGenSchedApp.initialSchedule = xmldoc(\"xml/Flows.xml\")");
+
+
+    		writer.close();
+    	} catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    private void Unloadned(Solution solution, String DirPath) {
+    	try {
+    		int linecounter = 0;
+    		Files.createDirectories(Paths.get(DirPath));
+    		PrintWriter writer = new PrintWriter(DirPath + "/Solution.ned", "UTF-8");
+			writer.println("package nesting.simulations.example;");
+			writer.println("import ned.DatarateChannel;");
+			writer.println("import nesting.node.ethernet.VlanEtherHostQ;");
+			writer.println("import nesting.node.ethernet.VlanEtherHostSched;");
+			writer.println("import nesting.node.ethernet.VlanEtherSwitchPreemptable;");
+			writer.println("network TC");
+			writer.println("{");
+			writer.println("types:");
+			writer.println("channel C extends DatarateChannel");
+			writer.println("{");
+			writer.println("delay = 0 us;");
+			writer.println("datarate = 100Mbps;");
+			writer.println("}");
+			writer.println("submodules:");
+			for (Switches sw : solution.SW) {
+				writer.println(sw.Name+": VlanEtherSwitchPreemptable {");
+				writer.println("gates:");
+				writer.println("eth["+sw.ports.size()+"];");
+				writer.println("}");
+			}
+			for (EndSystems es : solution.ES) {
+				writer.println(es.Name+": VlanEtherHostSched {");
+				writer.println("}");
+			}
+			writer.println("connections:");
+			int swcounter = 0;
+			for (Switches sw : solution.SW) {
+				int counter=0;
+				for (Port port : sw.ports) {
+					if(port.outPort) {
+						if(port.connectedToES) {
+							writer.println(sw.Name + ".ethg[" + counter + "] --> C --> " + port.connectedTo + ".ethg;");
+						}else {	
+				    		Optional<Switches> tempsw = solution.SW.stream().filter(x -> x.Name.equals(port.connectedTo)).findFirst();
+				    		if (tempsw.isPresent()) {
+				    			Switches Csw = tempsw.get();
+				    			int Cswcounter = solution.SW.lastIndexOf(Csw);
+				    			if(Cswcounter > swcounter) {
+					    			int Ccounter = 0;
+					    			for (Port Cport : Csw.ports) {
+										if(Cport.connectedTo.equals(sw.Name) && !Cport.outPort) {
+											writer.println(sw.Name + ".ethg[" + counter + "] --> C --> " + port.connectedTo + ".ethg[" + Ccounter + "];");
+										}
+					    				Ccounter++;
+									}
+				    			}
+
+
+
+				    		}
+
+						}
+					}else {
+						if(port.connectedToES) {
+							writer.println(sw.Name + ".ethg[" + counter + "] <-- C <-- " + port.connectedTo + ".ethg ;");
+
+						}else {
+				    		Optional<Switches> tempsw = solution.SW.stream().filter(x -> x.Name.equals(port.connectedTo)).findFirst();
+				    		if (tempsw.isPresent()) {
+				    			Switches Csw = tempsw.get();
+				    			int Cswcounter = solution.SW.lastIndexOf(Csw);
+				    			if(Cswcounter > swcounter) {
+					    			int Ccounter = 0;
+					    			for (Port Cport : Csw.ports) {
+										if(Cport.connectedTo.equals(sw.Name) && Cport.outPort) {
+											writer.println(sw.Name + ".ethg[" + counter + "] <-- C <-- " + port.connectedTo + ".ethg[" + Ccounter + "];");
+										}
+					    				Ccounter++;
+									}
+				    			}
+
+
+
+				    		}
+							
+						}
+					}
+					counter++;
+				}
+				swcounter++;
+			}
+			writer.println("}");
+    		writer.close();
+    	} catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    private void UnloadFlows(Solution solution, String DirPath) {
+        try{
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.newDocument();
+            
+            String period = Integer.toString(solution.Hyperperiod) + "us";
+            
+            Element root = doc.createElement("schedules");
+            doc.appendChild(root);
+            
+            Element defaultcycle = doc.createElement("defaultcycle");
+            defaultcycle.setTextContent(period);
+            root.appendChild(defaultcycle);
+            for (EndSystems es : solution.ES) {
+            	Element host = doc.createElement("host");
+            	root.appendChild(host);
+            	Attr hostname = doc.createAttribute("name");
+            	hostname.setValue(es.Name);
+            	host.setAttributeNode(hostname);
+            	Element cycle = doc.createElement("cycle");
+            	cycle.setTextContent(period);
+            	host.appendChild(cycle);
+            	
+            	for (int flowid : es.outStreamsIDs) {
+					for (Stream s : solution.streams) {
+						if(s.Id == flowid) {
+							Element entry = doc.createElement("entry");
+							host.appendChild(entry);
+				            Element entryflowid = doc.createElement("flowId");
+				            entryflowid.setTextContent(Integer.toString(flowid));
+				            entry.appendChild(entryflowid);
+				            
+				            Element entrystart = doc.createElement("start");
+				            entrystart.setTextContent("0us");
+				            entry.appendChild(entrystart);
+				            
+				            Element entryqueue = doc.createElement("queue");
+				            entryqueue.setTextContent(Integer.toString(s.Priority));
+				            entry.appendChild(entryqueue);
+				            
+				            Element entrydest = doc.createElement("dest");
+				            String listener = s.CroutingList.get(s.CroutingList.size() - 1);
+				            int counter = 1;
+				            for (EndSystems tempes : solution.ES) {
+								if(tempes.Name.equals(listener)) {
+									break;
+								}
+								counter++;
+							}
+				            String listenerAdd = "00:00:00:00:00:" + Integer.toString(counter);
+				            entrydest.setTextContent(listenerAdd);
+				            entry.appendChild(entrydest);
+				            
+				            Element entrysize = doc.createElement("size");
+				            entrysize.setTextContent(Integer.toString(s.Size)+"B");
+				            entry.appendChild(entrysize);
+							
+						}
+					}
+				}
+            	
+            	
+			}
+               
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource domSource = new DOMSource(doc);
+            Files.createDirectories(Paths.get(DirPath));
+            String path = DirPath + "/Flows.xml";
+            StreamResult streamResult = new StreamResult(new File(path));
+            transformer.transform(domSource, streamResult);
+            
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    private void UnloadRouting(Solution solution, String DirPath) {
+        try{
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.newDocument();
+            
+            String period = Integer.toString(solution.Hyperperiod) + "us";
+            
+            Element root = doc.createElement("filteringDatabases");
+            doc.appendChild(root);
+            
+            
+            for (Switches sw : solution.SW) {
+                Element database = doc.createElement("filteringDatabase");
+                root.appendChild(database);
+            	Attr id = doc.createAttribute("id");
+            	id.setValue(sw.Name);
+            	database.setAttributeNode(id);
+                Element staticlabel = doc.createElement("static");
+                database.appendChild(staticlabel);
+                Element forward = doc.createElement("forward");
+                database.appendChild(forward);
+                
+                int portcounter = 0;
+                for (Port port : sw.ports) {
+					if(port.outPort) {
+		            	for (Stream s : port.AssignedStreams) {
+			                Element indivitualframe = doc.createElement("individualAddress");
+			                forward.appendChild(indivitualframe);
+			                
+			            	Attr macad = doc.createAttribute("macAddress");
+				            String listener = s.CroutingList.get(s.CroutingList.size() - 1);
+				            int counter = 1;
+				            for (EndSystems tempes : solution.ES) {
+								if(tempes.Name.equals(listener)) {
+									break;
+								}
+								counter++;
+							}
+				            String listenerAdd = "00:00:00:00:00:" + Integer.toString(counter);
+			            	macad.setValue(listenerAdd);
+			            	indivitualframe.setAttributeNode(macad);
+			            	
+			            	Attr portlabel = doc.createAttribute("port");
+			            	portlabel.setValue(Integer.toString(portcounter));
+			            	indivitualframe.setAttributeNode(portlabel);
+
+						}
+   
+						portcounter++;
+					}
+				}
+                
+                
+            	
+			}
+            
+
+               
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource domSource = new DOMSource(doc);
+            Files.createDirectories(Paths.get(DirPath));
+            String path = DirPath + "/Routing.xml";
+            StreamResult streamResult = new StreamResult(new File(path));
+            transformer.transform(domSource, streamResult);
+            
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    private void UnloadGCLs(Solution solution, String DirPath, String filename) {
+        try{
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.newDocument();
+            
+            String period = Integer.toString(solution.Hyperperiod) + "us";
+            
+            Element root = doc.createElement("schedules");
+            doc.appendChild(root);
+            
+            Element defaultcycle = doc.createElement("defaultcycle");
+            defaultcycle.setTextContent(period);
+            root.appendChild(defaultcycle);
+            
+            for (Switches sw : solution.SW) {
+            	Element host = doc.createElement("switch");
+            	root.appendChild(host);
+            	Attr hostname = doc.createAttribute("name");
+            	hostname.setValue(sw.Name);
+            	host.setAttributeNode(hostname);
+            	
+            	int portcounter = 0;
+            	for (Port port : sw.ports) {
+					if(port.outPort) {
+		            	Element portlist = doc.createElement("port");
+		            	host.appendChild(portlist);
+		            	Attr portid = doc.createAttribute("id");
+		            	portid.setValue(Integer.toString(portcounter));
+		            	portlist.setAttributeNode(portid);
+		            	
+		            	
+		            	Element schedule = doc.createElement("schedule");
+		            	portlist.appendChild(schedule);
+		            	Attr schedulecycle = doc.createAttribute("cycleTime");
+		            	schedulecycle.setValue(period);
+		            	schedule.setAttributeNode(schedulecycle);
+		            	
+		            	int prevClose = 0;
+						for (int i = 0; i < port.Topen.length; i++) {
+
+							
+							int dur =  port.Topen[i] - prevClose;
+							if(dur != 0) {
+				            	Element entry = doc.createElement("entry");
+				            	schedule.appendChild(entry);
+				            	Element entrylength = doc.createElement("length");
+				            	entrylength.setTextContent(Integer.toString(dur));
+				            	schedule.appendChild(entrylength);
+				            	
+				            	Element entrybit = doc.createElement("bitvector");
+				            	entrybit.setTextContent("11111111");
+				            	schedule.appendChild(entrybit);
+							}
+							dur = port.Tclose[i] - port.Topen[i];
+			            	Element entry = doc.createElement("entry");
+			            	schedule.appendChild(entry);
+			            	Element entrylength = doc.createElement("length");
+			            	entrylength.setTextContent(Integer.toString(dur));
+			            	schedule.appendChild(entrylength);
+			            	Element entrybit = doc.createElement("bitvector");
+			            	
+			            	
+							switch (port.affiliatedQue[i]) {
+							case 0:
+								entrybit.setTextContent("01111111");
+								break;
+							case 1:
+								entrybit.setTextContent("10111111");
+								break;
+							case 2:
+								entrybit.setTextContent("11011111");
+								break;
+							case 3:
+								entrybit.setTextContent("11101111");
+								break;
+							case 4:
+								entrybit.setTextContent("11110111");
+								break;
+							case 5:
+								entrybit.setTextContent("11111011");
+								break;
+							case 6:
+								entrybit.setTextContent("11111101");
+								break;
+							case 7:
+								entrybit.setTextContent("11111110");
+								break;
+
+							default:
+								throw new IllegalArgumentException("Unexpected value: " + port.affiliatedQue[i]);
+							}
+							
+							schedule.appendChild(entrybit);
+
+							prevClose = port.Tclose[i];
+
+						}
+						
+						int dur = solution.Hyperperiod - prevClose;
+						if(dur > 0) {
+			            	Element entry = doc.createElement("entry");
+			            	schedule.appendChild(entry);
+			            	Element entrylength = doc.createElement("length");
+			            	entrylength.setTextContent(Integer.toString(dur));
+			            	schedule.appendChild(entrylength);
+			            	
+			            	Element entrybit = doc.createElement("bitvector");
+			            	entrybit.setTextContent("11111111");
+			            	schedule.appendChild(entrybit);
+						}
+		            	
+
+						portcounter++;
+					}
+				}
+
+			}
+           
+               
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource domSource = new DOMSource(doc);
+            Files.createDirectories(Paths.get(DirPath));
+            String path = DirPath + "/" + filename;
+            StreamResult streamResult = new StreamResult(new File(path));
+            transformer.transform(domSource, streamResult);
+            
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    
     
     private void UnloadPorts(Solution solution, String DirPath, String fName) {
         try{
@@ -239,7 +679,15 @@ class DataUnloader {
             e.printStackTrace();
         }
     }
+    public void Report(Solution solution, long dur) {
+    	CreateReport(dur);
+    	if(GenerateOMNETPP) {
+    		String omnetpath = defaltDirPath + "/OMNET";
+    		UnloadOMNET(solution, omnetpath);
+    	}
+    }
     public void CreateReport(long dur) {
+
     	try {
     		Files.createDirectories(Paths.get(defaltDirPath));
     		String Reportpath = defaltDirPath + "/report.txt";
@@ -247,6 +695,8 @@ class DataUnloader {
     		String lineString = "Optimization Finished";
     		writer.println(lineString);
     		lineString = "The hyperPeriod is: " + hyperperiod;
+    		writer.println(lineString);
+    		lineString = "The number of frames are: " + variables;
     		writer.println(lineString);
     		lineString = "There are " + costValues.size() + " solutions, whithin " + dur + " milli seconds.";
     		writer.println(lineString);

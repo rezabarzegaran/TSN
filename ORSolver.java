@@ -94,7 +94,7 @@ class ORSolver {
 	    	if(!DebogMode) {
 	    		dataUnloader.WriteData(OptSolution, chosenmethod.toString(), method.getSolutionNumber());
 	    	}
-		    dataUnloader.CreateReport(solver.wallTime());
+		    dataUnloader.Report(OptSolution, solver.wallTime());
 	    }
 
 

@@ -14,13 +14,14 @@ class Solution {
         Create(dataLoader.getMessages(), dataLoader.getRoutes(), dataLoader.getApps(), dataLoader.getSwitches());
         Initialize();
 	}
-	public Solution(List<Stream> _streams, List<EndSystems> _es, List<Switches> _sw, List<App> _apps, List<Long> _costs, int _hyperperiod) {
+	public Solution(List<Stream> _streams, List<EndSystems> _es, List<Switches> _sw, List<App> _apps, List<Long> _costs, int _hyperperiod, int _variables) {
         streams = new ArrayList<Stream>();
         ES = new ArrayList<EndSystems>();
         SW = new ArrayList<Switches>();
         Apps = new ArrayList<App>();
         costValues = new ArrayList<Long>();
         costValues.clear();
+        Variables = _variables;
         
         for (Long val : _costs) {
 			costValues.add(val);
@@ -46,6 +47,7 @@ class Solution {
     public List<App> Apps;
     public List<Long> costValues;  
     public int Hyperperiod = 1;
+    public int Variables = 0;
     
     private void Create(List<Messages> _messages, List<Routes> routes, List<ControlApp> CAs, List<NetSwitch> SWs){
 
@@ -206,7 +208,7 @@ class Solution {
 		return nameStrings;
     }
     public Solution Clone() {
-    	return new Solution(streams, ES, SW, Apps, costValues, (Hyperperiod));
+    	return new Solution(streams, ES, SW, Apps, costValues, (Hyperperiod), Variables);
     }
 	public Switches getSwithObject(String name) {
 		for (Switches sw : SW) {
