@@ -153,6 +153,7 @@ public class Reza extends SolutionMethod{
 	}
 	private Solution AssignSolution(IntVar[][][] Offset, IntVar[] costs)  {
 		Current.costValues.clear();
+		Current.Variables = TotalVars;
 		for (int i = 0; i < costs.length; i++) {
 			Current.costValues.add(costs[i].value());
 		}

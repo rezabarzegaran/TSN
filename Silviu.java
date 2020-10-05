@@ -49,8 +49,8 @@ public class Silviu extends SolutionMethod{
 
 	}
 	public void addSolverLimits() {
-		int hours = 0;
-		int minutes = 3;
+		int hours = 10;
+		int minutes = 20;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
 		solver.newSearch(getDecision(),OptVar, limit);
@@ -79,7 +79,7 @@ public class Silviu extends SolutionMethod{
 		
 		//return false;
     	
-		if((TotalRuns >= 5)){
+		if((TotalRuns >= 1)){
 			return true;
 		}else {
 			return false;
@@ -125,6 +125,7 @@ public class Silviu extends SolutionMethod{
 	}
 	private Solution AssignSolution(IntVar[][][] Offset, IntVar[] costs)  {
 		Current.costValues.clear();
+		Current.Variables = TotalVars;
 		for (int i = 0; i < costs.length; i++) {
 			Current.costValues.add(costs[i].value());
 		}
@@ -147,6 +148,7 @@ public class Silviu extends SolutionMethod{
 							port.Topen[gclcounter] = (offsetvalue * sw.microtick) + j * port.AssignedStreams.get(i).Period;
 							port.Tclose[gclcounter] = port.Topen[gclcounter] + port.AssignedStreams.get(i).Transmit_Time;
 							port.affiliatedQue[gclcounter] = port.AssignedStreams.get(i).Priority;
+							port.setPeriod(Current.Hyperperiod);
 							gclcounter++;
 						}
 					}				

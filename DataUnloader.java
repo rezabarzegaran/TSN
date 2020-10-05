@@ -89,7 +89,7 @@ class DataUnloader {
     		
 		}else {
 			if (GeneralInterface) {
-	    		visualizer.CreateTotalSVG(solution, schedulePath, solution.Hyperperiod);
+	    		//visualizer.CreateTotalSVG(solution, schedulePath, solution.Hyperperiod);
 	    		UnloadStreams(solution, streamPath, solutionFile);
 	    		UnloadPorts(solution, switchPath, solutionFile);
 			}
@@ -102,7 +102,7 @@ class DataUnloader {
 	    		UnloadLuxi(solution, LuxiToolPath);
 			}
 			if (StreamWiseInterface) {
-	    		visualizer.CreateStreamWiseSVG(solution, schedulePath, solution.Hyperperiod);
+	    		//visualizer.CreateStreamWiseSVG(solution, schedulePath, solution.Hyperperiod);
 			}
 		}
 		

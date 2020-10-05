@@ -276,6 +276,7 @@ class Romon extends SolutionMethod{
 	}
 	private Solution AssignSolution(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[][][] Waff, IntVar[] Jitter)  {
 		Current.costValues.clear();
+		Current.Variables = TotalVars;
 		for (int i = 0; i < Jitter.length; i++) {
 			Current.costValues.add(Jitter[i].value());
 		}
