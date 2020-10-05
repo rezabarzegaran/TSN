@@ -107,7 +107,7 @@ public class Reza extends SolutionMethod{
     		return true;
     	}
     	
-		if((TotalRuns >= 5)){
+		if((TotalRuns >= 2)){
 			return true;
 		}else {
 			return false;
@@ -169,6 +169,7 @@ public class Reza extends SolutionMethod{
 							port.Topen[gclcounter] = (offsetvalue * sw.microtick) + j * port.AssignedStreams.get(i).Period;
 							port.Tclose[gclcounter] = port.Topen[gclcounter] + port.AssignedStreams.get(i).Transmit_Time;
 							port.affiliatedQue[gclcounter] = port.AssignedStreams.get(i).Priority;
+							port.setPeriod(Current.Hyperperiod);
 							gclcounter++;
 						}
 					}				
@@ -249,8 +250,13 @@ public class Reza extends SolutionMethod{
 								IntVar aVar = solver.makeProd(Offset[counter][i][j], sw.microtick).var();
 								IntVar bVar = solver.makeProd(Offset[preportindex][preindex][j], sw.microtick).var();
 								IntVar cVar = solver.makeSum(bVar, prePort.AssignedStreams.get(preindex).Transmit_Time).var();
-								IntVar dVar = solver.makeSum(cVar, sw.getDelay(prePort.AssignedStreams.get(preindex))).var();
+								IntVar dVar = solver.makeSum(cVar, sw.getDelay(port.AssignedStreams.get(i))).var();
 								solver.addConstraint(solver.makeGreaterOrEqual(aVar, dVar));
+							}
+						}else {
+							for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
+								IntVar aVar = solver.makeProd(Offset[counter][i][j], sw.microtick).var();
+								solver.addConstraint(solver.makeGreater(aVar, (int) (70 + 0 * port.AssignedStreams.get(i).Period + port.AssignedStreams.get(i).Transmit_Time + sw.getDelay(port.AssignedStreams.get(i)))));
 							}
 						}
 	
@@ -419,7 +425,7 @@ public class Reza extends SolutionMethod{
 		return solver.makeMinimize(Costs[5],1);
 	}
 	private void CostLimiter(IntVar[] Costs) {
-		solver.addConstraint(solver.makeLessOrEqual(Costs[5], 170));
+		solver.addConstraint(solver.makeLessOrEqual(Costs[5], 67));
 	}
 	private OptimizeVar ZStartJNoControl(IntVar[][][] Offset, IntVar[] Costs) {
 		IntVar fExpr = null;

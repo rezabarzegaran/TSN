@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,10 @@ import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.NameList;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 
 
 
@@ -209,12 +214,21 @@ class DataUnloader {
 			writer.println("record-eventlog = true");
 			writer.println("debug-on-errors = true");
 			writer.println("result-dir = results-tc");
-			writer.println("sim_time_limit = " + solution.Hyperperiod + "us");
+			writer.println("sim-time-limit = " + solution.Hyperperiod + "us");
 			writer.println("**.displayAddresses = true");
 			writer.println("**.verbose = true");
 			int escounter = 1;
 			for (EndSystems es : solution.ES) {
-				writer.println("**." + es.Name + ".eth.address = \"00-00-00-00-00-" + escounter + "\"");
+				if(escounter < 10) {
+					writer.println("**." + es.Name + ".eth.address = \"00-00-00-00-00-0" + escounter + "\"");
+
+				}else if(escounter <100) {
+					writer.println("**." + es.Name + ".eth.address = \"00-00-00-00-00-" + escounter + "\"");
+
+				}else if(escounter < 110) {
+					writer.println("**." + es.Name + ".eth.address = \"00-00-00-00-" + (int) (escounter/100) + "-" + (escounter % 100) + "\"");
+
+				}
 				escounter++;
 
 			}
@@ -225,7 +239,7 @@ class DataUnloader {
 				int portcounter = 0;
 				for (Port port : sw.ports) {
 					if(port.outPort) {
-						writer.println("**." + sw.Name+ ".eth[" + portcounter + "].queue.gateController.initialSchedule = xmldoc(\"xml/GCLs.xml\", \"/schedules/switch[@name='" + sw.Name + "']/port[@id='" + portcounter + "']/schedule\") ");
+						writer.println("**." + sw.Name+ ".eth[" + portcounter + "].queue.gateController.initialSchedule = xmldoc(\"xml/S.xml\", \"/schedules/switch[@name='" + sw.Name + "']/port[@id='" + portcounter + "']/schedule\") ");
 						portcounter++;
 					}
 
@@ -243,12 +257,12 @@ class DataUnloader {
             e.printStackTrace();
         }
     }
-    private void Unloadned(Solution solution, String DirPath) {
+	private void Unloadned(Solution solution, String DirPath) {
     	try {
     		int linecounter = 0;
     		Files.createDirectories(Paths.get(DirPath));
     		PrintWriter writer = new PrintWriter(DirPath + "/Solution.ned", "UTF-8");
-			writer.println("package nesting.simulations.example;");
+			writer.println("package nesting.simulations.examples;");
 			writer.println("import ned.DatarateChannel;");
 			writer.println("import nesting.node.ethernet.VlanEtherHostQ;");
 			writer.println("import nesting.node.ethernet.VlanEtherHostSched;");
@@ -258,14 +272,14 @@ class DataUnloader {
 			writer.println("types:");
 			writer.println("channel C extends DatarateChannel");
 			writer.println("{");
-			writer.println("delay = 0 us;");
+			writer.println("delay = 0us;");
 			writer.println("datarate = 100Mbps;");
 			writer.println("}");
 			writer.println("submodules:");
 			for (Switches sw : solution.SW) {
 				writer.println(sw.Name+": VlanEtherSwitchPreemptable {");
 				writer.println("gates:");
-				writer.println("eth["+sw.ports.size()+"];");
+				writer.println("ethg["+sw.ports.size()+"];");
 				writer.println("}");
 			}
 			for (EndSystems es : solution.ES) {
@@ -273,62 +287,79 @@ class DataUnloader {
 				writer.println("}");
 			}
 			writer.println("connections:");
-			int swcounter = 0;
 			for (Switches sw : solution.SW) {
-				int counter=0;
+				int portcounter=0;
 				for (Port port : sw.ports) {
 					if(port.outPort) {
 						if(port.connectedToES) {
-							writer.println(sw.Name + ".ethg[" + counter + "] --> C --> " + port.connectedTo + ".ethg;");
+							writer.println(sw.Name + ".ethg[" + portcounter + "] <--> C <--> " + port.connectedTo + ".ethg;");
 						}else {	
 				    		Optional<Switches> tempsw = solution.SW.stream().filter(x -> x.Name.equals(port.connectedTo)).findFirst();
 				    		if (tempsw.isPresent()) {
-				    			Switches Csw = tempsw.get();
-				    			int Cswcounter = solution.SW.lastIndexOf(Csw);
-				    			if(Cswcounter > swcounter) {
-					    			int Ccounter = 0;
-					    			for (Port Cport : Csw.ports) {
-										if(Cport.connectedTo.equals(sw.Name) && !Cport.outPort) {
-											writer.println(sw.Name + ".ethg[" + counter + "] --> C --> " + port.connectedTo + ".ethg[" + Ccounter + "];");
-										}
-					    				Ccounter++;
-									}
+				    				Switches Csw = tempsw.get();
+				    				if(solution.SW.indexOf(Csw) > solution.SW.indexOf(sw)) {
+							    		Optional<Port> tempportout = Csw.ports.stream().filter(x -> (x.connectedTo.equals(sw.Name) && x.outPort)).findFirst();
+							    		Optional<Port> tempportin = Csw.ports.stream().filter(x -> (x.connectedTo.equals(sw.Name) && !x.outPort)).findFirst();
+							    		
+							    		if(tempportout.isPresent()) {
+							    			Port portout = tempportout.get();
+											writer.println(sw.Name + ".ethg[" + portcounter + "] <--> C <--> " + port.connectedTo + ".ethg[" + Csw.getPortIndex(portout) + "];");
+							    		}else {
+							    			if(tempportin.isPresent()) {
+							    				Port portin = tempportin.get();
+												writer.println(sw.Name + ".ethg[" + portcounter + "] <--> C <--> " + port.connectedTo + ".ethg[" + Csw.getPortIndex(portin) + "];");
+
+							    			}
+							    		}
+				    				}
+
+				    				
 				    			}
 
+				    	}
+					portcounter++;
+					}
 
-
-				    		}
-
-						}
-					}else {
+				}
+				for (Port port : sw.ports) {
+					if(!port.outPort) {
+						
 						if(port.connectedToES) {
-							writer.println(sw.Name + ".ethg[" + counter + "] <-- C <-- " + port.connectedTo + ".ethg ;");
-
-						}else {
-				    		Optional<Switches> tempsw = solution.SW.stream().filter(x -> x.Name.equals(port.connectedTo)).findFirst();
-				    		if (tempsw.isPresent()) {
-				    			Switches Csw = tempsw.get();
-				    			int Cswcounter = solution.SW.lastIndexOf(Csw);
-				    			if(Cswcounter > swcounter) {
-					    			int Ccounter = 0;
-					    			for (Port Cport : Csw.ports) {
-										if(Cport.connectedTo.equals(sw.Name) && Cport.outPort) {
-											writer.println(sw.Name + ".ethg[" + counter + "] <-- C <-- " + port.connectedTo + ".ethg[" + Ccounter + "];");
-										}
-					    				Ccounter++;
-									}
-				    			}
-
-
-
+				    		Optional<Port> tempport = sw.ports.stream().filter(x -> (x.connectedTo.equals(port.connectedTo) && x.outPort)).findFirst();
+				    		if(!tempport.isPresent()) {
+								writer.println(sw.Name + ".ethg[" + portcounter + "] <--> C <--> " + port.connectedTo + ".ethg ;");
+								portcounter++;	
 				    		}
 							
+						}else {
+				    		Optional<Port> tempport = sw.ports.stream().filter(x -> (x.connectedTo.equals(port.connectedTo) && x.outPort)).findFirst();
+				    		if(!tempport.isPresent()) {
+					    		Optional<Switches> tempsw = solution.SW.stream().filter(x -> (x.Name.equals(port.connectedTo))).findFirst();
+					    		if(tempsw.isPresent()) {
+					    			Switches Csw = tempsw.get();
+					    			int ccounter = 0;
+					    			for (Port cport : Csw.ports) {
+										if(cport.outPort) {
+											writer.println(sw.Name + ".ethg[" + portcounter + "] <--> C <--> " + port.connectedTo + ".ethg[" + ccounter + "];");
+											ccounter++;
+											portcounter++;	
+										}
+									}
+					    		}
+				    		}
+									
 						}
+						
+						
+						
+	
+
+
+
 					}
-					counter++;
 				}
-				swcounter++;
 			}
+				
 			writer.println("}");
     		writer.close();
     	} catch (Exception e){
@@ -360,17 +391,48 @@ class DataUnloader {
             	cycle.setTextContent(period);
             	host.appendChild(cycle);
             	
+            	int[][] times;
+            	
+            	int arraysize = 0;
             	for (int flowid : es.outStreamsIDs) {
 					for (Stream s : solution.streams) {
 						if(s.Id == flowid) {
+							arraysize += s.N_instances;
+						}
+					}
+				}
+            	times = new int[arraysize][2];
+            	
+            	int arraycounter = 0;
+            	for (int flowid : es.outStreamsIDs) {
+					for (Stream s : solution.streams) {
+						if(s.Id == flowid) {
+							for (int i = 0; i < s.N_instances; i++) {
+								times[arraycounter][0] = i * s.Period;
+								times[arraycounter][1] = s.Id;
+								arraycounter++;
+							}
+						}
+					}
+				}
+            	
+            	Arrays.sort(times, (a,b) -> Integer.compare(a[0],b[0]));
+
+            	
+            	
+     
+            	for (int i = 0; i < arraysize; i++) {
+					for (Stream s : solution.streams) {
+						if(s.Id == times[i][1]) {
 							Element entry = doc.createElement("entry");
 							host.appendChild(entry);
 				            Element entryflowid = doc.createElement("flowId");
-				            entryflowid.setTextContent(Integer.toString(flowid));
+				            entryflowid.setTextContent(Integer.toString(s.Id));
 				            entry.appendChild(entryflowid);
 				            
 				            Element entrystart = doc.createElement("start");
-				            entrystart.setTextContent("0us");
+				            String starttime = Integer.toString(times[i][0]) + "us";
+				            entrystart.setTextContent(starttime);
 				            entry.appendChild(entrystart);
 				            
 				            Element entryqueue = doc.createElement("queue");
@@ -386,20 +448,33 @@ class DataUnloader {
 								}
 								counter++;
 							}
-				            String listenerAdd = "00:00:00:00:00:" + Integer.toString(counter);
+				            
+				            String listenerAdd = null;
+							if(counter < 10) {
+								listenerAdd = "00:00:00:00:00:0" + Integer.toString(counter);
+
+							}else if(counter <100) {
+								listenerAdd = "00:00:00:00:00-" + Integer.toString(counter);
+
+							}else if(counter < 110) {
+								listenerAdd = "00:00:00:00:" + Integer.toString((int)(counter/100)) + ":" + Integer.toString((counter%100));
+
+							}
+							
 				            entrydest.setTextContent(listenerAdd);
 				            entry.appendChild(entrydest);
 				            
 				            Element entrysize = doc.createElement("size");
 				            entrysize.setTextContent(Integer.toString(s.Size)+"B");
 				            entry.appendChild(entrysize);
-							
 						}
 					}
 				}
-            	
-            	
+		    		
+          
 			}
+            	
+            
                
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
@@ -436,7 +511,7 @@ class DataUnloader {
                 Element staticlabel = doc.createElement("static");
                 database.appendChild(staticlabel);
                 Element forward = doc.createElement("forward");
-                database.appendChild(forward);
+                staticlabel.appendChild(forward);
                 
                 int portcounter = 0;
                 for (Port port : sw.ports) {
@@ -454,7 +529,18 @@ class DataUnloader {
 								}
 								counter++;
 							}
-				            String listenerAdd = "00:00:00:00:00:" + Integer.toString(counter);
+				            String listenerAdd = null;
+							if(counter < 10) {
+								listenerAdd = "00-00-00-00-00-0" + Integer.toString(counter);
+
+							}else if(counter <100) {
+								listenerAdd = "00-00-00-00-00-" + Integer.toString(counter);
+
+							}else if(counter < 110) {
+								listenerAdd = "00-00-00-00-" + Integer.toString((int)(counter/100)) + "-" + Integer.toString((counter%100));
+
+							}
+				            
 			            	macad.setValue(listenerAdd);
 			            	indivitualframe.setAttributeNode(macad);
 			            	
@@ -526,79 +612,99 @@ class DataUnloader {
 		            	schedulecycle.setValue(period);
 		            	schedule.setAttributeNode(schedulecycle);
 		            	
+		            	int[][] G = new int[port.Topen.length][3];
+		            	for (int i = 0; i < port.Topen.length; i++) {
+							G[i][0] = port.Topen[i];
+							G[i][1] = port.Tclose[i];
+							G[i][2] = port.affiliatedQue[i];
+						}
+		            	Arrays.sort(G, (a,b) -> Integer.compare(a[0],b[0]));
+		            	
+		            	
+		            	
+		            	
 		            	int prevClose = 0;
-						for (int i = 0; i < port.Topen.length; i++) {
-
-							
-							int dur =  port.Topen[i] - prevClose;
-							if(dur != 0) {
+						for (int j = 0; j < (solution.Hyperperiod / port.getPeriod()); j++) {
+							for (int i = 0; i < port.Topen.length; i++) {			
+								int dur =  (j * port.getPeriod()) + G[i][0] - prevClose;
+								if(dur<0) {
+									prevClose = 0;
+									dur =  (j * port.getPeriod()) + G[i][0] - prevClose;
+								}
+								if(dur != 0) {
+					            	Element entry = doc.createElement("entry");
+					            	schedule.appendChild(entry);
+					            	Element entrylength = doc.createElement("length");
+					            	entrylength.setTextContent(Integer.toString(dur)+"us");
+					            	entry.appendChild(entrylength);
+					            	
+					            	Element entrybit = doc.createElement("bitvector");
+					            	entrybit.setTextContent("00000000");
+					            	entry.appendChild(entrybit);
+								}
+								dur = G[i][1] - G[i][0];
 				            	Element entry = doc.createElement("entry");
 				            	schedule.appendChild(entry);
 				            	Element entrylength = doc.createElement("length");
-				            	entrylength.setTextContent(Integer.toString(dur));
-				            	schedule.appendChild(entrylength);
-				            	
+				            	entrylength.setTextContent(Integer.toString(dur)+"us");
+				            	entry.appendChild(entrylength);
 				            	Element entrybit = doc.createElement("bitvector");
-				            	entrybit.setTextContent("11111111");
-				            	schedule.appendChild(entrybit);
-							}
-							dur = port.Tclose[i] - port.Topen[i];
-			            	Element entry = doc.createElement("entry");
-			            	schedule.appendChild(entry);
-			            	Element entrylength = doc.createElement("length");
-			            	entrylength.setTextContent(Integer.toString(dur));
-			            	schedule.appendChild(entrylength);
-			            	Element entrybit = doc.createElement("bitvector");
-			            	
-			            	
-							switch (port.affiliatedQue[i]) {
-							case 0:
-								entrybit.setTextContent("01111111");
-								break;
-							case 1:
-								entrybit.setTextContent("10111111");
-								break;
-							case 2:
-								entrybit.setTextContent("11011111");
-								break;
-							case 3:
-								entrybit.setTextContent("11101111");
-								break;
-							case 4:
-								entrybit.setTextContent("11110111");
-								break;
-							case 5:
-								entrybit.setTextContent("11111011");
-								break;
-							case 6:
-								entrybit.setTextContent("11111101");
-								break;
-							case 7:
-								entrybit.setTextContent("11111110");
-								break;
+				            	
+				            	
+								switch (G[i][2]) {
+								case 0:
+									entrybit.setTextContent("00000010");
+									break;
+								case 1:
+									entrybit.setTextContent("00000001");
+									break;
+								case 2:
+									entrybit.setTextContent("00000100");
+									break;
+								case 3:
+									entrybit.setTextContent("00001000");
+									break;
+								case 4:
+									entrybit.setTextContent("00010000");
+									break;
+								case 5:
+									entrybit.setTextContent("00100000");
+									break;
+								case 6:
+									entrybit.setTextContent("01000000");
+									break;
+								case 7:
+									entrybit.setTextContent("10000000");
+									break;
 
-							default:
-								throw new IllegalArgumentException("Unexpected value: " + port.affiliatedQue[i]);
+								default:
+									throw new IllegalArgumentException("Unexpected value: " + G[i][2]);
+								}
+								
+								entry.appendChild(entrybit);
+
+								prevClose = (j * port.getPeriod()) + G[i][1];
+
 							}
 							
-							schedule.appendChild(entrybit);
-
-							prevClose = port.Tclose[i];
 
 						}
-						
 						int dur = solution.Hyperperiod - prevClose;
 						if(dur > 0) {
 			            	Element entry = doc.createElement("entry");
 			            	schedule.appendChild(entry);
 			            	Element entrylength = doc.createElement("length");
-			            	entrylength.setTextContent(Integer.toString(dur));
-			            	schedule.appendChild(entrylength);
+			            	entrylength.setTextContent(Integer.toString(dur)+"us");
+			            	entry.appendChild(entrylength);
 			            	
 			            	Element entrybit = doc.createElement("bitvector");
-			            	entrybit.setTextContent("11111111");
-			            	schedule.appendChild(entrybit);
+			            	entrybit.setTextContent("00000000");
+			            	entry.appendChild(entrybit);
 						}
+		            	
+		            	
+		            	
+
 		            	
 
 						portcounter++;
@@ -646,19 +752,22 @@ class DataUnloader {
 						Attr portNameAttr = doc.createAttribute("ConnectedTo");
 						portNameAttr.setValue(port.connectedTo);
 						portElement.setAttributeNode(portNameAttr);
-						for (int i = 0; i < port.Topen.length; i++) {
-							Element frame = doc.createElement("Frame");
-							portElement.appendChild(frame);
-							Attr openAttr = doc.createAttribute("Open");
-							openAttr.setValue(String.valueOf(port.Topen[i]));
-							frame.setAttributeNode(openAttr);
-							Attr closeAttr = doc.createAttribute("Close");
-							closeAttr.setValue(String.valueOf(port.Tclose[i]));
-							frame.setAttributeNode(closeAttr);
-							Attr queAttr = doc.createAttribute("Que");
-							queAttr.setValue(String.valueOf(port.affiliatedQue[i]));
-							frame.setAttributeNode(queAttr);
+						for (int j = 0; j < (solution.Hyperperiod/port.getPeriod()); j++) {
+							for (int i = 0; i < port.Topen.length; i++) {
+								Element frame = doc.createElement("Frame");
+								portElement.appendChild(frame);
+								Attr openAttr = doc.createAttribute("Open");
+								openAttr.setValue(String.valueOf((j * port.getPeriod()) + port.Topen[i]));
+								frame.setAttributeNode(openAttr);
+								Attr closeAttr = doc.createAttribute("Close");
+								closeAttr.setValue(String.valueOf((j * port.getPeriod()) + port.Tclose[i]));
+								frame.setAttributeNode(closeAttr);
+								Attr queAttr = doc.createAttribute("Que");
+								queAttr.setValue(String.valueOf(port.affiliatedQue[i]));
+								frame.setAttributeNode(queAttr);
+							}
 						}
+
 
 						
 					}

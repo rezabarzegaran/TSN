@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.PrimitiveIterator.OfDouble;
 
 
 
@@ -132,7 +133,7 @@ public class Switches {
 		
 		int LowerKey = Integer.MIN_VALUE;
 		int UpperKey = Integer.MAX_VALUE;
-		int LowerValue = -1;
+		int LowerValue = 0;
 		int UpperValue = -1;
 		for (Map.Entry<Integer, Integer> entry : delayTable.entrySet()) {
 			if(entry.getKey() <= size) {
@@ -140,11 +141,11 @@ public class Switches {
 					LowerKey = entry.getKey();
 					LowerValue = entry.getValue();
 				}
-				if(entry.getKey() >= size) {
-					if(entry.getKey() <= UpperKey) {
-						UpperKey = entry.getKey();
-						UpperValue = entry.getValue();
-					}
+
+			}else if(entry.getKey() > size) {
+				if(entry.getKey() <= UpperKey) {
+					UpperKey = entry.getKey();
+					UpperValue = entry.getValue();
 				}
 			}
 					
@@ -152,11 +153,38 @@ public class Switches {
 		
 		if((LowerValue != -1 ) && (UpperValue != -1)) {
 			double step = UpperKey - LowerKey;
-			double Slope = Math.ceil((UpperValue - LowerValue)/step);
-			int finalvalue = LowerValue + (int) Slope * (size - LowerKey);
+			double Slope = (UpperValue - LowerValue)/step;
+			int finalvalue = LowerValue + (int) Math.ceil(Slope * (size - LowerKey));
 			return finalvalue;
 		}
 		return 0 ;
+	}
+	public int getNOutPort() {
+		int counter =0;
+		for (Port port : ports) {
+			if(port.outPort) {
+				counter++;
+			}
+		}
+		return counter;
+	}
+	public int getPortIndex(Port p) {
+		boolean isOut = p.outPort;
+		int index = 0;
+		for (Port port : ports) {
+			if(port.outPort == isOut) {
+				if(port.equals(p)) {
+					if(isOut) {
+						return index;
+					}else {
+						return (index+getNOutPort());
+					}
+					
+				}
+				index++;
+			}
+		}
+		return -1;
 	}
 	public Switches Clone() {
 		return new Switches(Name, Hyperperiod, clockAsync, streams, ports, delayTable);

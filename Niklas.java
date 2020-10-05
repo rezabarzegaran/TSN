@@ -1312,6 +1312,7 @@ public class Niklas extends SolutionMethod {
 				if(port.outPort) {
 					int gclcounter = 0;
 					int Hyperperiod = GetPortHyperperiod(wperiod[portcounter]);
+					//int Hyperperiod = Current.Hyperperiod;
 
 					port.SetGCLs(GetPortGCLSize(wperiod[portcounter], Hyperperiod));
 					int NUsedQ = 0;
