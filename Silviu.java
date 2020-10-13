@@ -44,7 +44,7 @@ public class Silviu extends SolutionMethod{
 		FlatArray(Offset, x, NOutports);
 		long allvariables = TotalVars;
 		System.out.println("There are " + allvariables + "Variables");
-		db = solver.makePhase(x,  solver.INT_VALUE_DEFAULT, solver.INT_VALUE_DEFAULT);
+		db = solver.makePhase(x,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MIN_VALUE);
 		//db = solver.makePhase(x,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE);
 
 	}
@@ -141,6 +141,8 @@ public class Silviu extends SolutionMethod{
 					}
 					
 					port.SetGCLs(TotalGCL);
+					port.setPeriod(Current.Hyperperiod);
+
 					int gclcounter = 0;
 					for (int i = 0; i < port.AssignedStreams.size(); i++) {
 						for (int j = 0; j < port.AssignedStreams.get(i).N_instances; j++) {
@@ -148,7 +150,6 @@ public class Silviu extends SolutionMethod{
 							port.Topen[gclcounter] = (offsetvalue * sw.microtick) + j * port.AssignedStreams.get(i).Period;
 							port.Tclose[gclcounter] = port.Topen[gclcounter] + port.AssignedStreams.get(i).Transmit_Time;
 							port.affiliatedQue[gclcounter] = port.AssignedStreams.get(i).Priority;
-							port.setPeriod(Current.Hyperperiod);
 							gclcounter++;
 						}
 					}				
@@ -341,10 +342,10 @@ public class Silviu extends SolutionMethod{
 
 	private OptimizeVar CostMinimizer(IntVar[] Costs) {
 		IntVar tempIntVar = null;
-		tempIntVar = solver.makeProd(Costs[0], 1).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 1).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 0).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 1).var()).var();
+		tempIntVar = solver.makeProd(Costs[0], 0).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 0).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 0).var()).var();
 		Costs[4] = tempIntVar;
 		return solver.makeMinimize(Costs[4],3);
 		

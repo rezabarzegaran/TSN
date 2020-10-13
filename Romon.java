@@ -75,8 +75,8 @@ class Romon extends SolutionMethod{
 		FlatAll(x, y, T);
 	    DecisionBuilder db0 = solver.makePhase(w, solver.CHOOSE_FIRST_UNBOUND , solver.ASSIGN_MIN_VALUE);
 	    DecisionBuilder db1 = solver.makeSolveOnce(db0);
-	    DecisionBuilder db2 = solver.makePhase(x, solver.CHOOSE_FIRST_UNBOUND , solver.ASSIGN_RANDOM_VALUE);
-	    DecisionBuilder db3 = solver.makePhase(y, solver.CHOOSE_FIRST_UNBOUND , solver.ASSIGN_RANDOM_VALUE);
+	    DecisionBuilder db2 = solver.makePhase(x, solver.CHOOSE_RANDOM , solver.ASSIGN_RANDOM_VALUE);
+	    DecisionBuilder db3 = solver.makePhase(y, solver.CHOOSE_RANDOM , solver.ASSIGN_RANDOM_VALUE);
 
 	    DecisionBuilder db4 = solver.makePhase(z, solver.CHOOSE_FIRST_UNBOUND , solver.ASSIGN_MIN_VALUE);
 	    DecisionBuilder db5 = solver.makeSolveOnce(db4);
@@ -87,7 +87,7 @@ class Romon extends SolutionMethod{
 	    //db = solver.compose(db7, db6);
 	}
 	public void addSolverLimits() {
-		int hours = 0;
+		int hours = 10;
 		int minutes = 3;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
@@ -286,6 +286,7 @@ class Romon extends SolutionMethod{
 			for (Port port : sw.ports) {
 				if(port.outPort) {
 					port.SetGCLs(port.GCLSize);
+					port.setPeriod(Current.Hyperperiod);
 					for (int i = 0; i < port.GCLSize; i++) {
 						port.Topen[i] = (int) Topen[counter][i].value();
 						port.Tclose[i] = (int) Tclose[counter][i].value();
@@ -731,10 +732,10 @@ class Romon extends SolutionMethod{
 		IntVar tempIntVar = null;
 		tempIntVar = solver.makeProd(Costs[0], 0).var();
 		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[1], 0).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 1).var()).var();
-		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 0).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[2], 0).var()).var();
+		tempIntVar = solver.makeSum(tempIntVar, solver.makeProd(Costs[3], 1).var()).var();
 		Costs[4] = tempIntVar;
-		return solver.makeMinimize(Costs[4],5);
+		return solver.makeMinimize(Costs[4],1);
 		
 
 	}
@@ -831,7 +832,7 @@ class Romon extends SolutionMethod{
 			}	
 		}
 		bExpr = solver.makeDiv(bExpr,totalvals).var();
-		ReciverJitter[3] = bExpr;
+		ReciverJitter[2] = bExpr;
 		return solver.makeMinimize(ReciverJitter[2], 1);
 
 	}
@@ -878,8 +879,8 @@ class Romon extends SolutionMethod{
 		cExpr = solver.makeDiv(cExpr, totalV).var();
 		//bExpr = solver.makeProd(bExpr, 10000).var();
 		//bExpr = solver.makeDiv(bExpr,Current.Hyperperiod).var();
-		ReciverJitter[2] = cExpr;
-		return solver.makeMinimize(ReciverJitter[2], 1);
+		ReciverJitter[3] = cExpr;
+		return solver.makeMinimize(ReciverJitter[3], 1);
 
 	}
 	private OptimizeVar Cost3(IntVar[][] Topen, IntVar[][] Tclose, IntVar[][] Paff, IntVar[][][] Waff, IntVar[] ReciverJitter) {

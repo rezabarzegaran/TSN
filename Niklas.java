@@ -505,8 +505,8 @@ public class Niklas extends SolutionMethod {
 							IntVar WindowServiceValue = getServiceCurve(port, q);
 							WindowServiceValue = solver.makeProd(WindowServiceValue, 10).var();
 							IntVar TotalServiceNeeded = getArrivalCurve(sw, port, q);
-							TotalServiceNeeded = solver.makeProd(TotalServiceNeeded, 8).var();
-							solver.addConstraint(solver.makeGreater(WindowServiceValue, TotalServiceNeeded));
+							TotalServiceNeeded = solver.makeProd(TotalServiceNeeded, 12).var();
+							solver.addConstraint(solver.makeGreaterOrEqual(WindowServiceValue, TotalServiceNeeded));
 							int EarliestD = getEarliestDeadline(q);
 							//IntVar WindowServiceValueAtT = getServiceCurveAtT(port, q, EarliestD);
 							//IntVar TotalServiceNeededAtT = getArrivalCurveAtT(sw, port, q, EarliestD);
@@ -1031,19 +1031,19 @@ public class Niklas extends SolutionMethod {
 		Flat2DArray(Wperiod, x);
 		Flat2DArray(Wlength, y);
 		Flat2DArray(Woffset, z);
-		long allvariables = 3 * TotalVars;
-		//IntVar[] allvars = new IntVar[(int) allvariables];
+		long allvariables = 2 * TotalVars;
+		IntVar[] allvars = new IntVar[(int) allvariables];
 		//MergeArray(x, y, z, allvars);
-		
+		MergeArray(y, z, allvars);
 		System.out.println("There are " + allvariables + "Variables");
-		DecisionBuilder[] dbs = new DecisionBuilder[3];
+		DecisionBuilder[] dbs = new DecisionBuilder[2];
 		dbs[0] = solver.makePhase(x,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
 		//DecisionBuilder dbstemp2 = solver.makePhase(x,  solver.CHOOSE_RANDOM, solver.ASSIGN_MAX_VALUE); // The systematic search method
-		dbs[1] = solver.makePhase(y,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
-		dbs[2] = solver.makePhase(z,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
-		DecisionBuilder dbstemp = solver.makePhase(z,  solver.CHOOSE_RANDOM, solver.ASSIGN_MIN_VALUE); // The systematic search method
-		//dbs[0]  = solver.makePhase(allvars,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE);
-		//dbs[2] = solver.makeSolveOnce(dbstemp);
+		//dbs[1] = solver.makePhase(y,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MIN_VALUE); // The systematic search method
+		//dbs[2] = solver.makePhase(z,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MIN_VALUE); // The systematic search method
+		DecisionBuilder dbstemp = solver.makePhase(x,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
+		dbs[1]  = solver.makePhase(allvars,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE);
+		//dbs[1] = solver.makeSolveOnce(dbstemp);
 		db = solver.compose(dbs);
 	}
 	public void addSolverLimits() {
@@ -1051,10 +1051,10 @@ public class Niklas extends SolutionMethod {
 		int minutes = 30;
 		int dur = (hours * 3600 + minutes * 60) * 1000; 
 		var limit = solver.makeTimeLimit(dur);
-		SearchMonitor[] searchVar = new SearchMonitor[2];
+		SearchMonitor[] searchVar = new SearchMonitor[1];
 		searchVar[0] = limit;
 		//searchVar[1] = excAssessment;	
-		searchVar[1] = costVar;
+		//searchVar[1] = costVar;
 		solver.newSearch(getDecision(),searchVar);
 	    System.out.println(solver.model_name() + " Initiated");
 	}
@@ -1076,7 +1076,7 @@ public class Niklas extends SolutionMethod {
 		TotalRuns++;
 		long duration = System.currentTimeMillis() - started;
     	System.out.println("Solution Found!!, in Time: " + duration);    	
-		if(TotalRuns >= 1){
+		if(TotalRuns >= 10){
 			return true;
 			//return false;
 		}else {
@@ -1105,7 +1105,7 @@ public class Niklas extends SolutionMethod {
 						if(q.isUsed()) {
 							wperiod[portcounter][UsedQCounter] = solver.makeIntVar(1 , ((port.getHPeriod()) / sw.microtick), ("W_" + portcounter + "_"+ UsedQCounter));
 							wlength[portcounter][UsedQCounter] = solver.makeIntVar((GetQuemaxSingleTransmitionDuration(q)/ sw.microtick), ((port.getHPeriod()) / sw.microtick), ("L_" + portcounter + "_"+ UsedQCounter));
-							woffset[portcounter][UsedQCounter] = solver.makeIntVar(0, ((port.getHPeriod()) / sw.microtick), ("O_" + portcounter + "_"+ UsedQCounter));
+							woffset[portcounter][UsedQCounter] = solver.makeIntVar(0, (((port.getHPeriod()) / sw.microtick) - (GetQuemaxSingleTransmitionDuration(q)/ sw.microtick)), ("O_" + portcounter + "_"+ UsedQCounter));
 							Totalvars++;
 							UsedQCounter++;
 						}
@@ -1124,12 +1124,14 @@ public class Niklas extends SolutionMethod {
 		//IntVar totalCost = solver.makeSum(Cost1, Cost2).var();
 		IntVar totalCost = Cost1;
 		cost[1] = totalCost;
-		solver.addConstraint(solver.makeLessOrEqual(cost[0], 3000));
+		solver.addConstraint(solver.makeLessOrEqual(cost[0], 2420));
+		//solver.addConstraint(solver.makeEquality(cost[0], 3045));
+
 		//solver.addConstraint(solver.makeLessOrEqual(cost[1], 6000));
 		//solver.addConstraint(solver.makeLessOrEqual(cost[0], 8500));
-		//solver.addConstraint(solver.makeGreaterOrEqual(cost[1], 4500));
+		//solver.addConstraint(solver.makeGreaterOrEqual(cost[0], 2620));
 
-		return solver.makeMinimize(totalCost, 4);
+		return solver.makeMinimize(totalCost, 2);
 	}
 	private OptimizeVar MinimizeWindowPercentage(IntVar[][] wperiod, IntVar[][] wlength, IntVar[][] woffset, IntVar[] cost) {
 		IntVar percent = null;
@@ -1376,6 +1378,17 @@ public class Niklas extends SolutionMethod {
 				destination[counter] = source[i][j];
 				counter++;
 			}
+		}
+	}
+	private void MergeArray(IntVar[] source1, IntVar[] source2, IntVar[] destination) {
+		int counter = 0;
+		for (int i = 0; i < source1.length; i++) {
+			destination[counter] = source1[i];
+			counter++;
+		}
+		for (int i = 0; i < source2.length; i++) {
+			destination[counter] = source2[i];
+			counter++;
 		}
 	}
 	private void MergeArray(IntVar[] source1, IntVar[] source2, IntVar[] source3, IntVar[] destination) {

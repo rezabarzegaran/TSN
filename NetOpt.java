@@ -19,8 +19,8 @@ public class NetOpt {
 		//String testcase = "src/TestCases/TII/GM/GM2.xml";
 		//String msg = "src/TestCases/Luxi/TC5/msg.txt";
 		//String vls = "src/TestCases/Luxi/TC5/vls.txt";
-		String msg = "src/TestCases/RTAS/TC5/msg.txt";
-		String vls = "src/TestCases/RTAS/TC5/vls.txt";
+		String msg = "src/TestCases/IEEE/TC5/msg.txt";
+		String vls = "src/TestCases/IEEE/TC5/vls.txt";
 
         //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		// Loading Data
@@ -39,7 +39,7 @@ public class NetOpt {
         //Creating Solver
 
         //Select Between Methods
-        methods chosenMethods = methods.Silviu;
+        methods chosenMethods = methods.Niklas;
         
         boolean debugmode = true;
         
