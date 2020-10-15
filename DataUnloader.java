@@ -49,7 +49,7 @@ class DataUnloader {
     	JitterTimeInterface = true;
     	StreamWiseInterface = false;
     	GeneralInterface = true;
-    	GenerateOMNETPP = true;
+    	GenerateOMNETPP = false;
     	costValues = new ArrayList<List<Integer>>();
     	SolutionTimes = new ArrayList<Long>();
     }
@@ -82,7 +82,7 @@ class DataUnloader {
 		
 		if(name.contains("Niklas")) {
     		//visualizer.CreateTotalWindowSVG(solution, schedulePath, solution.Hyperperiod);
-    		UnloadPorts(solution, switchPath, solutionFile);
+    		//UnloadPorts(solution, switchPath, solutionFile);
     		UnloadLuxi(solution, LuxiToolPath);
     		NETCALCall(solution);
     		NETCALLRun(solution);
