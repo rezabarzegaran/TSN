@@ -58,9 +58,9 @@ public class Niklas extends SolutionMethod {
 		WindowPropertyConstraint(Wperiod, Wlength, Woffset);
 		PortSamePeriodConstraint(Wperiod, Wlength, Woffset);
 		FixedPeriodConstraint(Wperiod, Wlength, Woffset);
-		//BandwidthConstraint(Wperiod, Wlength, Woffset);
+		BandwidthConstraint(Wperiod, Wlength, Woffset);
 		NoOverlappingWidnows(Wperiod, Wlength, Woffset);
-		//DelayConstraint3(Wperiod, Wlength, Woffset);
+		DelayConstraint3(Wperiod, Wlength, Woffset);
 		
 		
 		//WindowDurationConstraint(Wperiod, Wlength, Woffset);		
@@ -268,7 +268,7 @@ public class Niklas extends SolutionMethod {
 			//Value += ((s.N_instances * (s.N_instances + 1 )* (2 * s.N_instances + 1 ))/6)*(s.Transmit_Time * s.Period);
 
 			Value += ((s.N_instances * (s.N_instances + 1 ))/2)*(s.Transmit_Time * s.Period);
-			Value += ((s.N_instances * (s.N_instances - 1 ))/2)*(s.Transmit_Time  * s.Period);
+			//Value += ((s.N_instances * (s.N_instances - 1 ))/2)*(s.Transmit_Time  * s.Period);
 
 			if(s.isThisFirstSwtich(SW.Name)) {
 				//Value += ((s.N_instances * (s.N_instances + 1 ))/2)*(s.Transmit_Time * s.Period);
@@ -279,7 +279,7 @@ public class Niklas extends SolutionMethod {
 				//Value += s.N_instances * (1.0 * s.Transmit_Time * (s.Period - duration));
 			}else {
 				int currentSWNumber = s.routingList.indexOf(SW.Name);
-				//Value += ((s.N_instances * (s.N_instances + 1 ))/2)*(s.Transmit_Time  * s.Period);
+				Value += ((s.N_instances * (s.N_instances + 1 ))/2)*(s.Transmit_Time  * s.Period);
 				//Value += ((s.N_instances * (s.N_instances - 1 ))/2)*(s.Transmit_Time  * s.Period);
 
 				//Value += ((s.N_instances * (s.N_instances + 1 )* (2 * s.N_instances + 1 ))/6)*(s.Transmit_Time * s.Period);
@@ -506,7 +506,7 @@ public class Niklas extends SolutionMethod {
 							IntVar WindowServiceValue = getServiceCurve(port, q);
 							WindowServiceValue = solver.makeProd(WindowServiceValue, 10).var();
 							IntVar TotalServiceNeeded = getArrivalCurve(sw, port, q);
-							TotalServiceNeeded = solver.makeProd(TotalServiceNeeded, 17).var();
+							TotalServiceNeeded = solver.makeProd(TotalServiceNeeded, 42).var();
 							solver.addConstraint(solver.makeGreaterOrEqual(WindowServiceValue, TotalServiceNeeded));
 							int EarliestD = getEarliestDeadline(q);
 							//IntVar WindowServiceValueAtT = getServiceCurveAtT(port, q, EarliestD);
@@ -1032,10 +1032,10 @@ public class Niklas extends SolutionMethod {
 		Flat2DArray(Wperiod, x);
 		Flat2DArray(Wlength, y);
 		Flat2DArray(Woffset, z);
-		long allvariables = 3 * TotalVars;
+		long allvariables = 2 * TotalVars;
 		IntVar[] allvars = new IntVar[(int) allvariables];
-		MergeArray(x, y, z, allvars);
-		//MergeArray(y, z, allvars);
+		//MergeArray(x, y, z, allvars);
+		MergeArray(y, x, allvars);
 		System.out.println("There are " + allvariables + "Variables");
 		DecisionBuilder[] dbs = new DecisionBuilder[3];
 		dbs[1] = solver.makePhase(x,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
@@ -1043,7 +1043,7 @@ public class Niklas extends SolutionMethod {
 		dbs[2] = solver.makePhase(y,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
 		dbs[0] = solver.makePhase(z,  solver.CHOOSE_FIRST_UNBOUND, solver.ASSIGN_MIN_VALUE); // The systematic search method
 		//DecisionBuilder dbstemp = solver.makePhase(x,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE); // The systematic search method
-		//dbs[0]  = solver.makePhase(allvars,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE);
+		//dbs[1]  = solver.makePhase(allvars,  solver.CHOOSE_RANDOM, solver.ASSIGN_RANDOM_VALUE);
 		//dbs[1] = solver.makeSolveOnce(dbstemp);
 		db = solver.compose(dbs);
 	}
@@ -1077,7 +1077,7 @@ public class Niklas extends SolutionMethod {
 		TotalRuns++;
 		long duration = System.currentTimeMillis() - started;
     	System.out.println("Solution Found!!, in Time: " + duration);    	
-		if(TotalRuns >= 5){
+		if(TotalRuns >= 2){
 			return true;
 			//return false;
 		}else {
@@ -1125,8 +1125,8 @@ public class Niklas extends SolutionMethod {
 		//IntVar totalCost = solver.makeSum(Cost1, Cost2).var();
 		IntVar totalCost = Cost1;
 		cost[1] = totalCost;
-		//solver.addConstraint(solver.makeLessOrEqual(cost[0], 2539));
-		solver.addConstraint(solver.makeEquality(cost[0], 4590));
+		solver.addConstraint(solver.makeLessOrEqual(cost[0], 835));
+		//solver.addConstraint(solver.makeEquality(cost[0], 835));
 
 		//solver.addConstraint(solver.makeLessOrEqual(cost[1], 6000));
 		//solver.addConstraint(solver.makeLessOrEqual(cost[0], 8500));

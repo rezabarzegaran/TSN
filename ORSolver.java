@@ -28,7 +28,8 @@ class ORSolver {
 		Niklas,
 		Silviu,
 		Jorge,
-		Reza
+		Reza,
+		Hybrid
 	}
 	public void setResultPath(String _path) {
 		dataUnloader.setDirPath(_path);
@@ -54,6 +55,9 @@ class ORSolver {
 		case Reza:
 			method = new Reza(solver);
 			break;
+		case Hybrid:
+			method = new Hybrid(solver);
+			break;
 		default:
 			method = new Silviu(solver);
 
@@ -69,24 +73,42 @@ class ORSolver {
 	    
 	    Solution OptSolution = null;
 	    long start=(System.currentTimeMillis());
-	    while (solver.nextSolution()) { 
-	    	OptSolution = method.cloneSolution();
-	    	long now= ( System.currentTimeMillis() );
-		    long Tnow = now - start;
-	    	System.out.println("Found, " +  Tnow);
-		    
+	    if (chosenmethod != methods.Hybrid ) {
+		    while (solver.nextSolution()) { 
+		    	OptSolution = method.cloneSolution();
+		    	long now= ( System.currentTimeMillis() );
+			    long Tnow = now - start;
+		    	System.out.println("Found, " +  Tnow);
+			    
 
-	    	dataUnloader.CaptureSolution(OptSolution, Tnow);
-	    	if(DebogMode) {
-	    		dataUnloader.WriteData(OptSolution, chosenmethod.toString(), method.getSolutionNumber());
-	    	}
-			
-	    	if(method.Monitor(start)) {
-	    		break;
-	    	}
+		    	dataUnloader.CaptureSolution(OptSolution, Tnow);
+		    	if(DebogMode) {
+		    		dataUnloader.WriteData(OptSolution, chosenmethod.toString(), method.getSolutionNumber());
+		    	}
+				
+		    	if(method.Monitor(start)) {
+		    		break;
+		    	}
 
-	    }
-	    solver.endSearch();
+		    }
+		    solver.endSearch();
+		}else {
+			while(true) {
+				OptSolution = method.cloneSolution();
+		    	long now= ( System.currentTimeMillis() );
+			    long Tnow = now - start;
+		    	//System.out.println("Found, " +  Tnow);
+		    	dataUnloader.CaptureSolution(OptSolution, Tnow);
+		    	if(DebogMode) {
+		    		dataUnloader.WriteData(OptSolution, chosenmethod.toString(), method.getSolutionNumber());
+		    	}
+				
+		    	if(method.Monitor(start)) {
+		    		break;
+		    	}
+			}
+		}
+
 	    long end= ( System.currentTimeMillis());
 	    long duration = end - start;
 	    
@@ -94,8 +116,9 @@ class ORSolver {
 	    	if(!DebogMode) {
 	    		dataUnloader.WriteData(OptSolution, chosenmethod.toString(), method.getSolutionNumber());
 	    	}
-		    dataUnloader.Report(OptSolution, solver.wallTime());
 	    }
+	    dataUnloader.Report(OptSolution, solver.wallTime());
+
 
 
 	    // Statistics

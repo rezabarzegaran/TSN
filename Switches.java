@@ -9,6 +9,8 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.PrimitiveIterator.OfDouble;
 
+import com.sun.security.auth.NTDomainPrincipal;
+
 
 
 
@@ -379,24 +381,33 @@ class Port {
 class Que{
 	int id;
 	int Priority;
+	int period;
 	List<Stream> assignedStreams = new ArrayList<Stream>();
 	int Hyperperiod = -1;
 	public Que(int per){
 		setID(per);
 		setPriority(per);
+		period = 1;
 	}
-	public Que(int _id, int _Pri , List<Stream> streams) {
+	public Que(int _id, int _Pri , List<Stream> streams, int _period) {
 		id = _id;
 		Priority = _Pri;
 		for (Stream s : streams) {
 			AssignStream(s);
 		}
+		setPeriod(_period);
 	}
 	private void setID(int _id) {
 		id = _id;
 	}
 	private void setPriority(int per) {
 		Priority = per;
+	}
+	public void setPeriod(int p) {
+		period = p;
+	}
+	public int getPeriod() {
+		return period;
 	}
 	public void AssignStream(Stream s) {
 		assignedStreams.add(s);
@@ -432,6 +443,6 @@ class Que{
 		return lcm;
 	}
 	public Que Clone() {
-		return new Que(id, Priority, assignedStreams);
+		return new Que(id, Priority, assignedStreams, period);
 	}
 }

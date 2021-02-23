@@ -57,12 +57,18 @@ class DataUnloader {
     	defaltDirPath = _path;
     }
     public void CaptureSolution(Solution solution, long Tnow) {
-    	getCostValues(solution);
-    	SolutionTimes.add(Tnow);
-    	variables = solution.Variables;
+    	if(solution != null) {
+        	getCostValues(solution);
+        	SolutionTimes.add(Tnow);
+        	variables = solution.Variables;
+    	}
+
     }
     public void WriteData(Solution solution, String name, int counter) {
     	//getCostValues(solution);
+    	if(solution == null) {
+    		return;
+    	}
     	hyperperiod = solution.Hyperperiod;
 		if (!defaultPath.contains(name)) {
     		defaultPath = defaultPath + "/" + name; 
@@ -87,7 +93,12 @@ class DataUnloader {
     		NETCALCall(solution);
     		NETCALLRun(solution);
     		
-		}else {
+		}else if(name.contains("Hybrid")){
+    		UnloadLuxi(solution, LuxiToolPath);
+    		NETCALCall(solution);
+    		NETCALLRun(solution);
+		}
+		else{
 			if (GeneralInterface) {
 	    		//visualizer.CreateTotalSVG(solution, schedulePath, solution.Hyperperiod);
 	    		UnloadStreams(solution, streamPath, solutionFile);
