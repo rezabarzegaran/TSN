@@ -1,0 +1,32 @@
+digraph network {
+  "ES1" -> "SW1" [ label="1" color="maroon" ];
+  "SW1" -> "SW2" [ label="1" color="maroon" ];
+  "SW2" -> "ES3" [ label="1" color="maroon" ];
+  "ES1" -> "SW1" [ label="2" color="maroon" ];
+  "SW1" -> "SW2" [ label="2" color="maroon" ];
+  "SW2" -> "ES3" [ label="2" color="maroon" ];
+  "ES1" -> "SW1" [ label="3" color="maroon" ];
+  "SW1" -> "ES2" [ label="3" color="maroon" ];
+  "ES2" -> "SW1" [ label="4" color="maroon" ];
+  "SW1" -> "ES1" [ label="4" color="maroon" ];
+  "ES2" -> "SW1" [ label="5" color="maroon" ];
+  "SW1" -> "SW2" [ label="5" color="maroon" ];
+  "SW2" -> "ES3" [ label="5" color="maroon" ];
+  "ES2" -> "SW1" [ label="6" color="maroon" ];
+  "SW1" -> "SW2" [ label="6" color="maroon" ];
+  "SW2" -> "ES3" [ label="6" color="maroon" ];
+  "ES3" -> "SW2" [ label="7" color="maroon" ];
+  "SW2" -> "SW1" [ label="7" color="maroon" ];
+  "SW1" -> "ES1" [ label="7" color="maroon" ];
+  "ES3" -> "SW2" [ label="8" color="maroon" ];
+  "SW2" -> "SW1" [ label="8" color="maroon" ];
+  "SW1" -> "ES2" [ label="8" color="maroon" ];
+  "ES3" -> "SW2" [ label="9" color="maroon" ];
+  "SW2" -> "SW1" [ label="9" color="maroon" ];
+  "SW1" -> "ES2" [ label="9" color="maroon" ];
+  "ES1" [ label="ES1" style="filled" ratio="fill" ];
+  "SW1" [ label="SW1" color="0.650 0.200 1.000" style="filled" ratio="fill" ];
+  "SW2" [ label="SW2" color="0.650 0.200 1.000" style="filled" ratio="fill" ];
+  "ES3" [ label="ES3" style="filled" ratio="fill" ];
+  "ES2" [ label="ES2" style="filled" ratio="fill" ];
+}

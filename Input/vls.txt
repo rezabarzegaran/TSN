@@ -1,0 +1,10 @@
+#generated
+vl0 : ES1,SW1 ; SW1,SW2 ; SW2,ES3 ;
+vl1 : ES1,SW1 ; SW1,SW2 ; SW2,ES3 ;
+vl2 : ES1,SW1 ; SW1,ES2 ;
+vl3 : ES2,SW1 ; SW1,ES1 ; 
+vl4 : ES2,SW1 ; SW1,SW2 ; SW2,ES3 ;
+vl5 : ES2,SW1 ; SW1,SW2 ; SW2,ES3 ;
+vl6 : ES3,SW2 ; SW2,SW1 ; SW1,ES1 ;
+vl7 : ES3,SW2 ; SW2,SW1 ; SW1,ES2 ;
+vl8 : ES3,SW2 ; SW2,SW1 ; SW1,ES2 ; 

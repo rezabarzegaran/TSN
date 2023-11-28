@@ -1,0 +1,8 @@
+Optimization Finished
+The hyperPeriod is: 15000
+The number of frames are: 113
+There are 3 solutions, whithin 240083 milli seconds.
+The cost values are: 
+Solution 0:	0,	0,	353,	205,	205,	Generated in : 52
+Solution 1:	0,	0,	353,	198,	198,	Generated in : 102
+Solution 2:	0,	0,	353,	192,	192,	Generated in : 215
