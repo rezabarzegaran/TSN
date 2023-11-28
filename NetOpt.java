@@ -39,7 +39,7 @@ public class NetOpt {
         //Creating Solver
 
         //Select Between Methods
-        methods chosenMethods = methods.Romon;
+        methods chosenMethods = methods.Ramon;
         
         boolean debugmode = true;
         
