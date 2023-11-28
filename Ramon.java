@@ -10,11 +10,11 @@ import com.google.ortools.constraintsolver.OptimizeVar;
 import com.google.ortools.constraintsolver.SearchMonitor;
 import com.google.ortools.constraintsolver.Solver;
 
-class Romon extends SolutionMethod{
+class Ramon extends SolutionMethod{
 	Solution Current;
 	Solver solver;
 	DecisionBuilder db;
-	public Romon(Solver _solver) {
+	public Ramon(Solver _solver) {
 		solver = _solver;
 	}
 	public void Initialize(Solution current) {
