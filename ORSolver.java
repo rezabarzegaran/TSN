@@ -24,7 +24,7 @@ class ORSolver {
 		Current = current;
 	}
 	public enum methods {
-		Romon,
+		Ramon,
 		Niklas,
 		Silviu,
 		Jorge,
@@ -40,8 +40,8 @@ class ORSolver {
 	    SolutionMethod method = null;
 	    
 	    switch (chosenmethod) {
-		case Romon:
-			method = new Romon(solver);
+		case Ramon:
+			method = new Ramon(solver);
 			break;
 		case Niklas:
 			method = new Niklas(solver);
